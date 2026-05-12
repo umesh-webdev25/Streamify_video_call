@@ -9,6 +9,36 @@ export default {
   plugins: [daisyui],
   daisyui: {
     themes: [
+      {
+        "streamify-pro": {
+          primary: "#2563EB",
+          secondary: "#60A5FA",
+          accent: "#DBEAFE",
+          neutral: "#0F172A",
+          "base-100": "#F8FAFC",
+          "base-200": "#FFFFFF",
+          "base-300": "#E2E8F0",
+          "base-content": "#0F172A",
+          success: "#22C55E",
+          warning: "#F59E0B",
+          error: "#EF4444",
+        },
+      },
+      {
+        "streamify-dark": {
+          primary: "#3B82F6",
+          secondary: "#60A5FA",
+          accent: "#1E3A8A",
+          neutral: "#F8FAFC",
+          "base-100": "#0F172A",
+          "base-200": "#1E293B",
+          "base-300": "#334155",
+          "base-content": "#F8FAFC",
+          success: "#10B981",
+          warning: "#F59E0B",
+          error: "#EF4444",
+        },
+      },
       "light",
       "dark",
       "cupcake",

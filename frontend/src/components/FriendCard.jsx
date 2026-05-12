@@ -3,29 +3,39 @@ import { LANGUAGE_TO_FLAG } from "../constants";
 
 const FriendCard = ({ friend }) => {
   return (
-    <div className="card bg-base-200 hover:shadow-md transition-shadow">
-      <div className="card-body p-4">
+    <div className="card bg-base-200 border border-base-300 hover:shadow-lg transition-all duration-300 group">
+      <div className="card-body p-5">
         {/* USER INFO */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="avatar size-12">
-            <img src={friend.profilePic} alt={friend.fullName} />
+        <div className="flex items-center gap-4 mb-4">
+          <div className="avatar size-14">
+            <div className="rounded-xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-300">
+              <img src={friend.profilePic} alt={friend.fullName} />
+            </div>
           </div>
-          <h3 className="font-semibold truncate">{friend.fullName}</h3>
+          <div className="flex-1 overflow-hidden">
+            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+              {friend.fullName}
+            </h3>
+            <p className="text-xs text-base-content/50 font-medium">SaaS User</p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <span className="badge badge-secondary text-xs">
+        <div className="flex flex-wrap gap-2 mb-5">
+          <span className="badge badge-primary badge-sm py-2.5 font-medium">
             {getLanguageFlag(friend.nativeLanguage)}
-            Native: {friend.nativeLanguage}
+            {friend.nativeLanguage}
           </span>
-          <span className="badge badge-outline text-xs">
+          <span className="badge badge-ghost border-base-300 badge-sm py-2.5 font-medium">
             {getLanguageFlag(friend.learningLanguage)}
-            Learning: {friend.learningLanguage}
+            {friend.learningLanguage}
           </span>
         </div>
 
-        <Link to={`/chat/${friend._id}`} className="btn btn-outline w-full">
-          Message
+        <Link
+          to={`/chat/${friend._id}`}
+          className="btn btn-primary btn-sm rounded-lg w-full font-semibold tracking-wide shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+        >
+          Send Message
         </Link>
       </div>
     </div>

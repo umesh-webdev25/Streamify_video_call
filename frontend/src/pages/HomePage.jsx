@@ -51,72 +51,75 @@ const HomePage = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto space-y-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Your Friends</h2>
-          <Link to="/notifications" className="btn btn-outline btn-sm">
-            <UsersIcon className="mr-2 size-4" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-base-200 p-6 rounded-2xl border border-base-300 shadow-sm">
+          <div>
+            <h2 className="text-3xl font-extrabold tracking-tight text-base-content">Your Network</h2>
+            <p className="text-base-content/60 mt-1 font-medium">Manage and connect with your professional contacts</p>
+          </div>
+          <Link to="/notifications" className="btn btn-primary btn-md rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 px-6">
+            <UsersIcon className="mr-2 size-5" />
             Friend Requests
           </Link>
         </div>
 
         {loadingFriends ? (
-          <div className="flex justify-center py-12">
-            <span className="loading loading-spinner loading-lg" />
+          <div className="flex justify-center py-16">
+            <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : friends.length === 0 ? (
           <NoFriendsFound />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {friends.map((friend) => (
               <FriendCard key={friend._id} friend={friend} />
             ))}
           </div>
         )}
 
-        <section>
-          <div className="mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Meet New Learners</h2>
-                <p className="opacity-70">
-                  Discover perfect language exchange partners based on your profile
-                </p>
-              </div>
-            </div>
+        <section className="space-y-8">
+          <div className="border-l-4 border-primary pl-6 py-2">
+            <h2 className="text-3xl font-extrabold tracking-tight text-base-content">Meet New Learners</h2>
+            <p className="text-base-content/60 mt-1 font-medium">
+              Perfect matches for your professional language exchange
+            </p>
           </div>
 
           {loadingUsers ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg" />
+            <div className="flex justify-center py-16">
+              <span className="loading loading-spinner loading-lg text-primary" />
             </div>
           ) : recommendedUsers.length === 0 ? (
-            <div className="card bg-base-200 p-6 text-center">
-              <h3 className="font-semibold text-lg mb-2">No recommendations available</h3>
-              <p className="text-base-content opacity-70">
-                Check back later for new language partners!
+            <div className="card bg-base-200 p-10 text-center border border-dashed border-base-300 rounded-2xl">
+              <h3 className="font-bold text-xl mb-2">No suggestions right now</h3>
+              <p className="text-base-content/60 max-w-md mx-auto">
+                Check back later for new professional language partners tailored to your profile.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {recommendedUsers.map((user) => {
                 const hasRequestBeenSent = outgoingRequestsIds.has(user._id);
 
                 return (
                   <div
                     key={user._id}
-                    className="card bg-base-200 hover:shadow-lg transition-all duration-300"
+                    className="card bg-base-200 border border-base-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group"
                   >
-                    <div className="card-body p-5 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="avatar size-16 rounded-full">
-                          <img src={user.profilePic} alt={user.fullName} />
+                    <div className="card-body p-6 space-y-5">
+                      <div className="flex items-center gap-4">
+                        <div className="avatar size-16">
+                          <div className="rounded-2xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-300 shadow-sm">
+                            <img src={user.profilePic} alt={user.fullName} />
+                          </div>
                         </div>
 
-                        <div>
-                          <h3 className="font-semibold text-lg">{user.fullName}</h3>
+                        <div className="flex-1 overflow-hidden">
+                          <h3 className="font-bold text-xl truncate group-hover:text-primary transition-colors">
+                            {user.fullName}
+                          </h3>
                           {user.location && (
-                            <div className="flex items-center text-xs opacity-70 mt-1">
-                              <MapPinIcon className="size-3 mr-1" />
+                            <div className="flex items-center text-xs font-semibold text-base-content/50 mt-1 uppercase tracking-wider">
+                              <MapPinIcon className="size-3 mr-1.5 text-primary/70" />
                               {user.location}
                             </div>
                           )}
@@ -124,36 +127,40 @@ const HomePage = () => {
                       </div>
 
                       {/* Languages with flags */}
-                      <div className="flex flex-wrap gap-1.5">
-                        <span className="badge badge-secondary">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="badge badge-primary badge-sm py-3 px-3 font-semibold">
                           {getLanguageFlag(user.nativeLanguage)}
-                          Native: {capitialize(user.nativeLanguage)}
+                          {capitialize(user.nativeLanguage)}
                         </span>
-                        <span className="badge badge-outline">
+                        <span className="badge badge-ghost border-base-300 badge-sm py-3 px-3 font-semibold">
                           {getLanguageFlag(user.learningLanguage)}
-                          Learning: {capitialize(user.learningLanguage)}
+                          {capitialize(user.learningLanguage)}
                         </span>
                       </div>
 
-                      {user.bio && <p className="text-sm opacity-70">{user.bio}</p>}
+                      {user.bio && (
+                        <p className="text-sm text-base-content/70 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                          {user.bio}
+                        </p>
+                      )}
 
                       {/* Action button */}
                       <button
-                        className={`btn w-full mt-2 ${
-                          hasRequestBeenSent ? "btn-disabled" : "btn-primary"
+                        className={`btn w-full mt-2 rounded-xl font-bold tracking-wide transition-all shadow-sm active:scale-95 ${
+                          hasRequestBeenSent ? "btn-disabled bg-base-300 border-none" : "btn-primary hover:shadow-md"
                         } `}
                         onClick={() => sendRequestMutation(user._id)}
                         disabled={hasRequestBeenSent || isPending}
                       >
                         {hasRequestBeenSent ? (
                           <>
-                            <CheckCircleIcon className="size-4 mr-2" />
+                            <CheckCircleIcon className="size-5 mr-2" />
                             Request Sent
                           </>
                         ) : (
                           <>
-                            <UserPlusIcon className="size-4 mr-2" />
-                            Send Friend Request
+                            <UserPlusIcon className="size-5 mr-2" />
+                            Connect
                           </>
                         )}
                       </button>

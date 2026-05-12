@@ -2,26 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    font-family: "Inter", sans-serif;
+  }
+}
+
 .str-chat__channel {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom, #c9e8c9, #b7e7bb);
+  background: linear-gradient(135deg, oklch(var(--b1)), oklch(var(--b2)));
   height: 100%;
 }
 
 .str-chat__container {
   max-width: 1200px;
   width: 100%;
-  height: 80% !important;
+  height: 85% !important;
   margin: 0 auto !important;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  border: 1px solid oklch(var(--b3));
 }
 
 .str-chat__list {
-  background-color: #ffffff;
+  background-color: oklch(var(--b2));
   padding: 12px;
 }
 
@@ -30,5 +37,24 @@
 }
 
 .str-chat__message-input {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid oklch(var(--b3));
+  background-color: oklch(var(--b2));
 }
+
+/* CUSTOM MESSAGE BUBBLE OVERRIDES */
+.str-chat__message-bubble {
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+}
+
+.str-chat__message--me .str-chat__message-bubble {
+  background-color: oklch(var(--p)) !important;
+  color: oklch(var(--pc)) !important;
+}
+
+.str-chat__message--other .str-chat__message-bubble {
+  background-color: oklch(var(--b1)) !important;
+  color: oklch(var(--bc)) !important;
+  border: 1px solid oklch(var(--b3)) !important;
+}
+

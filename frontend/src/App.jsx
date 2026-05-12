@@ -8,7 +8,7 @@ import FriendsPage from "./pages/FriendsPage.jsx";
 import CallPage from "./pages/CallPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
-
+import ForgetPassword from "./pages/ForgetPassword.jsx";
 import { Toaster } from "react-hot-toast";
 
 import PageLoader from "./components/PageLoader.jsx";
@@ -25,9 +25,17 @@ const App = () => {
 
   if (isLoading) return <PageLoader />;
 
+  const displayTheme = isAuthenticated ? theme : "streamify-pro";
+
   return (
-    <div className="h-screen" data-theme={theme}>
+    <div className="h-screen transition-colors duration-300" data-theme={displayTheme}>
       <Routes>
+
+        <Route
+          path="/forget-password"
+          element={!isAuthenticated ? <ForgetPassword /> : <Navigate to="/" />}
+        />
+
         <Route
           path="/"
           element={
