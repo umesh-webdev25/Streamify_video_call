@@ -12,10 +12,13 @@ import morgan from "morgan";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import chatRoutes from "./routes/chat.route.js";
+import meetingRoutes from "./routes/meeting.routes.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
+import dns from "dns";
 
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 // Load .env before using process.env
 dotenv.config();
 
@@ -67,6 +70,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

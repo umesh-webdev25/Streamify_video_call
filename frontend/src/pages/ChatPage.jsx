@@ -6,11 +6,12 @@ import { getStreamToken } from "../lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   VideoIcon,
-  PhoneIcon,
   MoreVerticalIcon,
   InfoIcon,
   SearchIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  MessageSquareIcon,
+  PhoneIcon,
 } from "lucide-react";
 
 import {
@@ -104,12 +105,12 @@ const ChatPage = () => {
 
   const handleVideoCall = () => {
     if (channel) {
-      const callUrl = `${window.location.origin}/call/${channel.id}`;
+      const callUrl = `${window.location.origin}/meeting/room/${channel.id}`;
       channel.sendMessage({
-        text: `🚀 I've started a premium video call. Join here: ${callUrl}`,
+        text: `🚀 Join my video call: ${callUrl}`,
       });
       toast.success("Call invitation sent!");
-      navigate(`/call/${channel.id}`);
+      navigate(`/meeting/room/${channel.id}`);
     }
   };
 
@@ -124,9 +125,9 @@ const ChatPage = () => {
       </Helmet>
 
       {/* BACKGROUND DECORATION */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[30%] bg-blue-600/5 rounded-full blur-[100px]" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-1/4 -left-1/4 w-1/3 h-1/3 bg-secondary/5 rounded-full blur-[100px]" />
       </div>
 
       <Chat client={chatClient} theme="str-chat__theme-dark">
@@ -134,68 +135,50 @@ const ChatPage = () => {
           <div className="flex flex-1 overflow-hidden h-full">
             <div className="flex-1 flex flex-col min-w-0 h-full">
               <Window>
-                {/* ULTRA PREMIUM HEADER */}
-                <div className="sticky top-0 z-30 px-6 py-4 border-b border-white/10 bg-base-100/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-base-100/50">
+                {/* HEADER */}
+                <div className="sticky top-0 z-30 px-4 sm:px-6 py-3 sm:py-4 border-b border-base-300/50 bg-base-100/80 backdrop-blur-2xl">
                   <div className="flex items-center justify-between">
                     
                     {/* LEFT */}
-                    <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       
                       {/* MOBILE BACK */}
                       <button
                         onClick={() => navigate(-1)}
-                        className="lg:hidden flex items-center justify-center size-10 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300"
+                        className="lg:hidden flex items-center justify-center size-9 sm:size-10 rounded-xl bg-base-200/80 hover:bg-base-300/80 border border-base-300/50 transition-all"
                       >
-                        <ChevronLeftIcon className="size-5 text-base-content/70" />
+                        <ChevronLeftIcon className="size-4 sm:size-5 text-base-content/60" />
                       </button>
 
-                      {/* AVATAR */}
-                      <div className="relative group">
-                        {/* Glow */}
-                        <div className="absolute inset-0 rounded-[28px] bg-primary/20 blur-xl opacity-70 group-hover:opacity-100 transition duration-500" />
-
-                        <div className="relative size-14 rounded-[28px] overflow-hidden ring-2 ring-white/10 shadow-2xl">
+                      {/* AVATAR WITH GLOW */}
+                      <div className="relative group shrink-0">
+                        <div className="absolute inset-0 rounded-2xl bg-primary/15 blur-xl opacity-70 group-hover:opacity-100 transition duration-500" />
+                        <div className="relative size-11 sm:size-14 rounded-2xl overflow-hidden ring-2 ring-base-300/60 shadow-lg">
                           <img
                             src={targetUser?.image}
                             alt={targetUser?.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
                         </div>
-
-                        {/* ONLINE */}
-                        <div className="absolute bottom-0 right-0">
-                          <div className="relative flex items-center justify-center">
-                            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 animate-ping" />
-                            <span className="relative size-4 rounded-full bg-green-500 border-[3px] border-base-100 shadow-lg" />
-                          </div>
-                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 size-3.5 sm:size-4 rounded-full bg-success border-[3px] border-base-100 shadow-sm" />
                       </div>
 
                       {/* USER INFO */}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-bold tracking-tight truncate text-base-content">
-                            {targetUser?.name || "Premium User"}
+                          <h2 className="text-base sm:text-lg font-bold tracking-tight truncate text-base-content">
+                            {targetUser?.name || "User"}
                           </h2>
-
-                          <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
-                            <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[10px] uppercase tracking-widest font-bold text-primary">
-                              PRO
-                            </span>
+                          <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                            <span className="size-1 rounded-full bg-primary" />
+                            <span className="text-[9px] uppercase tracking-widest font-bold text-primary">PRO</span>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="size-2 rounded-full bg-green-500 animate-pulse" />
-
-                          <p className="text-xs font-medium text-base-content/50">
-                            Active now
-                          </p>
-
-                          <span className="text-base-content/20">•</span>
-
-                          <p className="text-xs text-base-content/40 truncate">
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="size-1.5 rounded-full bg-success" />
+                          <p className="text-xs font-medium text-base-content/50">Active now</p>
+                          <span className="text-base-content/20 hidden xs:inline">·</span>
+                          <p className="text-xs text-base-content/40 truncate hidden xs:block">
                             Language Exchange Partner
                           </p>
                         </div>
@@ -203,52 +186,47 @@ const ChatPage = () => {
                     </div>
 
                     {/* RIGHT ACTIONS */}
-                    <div className="flex items-center gap-2">
-                      
-                      {/* SEARCH */}
-                      <button className="hidden sm:flex items-center justify-center size-11 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:scale-105">
-                        <SearchIcon className="size-4 text-base-content/60" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <button className="hidden sm:flex items-center justify-center size-9 sm:size-10 rounded-xl bg-base-200/80 hover:bg-base-300/80 border border-base-300/50 transition-all hover:scale-105 text-base-content/50 hover:text-base-content">
+                        <SearchIcon className="size-4" />
                       </button>
 
-                      {/* INFO */}
                       <button
                         onClick={() => setShowInfo(!showInfo)}
-                        className={`hidden sm:flex items-center justify-center size-11 rounded-2xl border transition-all duration-300 hover:scale-105 ${
+                        className={`hidden sm:flex items-center justify-center size-9 sm:size-10 rounded-xl border transition-all hover:scale-105 ${
                           showInfo
-                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                            : "bg-white/5 hover:bg-white/10 border-white/10 text-base-content/60"
+                            ? "bg-primary text-primary-content border-primary shadow-md shadow-primary/20"
+                            : "bg-base-200/80 hover:bg-base-300/80 border-base-300/50 text-base-content/50 hover:text-base-content"
                         }`}
                       >
                         <InfoIcon className="size-4" />
                       </button>
 
-                      {/* CALL BUTTON */}
                       <button
                         onClick={handleVideoCall}
-                        className="group relative overflow-hidden h-11 px-6 rounded-2xl bg-gradient-to-r from-primary to-blue-500 text-white font-semibold shadow-2xl shadow-primary/25 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
+                        className="group relative overflow-hidden h-9 sm:h-10 px-4 sm:px-5 rounded-xl bg-gradient-to-r from-primary to-blue-500 text-white font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all"
                       >
-                        {/* Glow */}
-                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                        <div className="relative flex items-center gap-2">
-                          <VideoIcon className="size-4" />
-                          <span className="hidden md:block">Start Call</span>
+                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative flex items-center gap-1.5 sm:gap-2">
+                          <VideoIcon className="size-3.5 sm:size-4" />
+                          <span className="hidden md:block text-xs sm:text-sm">Call</span>
                         </div>
                       </button>
 
-                      {/* MORE */}
-                      <button className="flex items-center justify-center size-11 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:scale-105">
-                        <MoreVerticalIcon className="size-4 text-base-content/60" />
+                      <button className="flex items-center justify-center size-9 sm:size-10 rounded-xl bg-base-200/80 hover:bg-base-300/80 border border-base-300/50 transition-all hover:scale-105">
+                        <MoreVerticalIcon className="size-4 text-base-content/50" />
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden relative bg-base-200/20">
+                {/* MESSAGE LIST */}
+                <div className="flex-1 overflow-hidden relative bg-base-200/10">
                   <MessageList />
                 </div>
 
-                <div className="p-4 bg-base-100/50 backdrop-blur-sm border-t border-base-200">
+                {/* MESSAGE INPUT */}
+                <div className="p-3 sm:p-4 bg-base-100/60 backdrop-blur-sm border-t border-base-300/40">
                   <MessageComposer />
                 </div>
               </Window>
@@ -262,11 +240,13 @@ const ChatPage = () => {
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: 320, opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
-                  className="hidden lg:flex flex-col border-l border-base-200 bg-base-100/50 backdrop-blur-md overflow-hidden h-full"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="hidden lg:flex flex-col border-l border-base-300/50 bg-base-100/40 backdrop-blur-md overflow-hidden h-full"
                 >
-                  <div className="p-8 flex flex-col items-center text-center space-y-6">
+                  <div className="p-6 sm:p-8 flex flex-col items-center text-center space-y-6 overflow-y-auto">
+                    {/* AVATAR */}
                     <div className="relative">
-                      <div className="size-32 rounded-[32px] overflow-hidden ring-4 ring-primary/10 ring-offset-4 ring-offset-base-100 shadow-2xl">
+                      <div className="size-28 sm:size-32 rounded-3xl overflow-hidden ring-4 ring-primary/10 ring-offset-4 ring-offset-base-100 shadow-2xl">
                         <img src={targetUser?.image} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div className="absolute -bottom-2 -right-2 bg-success px-3 py-1 rounded-full border-4 border-base-100 shadow-lg">
@@ -274,15 +254,24 @@ const ChatPage = () => {
                       </div>
                     </div>
 
+                    {/* NAME */}
                     <div className="space-y-1">
-                      <h2 className="text-xl font-bold text-base-content tracking-tight">{targetUser?.name}</h2>
-                      <p className="text-sm text-base-content/40 font-medium">@{targetUser?.name?.toLowerCase().replace(/\s/g, '')}</p>
+                      <h2 className="text-xl font-bold text-base-content tracking-tight">
+                        {targetUser?.name}
+                      </h2>
+                      <p className="text-sm text-base-content/40 font-medium">
+                        @{targetUser?.name?.toLowerCase().replace(/\s/g, '')}
+                      </p>
                     </div>
 
+                    {/* STATS */}
                     <div className="w-full grid grid-cols-2 gap-3">
                       <div className="bg-base-200/50 p-3 rounded-2xl border border-base-300/30">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/30 mb-1">Status</p>
-                        <p className="text-xs font-semibold text-base-content">Learner</p>
+                        <p className="text-xs font-semibold text-base-content flex items-center gap-1.5 justify-center">
+                          <span className="size-1.5 rounded-full bg-success" />
+                          Active
+                        </p>
                       </div>
                       <div className="bg-base-200/50 p-3 rounded-2xl border border-base-300/30">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/30 mb-1">Joined</p>
@@ -290,6 +279,7 @@ const ChatPage = () => {
                       </div>
                     </div>
 
+                    {/* ABOUT */}
                     <div className="w-full space-y-4 pt-4 border-t border-base-200">
                       <div className="text-left space-y-2">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/30">About</p>
@@ -305,11 +295,24 @@ const ChatPage = () => {
                           </span>
                         ))}
                       </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleVideoCall}
+                          className="btn btn-primary btn-sm flex-1 rounded-xl gap-1.5 shadow-md shadow-primary/20"
+                        >
+                          <VideoIcon className="size-3.5" />
+                          Call
+                        </button>
+                        <button
+                          onClick={() => navigate(`/meeting/room/${[authUser._id, targetUserId].sort().join("-")}`)}
+                          className="btn btn-outline btn-sm flex-1 rounded-xl border-base-300 text-base-content/60 hover:bg-base-200 hover:text-base-content gap-1.5"
+                        >
+                          <MessageSquareIcon className="size-3.5" />
+                          Meeting
+                        </button>
+                      </div>
                     </div>
-                    
-                    <button className="btn btn-outline btn-sm w-full rounded-xl border-base-300 text-base-content/50 hover:bg-base-200 hover:text-base-content mt-auto">
-                      View Full Profile
-                    </button>
                   </div>
                 </motion.div>
               )}

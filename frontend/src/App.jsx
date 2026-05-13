@@ -11,6 +11,9 @@ import ChatPage from "./pages/ChatPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
+import MeetingLobbyPage from "./pages/MeetingLobbyPage.jsx";
+import MeetingRoomPage from "./pages/MeetingRoomPage.jsx";
+import MeetingSchedulePage from "./pages/MeetingSchedulePage.jsx";
 import { Toaster } from "react-hot-toast";
 
 
@@ -102,6 +105,9 @@ const App = () => {
             }
           />
           <Route path="/call/:id" element={<CallPage />} />
+          <Route path="/meeting/lobby" element={<MeetingLobbyPage />} />
+          <Route path="/meeting/room/:roomId" element={<MeetingRoomPage />} />
+          <Route path="/meeting/schedule" element={<MeetingSchedulePage />} />
         </Route>
 
         {/* FALLBACK */}

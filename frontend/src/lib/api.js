@@ -63,3 +63,29 @@ export async function getStreamToken() {
   const response = await axiosInstance.get("/chat/token");
   return response.data.data;
 }
+
+// Meeting API
+export async function createMeeting(data) {
+  const response = await axiosInstance.post("/meetings/create", data);
+  return response.data.data;
+}
+
+export async function getMeeting(roomId) {
+  const response = await axiosInstance.get(`/meetings/${roomId}`);
+  return response.data.data;
+}
+
+export async function joinMeeting(data) {
+  const response = await axiosInstance.post("/meetings/join", data);
+  return response.data.data;
+}
+
+export async function endMeeting(roomId) {
+  const response = await axiosInstance.delete(`/meetings/${roomId}/end`);
+  return response.data.data;
+}
+
+export async function getMeetingToken() {
+  const response = await axiosInstance.get("/meetings/token");
+  return response.data.data;
+}

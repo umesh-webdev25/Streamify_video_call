@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { BellIcon, HomeIcon, UsersIcon, SettingsIcon, SearchIcon } from "lucide-react";
+import { BellIcon, HomeIcon, UsersIcon, SettingsIcon, SearchIcon, VideoIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 
@@ -9,6 +9,7 @@ const MobileNav = () => {
 
   const navItems = [
     { icon: HomeIcon, label: "Home", path: "/" },
+    { icon: VideoIcon, label: "Meetings", path: "/meeting/lobby" },
     { icon: UsersIcon, label: "Friends", path: "/friends" },
     { icon: BellIcon, label: "Alerts", path: "/notifications" },
     { icon: SettingsIcon, label: "Config", path: "/settings" },
