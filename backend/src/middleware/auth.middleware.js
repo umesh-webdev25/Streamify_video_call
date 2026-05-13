@@ -1,37 +1,38 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import userRepository from "../repositories/user.repository.js";
+import AppError from "../utils/AppError.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const protectRoute = async (req, res, next) => {
+/**
+ * Middleware to protect routes and verify JWT
+ */
+export const protectRoute = asyncHandler(async (req, res, next) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    throw new AppError("Unauthorized - No token provided", 401);
+  }
+
   try {
-    const token = req.cookies.jwt;
-
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized - No token provided" });
-    }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    if (!decoded) {
-      return res.status(401).json({ message: "Unauthorized - Invalid token" });
+    if (!decoded || !decoded.userId) {
+      throw new AppError("Unauthorized - Invalid token", 401);
     }
 
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await userRepository.findById(decoded.userId);
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized - User not found" });
+      throw new AppError("Unauthorized - User not found", 401);
     }
 
+    // Pass user to request object
     req.user = user;
-
     next();
   } catch (error) {
-    console.log("Error in protectRoute middleware", error && error.message ? error.message : error);
-    // If the error is a JWT verification error, return 401
-    if (error && (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError")) {
-      return res.status(401).json({ message: "Unauthorized - Invalid or expired token" });
+    if (error.name === "TokenExpiredError") {
+      throw new AppError("Unauthorized - Token expired", 401);
     }
-
-    // For other unexpected errors, return 500
-    res.status(500).json({ message: "Internal Server Error" });
+    throw new AppError("Unauthorized - Invalid token", 401);
   }
-};
+});

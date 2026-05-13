@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { acceptFriendRequest, getFriendRequests } from "../lib/api";
-import { BellIcon, ClockIcon, MessageSquareIcon, UserCheckIcon } from "lucide-react";
+import { BellIcon, ClockIcon, CheckCircleIcon, UserPlusIcon } from "lucide-react";
 import NoNotificationsFound from "../components/NoNotificationsFound";
+import { capitalize } from "../lib/utils";
+import { getLanguageFlag } from "../components/FriendCard";
+import { Helmet } from "react-helmet-async";
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();
 
-  const { data: friendRequests, isLoading, isError, error } = useQuery({
+  const {
+    data: friendRequests,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["friendRequests"],
     queryFn: getFriendRequests,
   });
@@ -23,129 +31,152 @@ const NotificationsPage = () => {
   const acceptedRequests = friendRequests?.acceptedReqs || [];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-base-100 min-h-screen">
-      <div className="container mx-auto max-w-4xl space-y-10">
-        <div className="flex items-center justify-between border-b border-base-300 pb-6">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-base-content">Notifications</h1>
-            <p className="text-base-content/60 mt-1 font-medium">Stay updated with your professional network</p>
-          </div>
-          <div className="p-3 bg-primary/10 rounded-2xl">
-            <BellIcon className="size-6 text-primary" />
-          </div>
+    <div className="p-6 sm:p-8 max-w-3xl mx-auto space-y-10">
+      <Helmet>
+        <title>Notifications | Streamify</title>
+      </Helmet>
+
+      {/* PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-base-200">
+        <div>
+          <h1 className="text-2xl font-bold text-base-content tracking-tight">
+            Notifications
+          </h1>
+          <p className="text-sm text-base-content/50 mt-0.5">
+            Stay updated with your professional network
+          </p>
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-          </div>
-        ) : isError ? (
-          <div className="alert alert-error rounded-2xl border-none shadow-md">
-            <span className="font-semibold">{error?.response?.data?.message || error?.message || "Failed to load notifications"}</span>
-          </div>
-        ) : (
-          <>
-            {incomingRequests.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center gap-3 border-l-4 border-primary pl-4 py-1">
-                  <h2 className="text-xl font-bold text-base-content flex items-center gap-2">
-                    Pending Requests
-                    <span className="badge badge-primary badge-md ml-2 font-bold px-3">{incomingRequests.length}</span>
-                  </h2>
-                </div>
-
-                <div className="grid gap-4">
-                  {incomingRequests.map((request) => (
-                    <div
-                      key={request._id}
-                      className="card bg-base-200 border border-base-300 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group"
-                    >
-                      <div className="card-body p-5">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-4">
-                            <div className="avatar size-16">
-                                <div className="rounded-2xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all shadow-sm">
-                                  <img src={request.sender?.profilePic} alt={request.sender?.fullName} />
-                                </div>
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{request.sender?.fullName}</h3>
-                              <div className="flex flex-wrap gap-2 mt-1.5">
-                                <span className="badge badge-primary badge-sm font-semibold py-2.5 px-3">
-                                  {request.sender?.nativeLanguage}
-                                </span>
-                                <span className="badge badge-ghost border-base-300 badge-sm font-semibold py-2.5 px-3">
-                                  {request.sender?.learningLanguage}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <button
-                            className="btn btn-primary btn-md rounded-xl font-bold tracking-wide shadow-md hover:shadow-primary/20 transition-all px-8 active:scale-95"
-                            onClick={() => acceptRequestMutation(request._id)}
-                            disabled={isPending}
-                          >
-                            Accept
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* ACCEPTED REQS NOTIFICATONS */}
-            {acceptedRequests.length > 0 && (
-              <section className="space-y-6">
-                 <div className="flex items-center gap-3 border-l-4 border-success pl-4 py-1">
-                  <h2 className="text-xl font-bold text-base-content flex items-center gap-2">
-                    Recent Connections
-                  </h2>
-                </div>
-
-                <div className="grid gap-4">
-                  {acceptedRequests.map((notification) => (
-                    <div key={notification._id} className="card bg-base-200 border border-base-300 shadow-sm hover:shadow-md transition-all duration-300 group">
-                      <div className="card-body p-5">
-                        <div className="flex items-center gap-4">
-                          <div className="avatar size-12">
-                            <div className="rounded-xl ring-1 ring-base-300 group-hover:ring-success/30 transition-all">
-                              <img src={notification.recipient?.profilePic} alt={notification.recipient?.fullName} />
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-base-content">{notification.recipient?.fullName}</h3>
-                            <p className="text-sm text-base-content/60 font-medium mt-0.5">
-                              Accepted your friend request and is ready to connect.
-                            </p>
-                            <p className="text-[11px] font-bold flex items-center text-base-content/40 uppercase tracking-widest mt-2">
-                              <ClockIcon className="size-3 mr-1.5" />
-                              Just now
-                            </p>
-                          </div>
-                          <div className="badge badge-success badge-md font-bold px-4 py-3 gap-2">
-                            <MessageSquareIcon className="size-4" />
-                            Connected
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {incomingRequests.length === 0 && acceptedRequests.length === 0 && (
-              <div className="py-20">
-                <NoNotificationsFound />
-              </div>
-            )}
-          </>
-        )}
+        <BellIcon className="size-5 text-base-content/30 self-start sm:self-auto" />
       </div>
+
+      {/* LOADING */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-24 space-y-3">
+          <span className="loading loading-spinner loading-md text-primary" />
+          <p className="text-xs font-medium text-base-content/40 uppercase tracking-widest">
+            Loading notifications...
+          </p>
+        </div>
+      ) : isError ? (
+        <div className="alert alert-error rounded-lg py-3 text-sm border-none">
+          <span>
+            {error?.response?.data?.message ||
+              error?.message ||
+              "Failed to load notifications"}
+          </span>
+        </div>
+      ) : (
+        <div className="space-y-10">
+
+          {/* INCOMING REQUESTS */}
+          {incomingRequests.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-widest flex items-center gap-2">
+                Pending Requests
+                <span className="badge badge-primary badge-sm font-semibold rounded-full">
+                  {incomingRequests.length}
+                </span>
+              </h2>
+
+              <div className="space-y-3">
+                {incomingRequests.map((request) => (
+                  <div
+                    key={request._id}
+                    className="bg-base-100 border border-base-200 rounded-xl p-4 hover:border-base-300 hover:shadow-sm transition-all duration-200"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
+                          <img
+                            src={request.sender?.profilePic}
+                            alt={request.sender?.fullName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-base-content truncate leading-tight">
+                            {request.sender?.fullName}
+                          </h3>
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium bg-base-200 text-base-content/60 px-2 py-0.5 rounded-md">
+                              {getLanguageFlag(request.sender?.nativeLanguage)}
+                              {capitalize(request.sender?.nativeLanguage)}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-md">
+                              {getLanguageFlag(request.sender?.learningLanguage)}
+                              {capitalize(request.sender?.learningLanguage)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        className="btn btn-primary btn-sm rounded-lg gap-2 font-medium self-start sm:self-auto shrink-0"
+                        onClick={() => acceptRequestMutation(request._id)}
+                        disabled={isPending}
+                      >
+                        <UserPlusIcon className="size-4" />
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ACCEPTED REQUESTS */}
+          {acceptedRequests.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-widest">
+                Recent Connections
+              </h2>
+
+              <div className="space-y-3">
+                {acceptedRequests.map((notification) => (
+                  <div
+                    key={notification._id}
+                    className="bg-base-100 border border-base-200 rounded-xl p-4 hover:border-base-300 transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
+                        <img
+                          src={notification.recipient?.profilePic}
+                          alt={notification.recipient?.fullName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base-content leading-tight truncate">
+                          {notification.recipient?.fullName}
+                        </h3>
+                        <p className="text-sm text-base-content/50 mt-0.5">
+                          Accepted your friend request and is ready to connect.
+                        </p>
+                        <div className="flex items-center gap-1 text-xs text-base-content/30 mt-1.5">
+                          <ClockIcon className="size-3" />
+                          Just now
+                        </div>
+                      </div>
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-success bg-success/10 px-2.5 py-1 rounded-md border border-success/20 shrink-0">
+                        <CheckCircleIcon className="size-3.5" />
+                        Connected
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* EMPTY STATE */}
+          {incomingRequests.length === 0 && acceptedRequests.length === 0 && (
+            <NoNotificationsFound />
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
 export default NotificationsPage;

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   getOutgoingFriendReqs,
   getRecommendedUsers,
@@ -7,26 +7,38 @@ import {
   sendFriendRequest,
 } from "../lib/api";
 import { Link } from "react-router";
-import { CheckCircleIcon, MapPinIcon, UserPlusIcon, UsersIcon } from "lucide-react";
-
-import { capitialize } from "../lib/utils";
-
+import {
+  CheckCircleIcon,
+  MapPinIcon,
+  UserPlusIcon,
+  UsersIcon,
+  SparklesIcon,
+  GlobeIcon,
+} from "lucide-react";
+import { capitalize, cn } from "../lib/utils";
 import FriendCard, { getLanguageFlag } from "../components/FriendCard";
 import NoFriendsFound from "../components/NoFriendsFound";
+import Skeleton from "../components/ui/Skeleton";
+import { Helmet } from "react-helmet-async";
 
 const HomePage = () => {
   const queryClient = useQueryClient();
-  const [outgoingRequestsIds, setOutgoingRequestsIds] = useState(new Set());
 
-  const { data: friends = [], isLoading: loadingFriends } = useQuery({
+  const { data: friendsRaw = [], isLoading: loadingFriends } = useQuery({
     queryKey: ["friends"],
     queryFn: getUserFriends,
   });
+  const friends = Array.isArray(friendsRaw)
+    ? friendsRaw
+    : friendsRaw?.friends || [];
 
-  const { data: recommendedUsers = [], isLoading: loadingUsers } = useQuery({
+  const { data: recommendedUsersRaw = [], isLoading: loadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: getRecommendedUsers,
   });
+  const recommendedUsers = Array.isArray(recommendedUsersRaw)
+    ? recommendedUsersRaw
+    : recommendedUsersRaw?.users || [];
 
   const { data: outgoingFriendReqs } = useQuery({
     queryKey: ["outgoingFriendReqs"],
@@ -35,143 +47,211 @@ const HomePage = () => {
 
   const { mutate: sendRequestMutation, isPending } = useMutation({
     mutationFn: sendFriendRequest,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] }),
   });
 
-  useEffect(() => {
-    const outgoingIds = new Set();
-    if (outgoingFriendReqs && outgoingFriendReqs.length > 0) {
-      outgoingFriendReqs.forEach((req) => {
-        outgoingIds.add(req.recipient._id);
-      });
-      setOutgoingRequestsIds(outgoingIds);
-    }
+  const outgoingRequestsIds = useMemo(() => {
+    const ids = new Set();
+    const reqs = Array.isArray(outgoingFriendReqs)
+      ? outgoingFriendReqs
+      : outgoingFriendReqs?.requests || [];
+    reqs.forEach((req) => ids.add(req.recipient?._id));
+    return ids;
   }, [outgoingFriendReqs]);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="container mx-auto space-y-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-base-200 p-6 rounded-2xl border border-base-300 shadow-sm">
-          <div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-base-content">Your Network</h2>
-            <p className="text-base-content/60 mt-1 font-medium">Manage and connect with your professional contacts</p>
-          </div>
-          <Link to="/notifications" className="btn btn-primary btn-md rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 px-6">
-            <UsersIcon className="mr-2 size-5" />
-            Friend Requests
-          </Link>
+    <div className="p-6 sm:p-8 max-w-8xl mx-auto space-y-10">
+      <Helmet>
+        <title>Dashboard | Streamify</title>
+      </Helmet>
+
+      {/* PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-base-200">
+        <div>
+          <h1 className="text-2xl font-bold text-base-content tracking-tight">
+            Your Network
+          </h1>
+          <p className="text-sm text-base-content/50 mt-0.5">
+            Manage and connect with your language partners
+          </p>
         </div>
+        <Link
+          to="/friends"
+          className="btn btn-primary btn-sm gap-2 rounded-lg self-start sm:self-auto"
+        >
+          <UsersIcon className="size-4" />
+          View All Friends
+        </Link>
+      </div>
+
+      {/* FRIENDS SECTION */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-widest">
+          Current Connections
+        </h2>
 
         {loadingFriends ? (
-          <div className="flex justify-center py-16">
-            <span className="loading loading-spinner loading-lg text-primary" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-base-200 rounded-xl p-4 space-y-3 border border-base-300"
+              >
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-12 rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-3/4 rounded" />
+                    <Skeleton className="h-3 w-1/2 rounded" />
+                  </div>
+                </div>
+                <Skeleton className="h-3 w-full rounded" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 flex-1 rounded-lg" />
+                  <Skeleton className="h-9 flex-1 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : friends.length === 0 ? (
           <NoFriendsFound />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {friends.map((friend) => (
               <FriendCard key={friend._id} friend={friend} />
             ))}
           </div>
         )}
+      </section>
 
-        <section className="space-y-8">
-          <div className="border-l-4 border-primary pl-6 py-2">
-            <h2 className="text-3xl font-extrabold tracking-tight text-base-content">Meet New Learners</h2>
-            <p className="text-base-content/60 mt-1 font-medium">
-              Perfect matches for your professional language exchange
+      {/* RECOMMENDED SECTION */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-widest">
+              Meet New Learners
+            </h2>
+            <p className="text-sm text-base-content/50 mt-0.5">
+              Handpicked partners for your language goals
             </p>
           </div>
+          <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
+            <SparklesIcon className="size-3.5" />
+            AI Suggested
+          </span>
+        </div>
 
-          {loadingUsers ? (
-            <div className="flex justify-center py-16">
-              <span className="loading loading-spinner loading-lg text-primary" />
+        {loadingUsers ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-base-200 rounded-xl p-5 space-y-4 border border-base-300"
+              >
+                <div className="flex items-center gap-4">
+                  <Skeleton className="size-14 rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-3/4 rounded" />
+                    <Skeleton className="h-3 w-1/2 rounded" />
+                  </div>
+                </div>
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+            ))}
+          </div>
+        ) : recommendedUsers.length === 0 ? (
+          <div className="border border-dashed border-base-300 rounded-xl p-12 text-center space-y-3">
+            <div className="size-12 bg-base-200 rounded-full flex items-center justify-center mx-auto">
+              <GlobeIcon className="size-6 text-base-content/30" />
             </div>
-          ) : recommendedUsers.length === 0 ? (
-            <div className="card bg-base-200 p-10 text-center border border-dashed border-base-300 rounded-2xl">
-              <h3 className="font-bold text-xl mb-2">No suggestions right now</h3>
-              <p className="text-base-content/60 max-w-md mx-auto">
-                Check back later for new professional language partners tailored to your profile.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {recommendedUsers.map((user) => {
-                const hasRequestBeenSent = outgoingRequestsIds.has(user._id);
-
-                return (
-                  <div
-                    key={user._id}
-                    className="card bg-base-200 border border-base-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group"
-                  >
-                    <div className="card-body p-6 space-y-5">
-                      <div className="flex items-center gap-4">
-                        <div className="avatar size-16">
-                          <div className="rounded-2xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-300 shadow-sm">
-                            <img src={user.profilePic} alt={user.fullName} />
-                          </div>
+            <h3 className="font-semibold text-base-content">
+              No suggestions right now
+            </h3>
+            <p className="text-sm text-base-content/50 max-w-sm mx-auto">
+              Check back later for new language partners tailored to your
+              profile.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recommendedUsers.map((user) => {
+              const hasRequestBeenSent = outgoingRequestsIds.has(user._id);
+              return (
+                <div
+                  key={user._id}
+                  className="bg-base-100 border border-base-200 rounded-xl p-5 space-y-4 hover:border-base-300 hover:shadow-sm transition-all duration-200"
+                >
+                  {/* User Header */}
+                  <div className="flex items-center gap-3">
+                    <div className="size-12 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
+                      <img
+                        src={user.profilePic}
+                        alt={user.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-base-content truncate leading-tight">
+                        {user.fullName}
+                      </h3>
+                      {user.location && (
+                        <div className="flex items-center gap-1 text-xs text-base-content/40 mt-0.5">
+                          <MapPinIcon className="size-3 shrink-0" />
+                          <span className="truncate">{user.location}</span>
                         </div>
-
-                        <div className="flex-1 overflow-hidden">
-                          <h3 className="font-bold text-xl truncate group-hover:text-primary transition-colors">
-                            {user.fullName}
-                          </h3>
-                          {user.location && (
-                            <div className="flex items-center text-xs font-semibold text-base-content/50 mt-1 uppercase tracking-wider">
-                              <MapPinIcon className="size-3 mr-1.5 text-primary/70" />
-                              {user.location}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Languages with flags */}
-                      <div className="flex flex-wrap gap-2">
-                        <span className="badge badge-primary badge-sm py-3 px-3 font-semibold">
-                          {getLanguageFlag(user.nativeLanguage)}
-                          {capitialize(user.nativeLanguage)}
-                        </span>
-                        <span className="badge badge-ghost border-base-300 badge-sm py-3 px-3 font-semibold">
-                          {getLanguageFlag(user.learningLanguage)}
-                          {capitialize(user.learningLanguage)}
-                        </span>
-                      </div>
-
-                      {user.bio && (
-                        <p className="text-sm text-base-content/70 leading-relaxed line-clamp-2 min-h-[2.5rem]">
-                          {user.bio}
-                        </p>
                       )}
-
-                      {/* Action button */}
-                      <button
-                        className={`btn w-full mt-2 rounded-xl font-bold tracking-wide transition-all shadow-sm active:scale-95 ${
-                          hasRequestBeenSent ? "btn-disabled bg-base-300 border-none" : "btn-primary hover:shadow-md"
-                        } `}
-                        onClick={() => sendRequestMutation(user._id)}
-                        disabled={hasRequestBeenSent || isPending}
-                      >
-                        {hasRequestBeenSent ? (
-                          <>
-                            <CheckCircleIcon className="size-5 mr-2" />
-                            Request Sent
-                          </>
-                        ) : (
-                          <>
-                            <UserPlusIcon className="size-5 mr-2" />
-                            Connect
-                          </>
-                        )}
-                      </button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
+
+                  {/* Languages */}
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-base-200 text-base-content/60 px-2.5 py-1 rounded-md">
+                      {getLanguageFlag(user.nativeLanguage)}
+                      {capitalize(user.nativeLanguage)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-md">
+                      {getLanguageFlag(user.learningLanguage)}
+                      {capitalize(user.learningLanguage)}
+                    </span>
+                  </div>
+
+                  {/* Bio */}
+                  {user.bio && (
+                    <p className="text-sm text-base-content/50 leading-relaxed line-clamp-2">
+                      {user.bio}
+                    </p>
+                  )}
+
+                  {/* Action */}
+                  <button
+                    className={cn(
+                      "btn btn-sm w-full rounded-lg gap-2 font-medium border-none",
+                      hasRequestBeenSent
+                        ? "bg-base-200 text-base-content/40 cursor-not-allowed"
+                        : "btn-primary"
+                    )}
+                    onClick={() => sendRequestMutation(user._id)}
+                    disabled={hasRequestBeenSent || isPending}
+                  >
+                    {hasRequestBeenSent ? (
+                      <>
+                        <CheckCircleIcon className="size-4" />
+                        Request Sent
+                      </>
+                    ) : (
+                      <>
+                        <UserPlusIcon className="size-4" />
+                        Connect
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

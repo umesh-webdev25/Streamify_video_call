@@ -1,62 +1,91 @@
 import { Link } from "react-router";
+import { MessageSquareIcon, VideoIcon, MapPinIcon } from "lucide-react";
+import { capitalize } from "../lib/utils";
+import { motion } from "framer-motion";
 import { LANGUAGE_TO_FLAG } from "../constants";
 
-const FriendCard = ({ friend }) => {
-  return (
-    <div className="card bg-base-200 border border-base-300 hover:shadow-lg transition-all duration-300 group">
-      <div className="card-body p-5">
-        {/* USER INFO */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="avatar size-14">
-            <div className="rounded-xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-300">
-              <img src={friend.profilePic} alt={friend.fullName} />
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
-              {friend.fullName}
-            </h3>
-            <p className="text-xs text-base-content/50 font-medium">SaaS User</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-5">
-          <span className="badge badge-primary badge-sm py-2.5 font-medium">
-            {getLanguageFlag(friend.nativeLanguage)}
-            {friend.nativeLanguage}
-          </span>
-          <span className="badge badge-ghost border-base-300 badge-sm py-2.5 font-medium">
-            {getLanguageFlag(friend.learningLanguage)}
-            {friend.learningLanguage}
-          </span>
-        </div>
-
-        <Link
-          to={`/chat/${friend._id}`}
-          className="btn btn-primary btn-sm rounded-lg w-full font-semibold tracking-wide shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
-        >
-          Send Message
-        </Link>
-      </div>
-    </div>
-  );
-};
-export default FriendCard;
-
-export function getLanguageFlag(language) {
+export const getLanguageFlag = (language) => {
   if (!language) return null;
-
   const langLower = language.toLowerCase();
   const countryCode = LANGUAGE_TO_FLAG[langLower];
 
   if (countryCode) {
     return (
       <img
-        src={`https://flagcdn.com/24x18/${countryCode}.png`}
+        src={`https://flagcdn.com/w40/${countryCode}.png`}
         alt={`${langLower} flag`}
-        className="h-3 mr-1 inline-block"
+        className="size-4 rounded-sm object-cover"
       />
     );
   }
-  return null;
-}
+  return "🌐";
+};
+
+const FriendCard = ({ friend }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      className="card bg-base-200 border border-base-300 hover:shadow-2xl transition-all duration-300 group overflow-hidden"
+    >
+      <div className="card-body p-6 space-y-5">
+        <div className="flex items-center gap-5">
+          <div className="avatar">
+            <div className="w-16 rounded-2xl ring-2 ring-primary/10 ring-offset-base-100 ring-offset-2 group-hover:ring-primary/30 transition-all duration-300 shadow-lg shadow-black/5">
+              <img src={friend.profilePic} alt={friend.fullName} />
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-black text-xl tracking-tight truncate group-hover:text-primary transition-colors">
+              {friend.fullName}
+            </h3>
+            <div className="flex items-center text-[10px] font-black text-base-content/40 mt-1 uppercase tracking-widest">
+              <MapPinIcon className="size-3 mr-1 text-primary/60" />
+              {friend.location || "Global Learner"}
+            </div>
+          </div>
+        </div>
+
+        {/* Languages */}
+        <div className="flex flex-wrap gap-2">
+          <div className="badge bg-base-300/50 text-[11px] font-bold py-3.5 px-3 border-none gap-1.5 shadow-sm">
+            {getLanguageFlag(friend.nativeLanguage)}
+            <span className="text-base-content/70">{capitalize(friend.nativeLanguage)}</span>
+          </div>
+          <div className="badge bg-primary/10 text-primary text-[11px] font-bold py-3.5 px-3 border-none gap-1.5 shadow-sm">
+            {getLanguageFlag(friend.learningLanguage)}
+            <span>{capitalize(friend.learningLanguage)}</span>
+          </div>
+        </div>
+
+        {friend.bio && (
+          <p className="text-sm text-base-content/60 leading-relaxed line-clamp-2 italic min-h-[2.5rem]">
+            "{friend.bio}"
+          </p>
+        )}
+
+        {/* Action buttons */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <Link
+            to={`/chat/${friend._id}`}
+            className="btn btn-ghost bg-base-300/30 hover:bg-primary hover:text-white rounded-xl gap-2 font-bold transition-all shadow-sm group/btn"
+          >
+            <MessageSquareIcon className="size-4 group-hover/btn:scale-110 transition-transform" />
+            <span>Chat</span>
+          </Link>
+          <Link
+            to={`/call/${friend._id}`}
+            className="btn btn-primary rounded-xl gap-2 font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all group/btn"
+          >
+            <VideoIcon className="size-4 group-hover/btn:scale-110 transition-transform" />
+            <span>Call</span>
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default FriendCard;

@@ -4,57 +4,75 @@
 
 @layer base {
   body {
-    font-family: "Inter", sans-serif;
+    @apply font-sans text-base-content antialiased selection:bg-primary/20 selection:text-primary;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-base-300/50 rounded-full hover:bg-base-300 transition-colors;
   }
 }
 
+@layer components {
+  .glass {
+    @apply bg-base-200/60 backdrop-blur-xl border border-white/10 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  .card-premium {
+    @apply bg-base-200 border border-base-300/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300;
+  }
+
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300 active:scale-95;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 font-extrabold;
+  }
+}
+
+/* Stream Chat Overrides */
 .str-chat__channel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @apply flex items-center justify-center h-full;
   background: linear-gradient(135deg, oklch(var(--b1)), oklch(var(--b2)));
-  height: 100%;
 }
 
 .str-chat__container {
-  max-width: 1200px;
-  width: 100%;
-  height: 85% !important;
-  margin: 0 auto !important;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  border: 1px solid oklch(var(--b3));
+  @apply max-w-6xl w-full h-[90%] mx-auto rounded-3xl shadow-2xl overflow-hidden border border-base-300/50 glass !important;
 }
 
 .str-chat__list {
-  background-color: oklch(var(--b2));
-  padding: 12px;
-}
-
-.str-chat__list-notifications {
-  display: none;
+  @apply bg-base-200/30 p-4 !important;
 }
 
 .str-chat__message-input {
-  border-top: 1px solid oklch(var(--b3));
-  background-color: oklch(var(--b2));
+  @apply border-t border-base-300/50 bg-base-200/50 p-4 !important;
 }
 
-/* CUSTOM MESSAGE BUBBLE OVERRIDES */
 .str-chat__message-bubble {
-  border-radius: 12px !important;
-  padding: 10px 14px !important;
+  @apply rounded-2xl p-3 shadow-sm !important;
 }
 
 .str-chat__message--me .str-chat__message-bubble {
-  background-color: oklch(var(--p)) !important;
-  color: oklch(var(--pc)) !important;
+  @apply bg-primary text-primary-content !important;
 }
 
 .str-chat__message--other .str-chat__message-bubble {
-  background-color: oklch(var(--b1)) !important;
-  color: oklch(var(--bc)) !important;
-  border: 1px solid oklch(var(--b3)) !important;
+  @apply bg-base-100 text-base-content border border-base-300/50 !important;
 }
+
 

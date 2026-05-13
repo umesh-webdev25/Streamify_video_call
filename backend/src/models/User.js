@@ -63,6 +63,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for performance
+userSchema.index({ email: 1 });
+userSchema.index({ isOnboarded: 1 });
+userSchema.index({ nativeLanguage: 1, learningLanguage: 1 });
+userSchema.index({ friends: 1 });
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 

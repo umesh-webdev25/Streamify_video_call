@@ -1,75 +1,170 @@
 import { Link, useLocation } from "react-router";
 import useAuthUser from "../hooks/useAuthUser";
-import { BellIcon, HomeIcon, ShipWheelIcon, UsersIcon } from "lucide-react";
+import { BellIcon, HomeIcon, LogOutIcon, SettingsIcon, ShipWheelIcon, UsersIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "../lib/utils";
+import { useState, useRef, useEffect } from "react";
+import useLogout from "../hooks/useLogout";
 
 const Sidebar = () => {
   const { authUser } = useAuthUser();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { logoutMutation } = useLogout();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const navItems = [
+    { icon: HomeIcon, label: "Home", path: "/" },
+    { icon: UsersIcon, label: "Friends", path: "/friends" },
+    { icon: BellIcon, label: "Notifications", path: "/notifications" },
+    { icon: SettingsIcon, label: "Settings", path: "/settings" },
+  ];
 
   return (
-    <aside className="w-68 bg-base-200 border-r border-base-300 hidden lg:flex flex-col h-screen sticky top-0 transition-all duration-300">
-      <div className="p-6 border-b border-base-300">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-            <ShipWheelIcon className="size-8 text-primary" />
+    <aside className="w-64 bg-base-100 border-r border-base-800 hidden lg:flex flex-col h-screen sticky top-0 z-40">
+      {/* LOGO */}
+      <div className="h-16 px-6 flex items-center border-b border-base-200">
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="p-1.5 bg-primary rounded-lg">
+            <ShipWheelIcon className="size-5 text-primary-content" />
           </div>
-          <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight">
+          <span className="text-lg font-bold tracking-tight text-base-content">
             Streamify
           </span>
         </Link>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2 mt-4">
-        <Link
-          to="/"
-          className={`btn btn-ghost justify-start w-full gap-3 px-4 py-3 rounded-xl normal-case font-medium transition-all duration-200 ${
-            currentPath === "/" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-base-content/70 hover:bg-base-content/5"
-          }`}
-        >
-          <HomeIcon className={`size-5 ${currentPath === "/" ? "text-primary" : "text-base-content/60"}`} />
-          <span>Home</span>
-        </Link>
-
-        <Link
-          to="/friends"
-          className={`btn btn-ghost justify-start w-full gap-3 px-4 py-3 rounded-xl normal-case font-medium transition-all duration-200 ${
-            currentPath === "/friends" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-base-content/70 hover:bg-base-content/5"
-          }`}
-        >
-          <UsersIcon className={`size-5 ${currentPath === "/friends" ? "text-primary" : "text-base-content/60"}`} />
-          <span>Friends</span>
-        </Link>
-
-        <Link
-          to="/notifications"
-          className={`btn btn-ghost justify-start w-full gap-3 px-4 py-3 rounded-xl normal-case font-medium transition-all duration-200 ${
-            currentPath === "/notifications" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-base-content/70 hover:bg-base-content/5"
-          }`}
-        >
-          <BellIcon className={`size-5 ${currentPath === "/notifications" ? "text-primary" : "text-base-content/60"}`} />
-          <span>Notifications</span>
-        </Link>
+      {/* NAV */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-base-content/60 hover:bg-base-200/70 hover:text-base-content"
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="active-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+              <item.icon className="size-4.5 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* USER PROFILE SECTION */}
-      <div className="p-6 border-t border-base-300 mt-auto bg-base-100/50">
-        <div className="flex items-center gap-4">
-          <div className="avatar">
-            <div className="w-11 rounded-xl ring-2 ring-primary/10 ring-offset-base-100 ring-offset-2">
-              <img src={authUser?.profilePic} alt="User Avatar" />
+      {/* USER PROFILE */}
+      <div className="px-4 pb-5 border-t border-base-200/70 pt-4 bg-base-100/60 backdrop-blur-md relative" ref={dropdownRef}>
+        <AnimatePresence>
+          {isDropdownOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              className="absolute bottom-full left-4 right-4 mb-3 bg-base-100 border border-base-200 rounded-2xl shadow-2xl overflow-hidden z-50 origin-bottom"
+            >
+              <div className="p-2">
+                <button
+                  onClick={() => {
+                    logoutMutation();
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-error hover:bg-error/10 transition-colors duration-150"
+                >
+                  <div className="p-1.5 bg-error/10 rounded-lg">
+                    <LogOutIcon className="size-4" />
+                  </div>
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className={cn(
+            "flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer border",
+            isDropdownOpen 
+              ? "bg-base-200 border-primary/20 shadow-inner" 
+              : "bg-base-200/40 hover:bg-base-200/70 shadow-sm hover:shadow-md border-base-300/40"
+          )}
+        >
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-lg bg-base-300">
+              <img
+                src={authUser?.profilePic}
+                alt={authUser?.fullName || "User Avatar"}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Online Indicator */}
+            {/* <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-base-100 shadow-sm animate-pulse" /> */}
+          </div>
+
+          {/* User Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-base-content truncate">
+              {authUser?.fullName}
+            </h3>
+
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <p className="text-xs text-base-content/60 font-medium">
+                Online
+              </p>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="font-bold text-sm truncate">{authUser?.fullName}</p>
-            <p className="text-[11px] font-semibold text-success flex items-center gap-1.5 uppercase tracking-wider">
-              <span className="size-2 rounded-full bg-success animate-pulse" />
-              Active Now
-            </p>
+
+          {/* Optional Action */}
+          <div className="p-2 rounded-xl hover:bg-base-300/60 transition-colors">
+            <motion.div
+              animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 text-base-content/50"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 15l7-7 7 7"
+                />
+              </svg>
+            </motion.div>
           </div>
         </div>
       </div>
     </aside>
   );
 };
+
 export default Sidebar;
