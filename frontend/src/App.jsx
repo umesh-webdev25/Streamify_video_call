@@ -14,8 +14,10 @@ import SettingsPage from "./pages/SettingsPage.jsx";
 import MeetingLobbyPage from "./pages/MeetingLobbyPage.jsx";
 import MeetingRoomPage from "./pages/MeetingRoomPage.jsx";
 import MeetingSchedulePage from "./pages/MeetingSchedulePage.jsx";
+import History from "./pages/History.jsx";
+import Group from "./pages/Group.jsx";
+import GroupContacts from "./pages/GroupContacts.jsx";
 import { Toaster } from "react-hot-toast";
-
 
 import PageLoader from "./components/PageLoader.jsx";
 import useAuthUser from "./hooks/useAuthUser.js";
@@ -42,7 +44,10 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-300" data-theme={displayTheme}>
+    <div
+      className="min-h-screen transition-colors duration-300"
+      data-theme={displayTheme}
+    >
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route element={<PublicRoute />}>
@@ -56,7 +61,11 @@ const App = () => {
           path="/onboarding"
           element={
             <ProtectedRoute requireOnboarding={false}>
-              {authUser?.isOnboarded ? <Navigate to="/" replace /> : <OnboardingPage />}
+              {authUser?.isOnboarded ? (
+                <Navigate to="/" replace />
+              ) : (
+                <OnboardingPage />
+              )}
             </ProtectedRoute>
           }
         />
@@ -87,6 +96,33 @@ const App = () => {
               </Layout>
             }
           />
+
+          <Route
+            path="/groups/:groupId"
+            element={
+              <Layout showSidebar={true}>
+                <GroupContacts />
+              </Layout>
+            }
+          />
+          <Route
+            path="/group"
+            element={
+              <Layout showSidebar={true}>
+                <Group />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/history"
+            element={
+              <Layout showSidebar={true}>
+                <History />
+              </Layout>
+            }
+          />
+
           <Route
             path="/settings"
             element={
@@ -120,7 +156,3 @@ const App = () => {
 };
 
 export default App;
-
-
-
-

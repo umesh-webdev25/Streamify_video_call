@@ -89,3 +89,48 @@ export async function getMeetingToken() {
   const response = await axiosInstance.get("/meetings/token");
   return response.data.data;
 }
+
+
+// Session API
+
+export async function getAllSessions() {
+  const response = await axiosInstance.get("/sessions");
+  return response.data.data;
+}
+
+export async function getMySessions() {
+  const response = await axiosInstance.get("/sessions/me");
+  return response.data.data;
+}
+
+export async function getSessionById(sessionId) {
+  const response = await axiosInstance.get(
+    `/sessions/${sessionId}`
+  );
+
+  return response.data.data;
+}
+
+export async function deleteSession(sessionId) {
+  const response = await axiosInstance.delete(
+    `/sessions/${sessionId}`
+  );
+
+  return response.data;
+}
+
+export async function deleteAllMySessions() {
+  const response = await axiosInstance.delete(
+    "/sessions/me/all"
+  );
+
+  return response.data;
+}
+
+export async function invalidateSession(sessionId) {
+  const response = await axiosInstance.put(
+    `/sessions/${sessionId}/invalidate`
+  );
+
+  return response.data.data;
+}

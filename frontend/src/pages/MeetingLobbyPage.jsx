@@ -20,6 +20,18 @@ import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 import { cn } from "../lib/utils";
 
+const generateMeetingCode = () => {
+  // Safe characters excluding O, 0, I, 1
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const getSegment = (length) =>
+    Array.from({ length }, () =>
+      chars.charAt(Math.floor(Math.random() * chars.length))
+    ).join("");
+
+  // Format: XXXX-XXXX-XXXX
+  return `${getSegment(4)}-${getSegment(4)}-${getSegment(4)}`;
+};
+
 const MeetingLobbyPage = () => {
   const navigate = useNavigate();
   const { authUser } = useAuthUser();
@@ -35,13 +47,7 @@ const MeetingLobbyPage = () => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  const generatedRoomId = useRef(
-    Array.from({ length: 8 }, () =>
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(
-        Math.floor(Math.random() * 36)
-      )
-    ).join("")
-  );
+  const generatedRoomId = useRef(generateMeetingCode());
 
   useEffect(() => {
     const getDevices = async () => {

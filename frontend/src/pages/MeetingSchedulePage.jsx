@@ -171,9 +171,9 @@ const MeetingSchedulePage = () => {
                   </label>
                   <input
                     type="time"
-                    value={time}
+                    value={time || ""}
                     onChange={(e) => setTime(e.target.value)}
-                    className="input input-bordered bg-base-200/50 border-base-300 w-full rounded-xl"
+                    className="w-full h-12 px-4 bg-white text-black border border-gray-200 rounded-2xl transition-all duration-200 outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 shadow-sm"
                   />
                 </div>
               </div>

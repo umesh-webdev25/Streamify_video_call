@@ -10,11 +10,13 @@ import {
   ShieldIcon,
   VideoIcon,
   UserIcon,
+  HistoryIcon,
+  GroupIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "../lib/utils";
 import { useState, useRef, useEffect } from "react";
-import useLogout from "../hooks/useLogout"
+import useLogout from "../hooks/useLogout";
 
 const Sidebar = () => {
   const { authUser } = useAuthUser();
@@ -53,6 +55,11 @@ const Sidebar = () => {
       path: "/friends",
     },
     {
+      icon: GroupIcon,
+      label: "Groups",
+      path: "/group",
+    },
+    {
       icon: VideoIcon,
       label: "Meetings",
       path: "/meeting/lobby",
@@ -71,6 +78,11 @@ const Sidebar = () => {
       icon: BellIcon,
       label: "Notification Settings",
       path: "/settings?tab=notifications",
+    },
+    {
+      icon: HistoryIcon,
+      label: "History",
+      path: "/history",
     },
     {
       icon: ShieldIcon,
