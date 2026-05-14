@@ -141,7 +141,8 @@ const MeetingRoomPage = () => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    if (h > 0)
+      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
@@ -189,7 +190,10 @@ const MeetingRoomPage = () => {
   if (isLoading || isConnecting) return <PageLoader />;
 
   return (
-    <div ref={containerRef} className="h-screen bg-[#050505] text-white overflow-hidden font-sans">
+    <div
+      ref={containerRef}
+      className="h-screen bg-[#050505] text-white overflow-hidden font-sans"
+    >
       <Helmet>
         <title>Meeting Room {roomId} | Streamify</title>
       </Helmet>
@@ -234,7 +238,9 @@ const MeetingRoomPage = () => {
               <PhoneOffIcon className="size-10" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl font-black tracking-tighter">Connection Interrupted</h1>
+              <h1 className="text-3xl font-black tracking-tighter">
+                Connection Interrupted
+              </h1>
               <p className="text-white/40 font-bold tracking-tight">
                 We couldn't establish a secure connection to the meeting.
               </p>
@@ -309,7 +315,7 @@ const MeetingRoomContent = ({
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
   const remoteParticipants = participants.filter(
-    (p) => p.sessionId !== localParticipant?.sessionId
+    (p) => p.sessionId !== localParticipant?.sessionId,
   );
 
   if (callingState === CallingState.LEFT) {
@@ -356,12 +362,17 @@ const MeetingRoomContent = ({
 
             <div className="glass-dark px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl border border-white/5 flex items-center gap-2 sm:gap-4">
               <div className="size-2.5 sm:size-3 rounded-full bg-success animate-pulse" />
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/60">Live</span>
-              <div className="h-3 sm:h-4 w-px bg-white/10" />
-              <span className="text-xs sm:text-sm font-bold tracking-tight">{formatTime(elapsed)}</span>
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/60">
+                Live
+              </span>
               <div className="h-3 sm:h-4 w-px bg-white/10" />
               <span className="text-xs sm:text-sm font-bold tracking-tight">
-                {participants.length} {participants.length === 1 ? "Participant" : "Participants"}
+                {formatTime(elapsed)}
+              </span>
+              <div className="h-3 sm:h-4 w-px bg-white/10" />
+              <span className="text-xs sm:text-sm font-bold tracking-tight">
+                {participants.length}{" "}
+                {participants.length === 1 ? "Participant" : "Participants"}
               </span>
             </div>
           </div>
@@ -372,14 +383,22 @@ const MeetingRoomContent = ({
               className="btn btn-ghost btn-circle btn-xs sm:btn-sm glass-dark border-white/5 hover:bg-white/10"
               title="Copy invite link"
             >
-              {copied ? <CheckIcon className="size-3 sm:size-4 text-success" /> : <CopyIcon className="size-3 sm:size-4" />}
+              {copied ? (
+                <CheckIcon className="size-3 sm:size-4 text-success" />
+              ) : (
+                <CopyIcon className="size-3 sm:size-4" />
+              )}
             </button>
             <button
               onClick={toggleFullscreen}
               className="hidden sm:flex btn btn-ghost btn-circle btn-sm glass-dark border-white/5 hover:bg-white/10"
               title="Toggle fullscreen"
             >
-              {isFullscreen ? <Minimize2Icon className="size-4" /> : <Maximize2Icon className="size-4" />}
+              {isFullscreen ? (
+                <Minimize2Icon className="size-4" />
+              ) : (
+                <Maximize2Icon className="size-4" />
+              )}
             </button>
           </div>
         </motion.div>
@@ -395,8 +414,8 @@ const MeetingRoomContent = ({
                   remoteParticipants.length === 1
                     ? "grid-cols-1"
                     : remoteParticipants.length <= 4
-                    ? "grid-cols-2"
-                    : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                      ? "grid-cols-2"
+                      : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
                 )}
               >
                 {remoteParticipants.map((p) => {
@@ -408,15 +427,20 @@ const MeetingRoomContent = ({
                         "relative rounded-xl sm:rounded-[2.5rem] overflow-hidden border bg-zinc-900 group shadow-2xl transition-all duration-500",
                         isDominant
                           ? "border-primary/50 ring-2 ring-primary/30 scale-[1.02] z-10"
-                          : "border-white/5 scale-100"
+                          : "border-white/5 scale-100",
                       )}
                     >
-                      <ParticipantView participant={p} className="h-full w-full object-cover" />
+                      <ParticipantView
+                        participant={p}
+                        className="h-full w-full object-cover"
+                      />
                       <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 glass-dark px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/5 flex items-center gap-1.5 sm:gap-2">
                         <p className="text-[10px] sm:text-sm font-bold tracking-tight">
                           {p.name || "External User"}
                         </p>
-                        {!p.isMicrophoneEnabled && <MicOffIcon className="size-2.5 sm:size-3.5 text-error" />}
+                        {!p.isMicrophoneEnabled && (
+                          <MicOffIcon className="size-2.5 sm:size-3.5 text-error" />
+                        )}
                       </div>
                       {raisedHands.has(p.sessionId) && (
                         <div className="absolute top-2 right-2 sm:top-4 sm:right-4 glass-dark px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg border border-white/5">
@@ -434,7 +458,9 @@ const MeetingRoomContent = ({
                   <PhoneOffIcon className="size-8 sm:size-10 text-primary/40" />
                 </div>
                 <div className="text-center space-y-1">
-                  <h3 className="text-lg sm:text-2xl font-black tracking-tighter">Waiting for others...</h3>
+                  <h3 className="text-lg sm:text-2xl font-black tracking-tighter">
+                    Waiting for others...
+                  </h3>
                   <p className="text-xs sm:text-sm text-white/40 font-bold tracking-tight">
                     Share the meeting link to invite participants
                   </p>
@@ -451,15 +477,23 @@ const MeetingRoomContent = ({
             >
               {localParticipant && (
                 <div className="relative w-full h-full bg-zinc-800">
-                  <ParticipantView participant={localParticipant} mirror={true} className="w-full h-full object-cover" />
+                  <ParticipantView
+                    participant={localParticipant}
+                    mirror={true}
+                    className="w-full h-full object-cover"
+                  />
                   {isCamMuted && (
                     <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
                       <VideoOffIcon className="size-5 sm:size-8 text-white/10" />
                     </div>
                   )}
                   <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 glass-dark px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg border border-white/5 flex items-center gap-1 sm:gap-1.5">
-                    <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">You</p>
-                    {isMicMuted && <MicOffIcon className="size-2 sm:size-3 text-error" />}
+                    <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">
+                      You
+                    </p>
+                    {isMicMuted && (
+                      <MicOffIcon className="size-2 sm:size-3 text-error" />
+                    )}
                   </div>
                   {raisedHands.has(localParticipant?.sessionId) && (
                     <div className="absolute top-1 right-1 sm:top-2 sm:right-2 glass-dark px-1 py-0.5 sm:px-1.5 sm:py-1 rounded-lg border border-white/5">
@@ -482,7 +516,9 @@ const MeetingRoomContent = ({
                 className="hidden lg:flex flex-col border-l border-white/10 bg-black/90 backdrop-blur-xl overflow-hidden h-full shrink-0"
               >
                 <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 shrink-0">
-                  <span className="text-xs text-white/20 font-medium">Meeting Chat</span>
+                  <span className="text-xs text-white/20 font-medium">
+                    Meeting Chat
+                  </span>
                   <button
                     onClick={onCloseChat}
                     className="btn btn-ghost btn-circle btn-xs text-white/30 hover:text-white/60"
@@ -509,7 +545,10 @@ const MeetingRoomContent = ({
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              onClick={() => { setShowChat(true); setShowNewMsgToast(false); }}
+              onClick={() => {
+                setShowChat(true);
+                setShowNewMsgToast(false);
+              }}
               className="absolute bottom-28 left-1/2 -translate-x-1/2 z-50 glass-dark px-4 py-2.5 rounded-2xl border border-primary/20 shadow-2xl flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer"
             >
               <MessageSquareIcon className="size-4 text-primary" />
@@ -524,83 +563,125 @@ const MeetingRoomContent = ({
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="absolute bottom-0 left-0 right-0 z-40 p-3 sm:p-6 flex items-center justify-center bg-gradient-to-t from-black/80 to-transparent"
+        className="absolute bottom-4 inset-x-0 z-40 flex justify-center"
         >
-          <div className="glass-dark px-3 sm:px-6 py-3 sm:py-4 rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-2 sm:gap-4">
-            <ControlToggle
-              active={!isMicMuted}
-              onClick={() => microphone.toggle()}
-              icon={isMicMuted ? MicOffIcon : MicIcon}
-              error={isMicMuted}
-              tooltip={isMicMuted ? "Unmute" : "Mute"}
-              isMobile={isMobile}
-            />
-            <ControlToggle
-              active={!isCamMuted}
-              onClick={() => camera.toggle()}
-              icon={isCamMuted ? VideoOffIcon : VideoIcon}
-              error={isCamMuted}
-              tooltip={isCamMuted ? "Turn on camera" : "Turn off camera"}
-              isMobile={isMobile}
-            />
-            <ControlToggle
-              active={isScreenSharing}
-              onClick={() => screenShare.toggle()}
-              icon={MonitorUpIcon}
-              primary={isScreenSharing}
-              tooltip={isScreenSharing ? "Stop sharing" : "Share screen"}
-              isMobile={isMobile}
-            />
-            <ControlToggle
-              active={false}
-              onClick={raiseHand}
-              icon={HandIcon}
-              tooltip={raisedHands.has(localParticipant?.sessionId) ? "Lower hand" : "Raise hand"}
-              customActive={raisedHands.has(localParticipant?.sessionId)}
-              isMobile={isMobile}
-            />
+          <div className="flex items-center justify-center">
+            <div
+              className="
+      flex items-center justify-center
+      gap-2 sm:gap-3
+      px-4 sm:px-5
+      py-3
+      rounded-full
+      bg-black/75
+      backdrop-blur-2xl
+      border border-white/10
+      shadow-2xl
+    "
+            >
+              <ControlToggle
+                active={!isMicMuted}
+                onClick={() => microphone.toggle()}
+                icon={isMicMuted ? MicOffIcon : MicIcon}
+                error={isMicMuted}
+                tooltip={isMicMuted ? "Unmute" : "Mute"}
+                isMobile={isMobile}
+              />
 
-            {/* CHAT BUTTON WITH UNREAD BADGE */}
-            <button
-              onClick={() => {
-                if (isMobile) {
-                  setMobileChatOpen(true);
-                  setShowNewMsgToast(false);
-                } else {
-                  setShowChat(!showChat);
-                  setShowNewMsgToast(false);
+              <ControlToggle
+                active={!isCamMuted}
+                onClick={() => camera.toggle()}
+                icon={isCamMuted ? VideoOffIcon : VideoIcon}
+                error={isCamMuted}
+                tooltip={isCamMuted ? "Turn on camera" : "Turn off camera"}
+                isMobile={isMobile}
+              />
+
+              <ControlToggle
+                active={isScreenSharing}
+                onClick={() => screenShare.toggle()}
+                icon={MonitorUpIcon}
+                primary={isScreenSharing}
+                tooltip={isScreenSharing ? "Stop sharing" : "Share screen"}
+                isMobile={isMobile}
+              />
+
+              <ControlToggle
+                active={false}
+                onClick={raiseHand}
+                icon={HandIcon}
+                tooltip={
+                  raisedHands.has(localParticipant?.sessionId)
+                    ? "Lower hand"
+                    : "Raise hand"
                 }
-              }}
-              className={cn(
-                "btn btn-circle transition-all border-none relative",
-                isMobile ? "btn-md" : "btn-lg",
-                showChat ? "bg-primary text-primary-content" : "bg-white/10 text-white hover:bg-white/20"
-              )}
-              title="Chat"
-            >
-              <MessageSquareIcon className={isMobile ? "size-4" : "size-5"} />
-              {unreadCount > 0 && !showChat && !mobileChatOpen && (
-                <span className="absolute -top-1 -right-1 size-4 sm:size-5 bg-error text-white text-[8px] sm:text-[10px] font-bold rounded-full flex items-center justify-center animate-in">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
+                customActive={raisedHands.has(localParticipant?.sessionId)}
+                isMobile={isMobile}
+              />
 
-            <div className="h-6 sm:h-10 w-px bg-white/10 mx-0.5 sm:mx-1" />
+              {/* CHAT BUTTON */}
+              <button
+                onClick={() => {
+                  if (isMobile) {
+                    setMobileChatOpen(true);
+                    setShowNewMsgToast(false);
+                  } else {
+                    setShowChat(!showChat);
+                    setShowNewMsgToast(false);
+                  }
+                }}
+                className={cn(
+                  `
+            relative
+            flex items-center justify-center
+            rounded-full
+            transition-all duration-200
+            border border-white/10
+            bg-white/10 text-white
+            hover:bg-white/20
+          `,
+                  isMobile ? "w-12 h-12" : "w-14 h-14",
+                  showChat && "bg-primary text-primary-content",
+                )}
+                title="Chat"
+              >
+                <MessageSquareIcon className={isMobile ? "size-4" : "size-5"} />
 
-            <button
-              onClick={() => setShowLeaveModal(true)}
-              className={cn(
-                "btn btn-error btn-circle shadow-xl shadow-error/20 hover:scale-110 active:scale-95 transition-all group",
-                isMobile ? "btn-md" : "btn-lg"
-              )}
-              title="End Meeting"
-            >
-              <PhoneOffIcon className={cn(
-                "group-hover:rotate-[135deg] transition-all duration-500",
-                isMobile ? "size-5" : "size-6"
-              )} />
-            </button>
+                {unreadCount > 0 && !showChat && !mobileChatOpen && (
+                  <span className="absolute -top-1 -right-1 size-4 sm:size-5 bg-error text-white text-[8px] sm:text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="h-8 w-px bg-white/10 mx-1" />
+
+              {/* END CALL */}
+              <button
+                onClick={() => setShowLeaveModal(true)}
+                className={cn(
+                  `
+            rounded-full
+            bg-red-500 hover:bg-red-600
+            text-white
+            flex items-center justify-center
+            transition-all duration-300
+            shadow-lg shadow-red-500/20
+            hover:scale-105
+          `,
+                  isMobile ? "w-12 h-12" : "w-14 h-14",
+                )}
+                title="End Meeting"
+              >
+                <PhoneOffIcon
+                  className={cn(
+                    "transition-transform duration-300",
+                    isMobile ? "size-5" : "size-6",
+                  )}
+                />
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -614,10 +695,11 @@ const MeetingRoomContent = ({
               transition={{ type: "spring", stiffness: 400, damping: 40 }}
               className="fixed inset-0 z-[60] flex flex-col lg:hidden"
             >
-              <div className="absolute inset-0 bg-black/50" onClick={() => setMobileChatOpen(false)} />
-              <motion.div
-                className="relative mt-auto h-[75vh] rounded-t-3xl overflow-hidden bg-[#0a0a0a] border-t border-white/10 shadow-2xl flex flex-col"
-              >
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setMobileChatOpen(false)}
+              />
+              <motion.div className="relative mt-auto h-[75vh] rounded-t-3xl overflow-hidden bg-[#0a0a0a] border-t border-white/10 shadow-2xl flex flex-col">
                 {/* SHEET HANDLE */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
                   <div className="flex items-center gap-3">
@@ -629,7 +711,9 @@ const MeetingRoomContent = ({
                     </button>
                     <h3 className="text-sm font-bold text-white">Chat</h3>
                   </div>
-                  <span className="text-xs text-white/30">{unreadCount > 0 ? `${unreadCount} new` : ""}</span>
+                  <span className="text-xs text-white/30">
+                    {unreadCount > 0 ? `${unreadCount} new` : ""}
+                  </span>
                 </div>
 
                 <div className="flex-1 overflow-hidden">
@@ -676,24 +760,43 @@ const ControlToggle = ({
 }) => (
   <button
     onClick={onClick}
-    className={cn(
-      "btn btn-circle transition-all border-none relative overflow-hidden tooltip tooltip-top",
-      isMobile ? "btn-md" : "btn-lg",
-      customActive
-        ? "bg-warning text-warning-content"
-        : active
-        ? primary
-          ? "bg-primary text-primary-content hover:bg-primary/80"
-          : "bg-white/10 text-white hover:bg-white/20"
-        : "bg-error/10 text-error hover:bg-error/20"
-    )}
     data-tip={tooltip}
+    className={cn(
+      `
+        tooltip tooltip-top
+        relative overflow-hidden
+        flex items-center justify-center
+        rounded-full
+        transition-all duration-300
+        border border-white/10
+        backdrop-blur-md
+        shrink-0
+      `,
+      isMobile ? "w-12 h-12" : "w-14 h-14",
+
+      customActive
+        ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+        : active
+          ? primary
+            ? "bg-blue-500 text-white hover:bg-blue-600"
+            : "bg-white/10 text-white hover:bg-white/20"
+          : "bg-red-500/15 text-red-400 hover:bg-red-500/25",
+    )}
   >
-    <Icon className={cn(isMobile ? "size-4" : "size-5", !active && !customActive && "animate-pulse")} />
+    <Icon
+      className={cn(
+        "transition-all duration-300",
+        isMobile ? "size-5" : "size-6",
+        !active && !customActive && "animate-pulse",
+      )}
+    />
+
     {active && !customActive && (
-      <motion.div layoutId="active-bg" className="absolute inset-0 bg-white/5 pointer-events-none" />
+      <motion.div
+        layoutId="active-bg"
+        className="absolute inset-0 bg-white/5 pointer-events-none rounded-full"
+      />
     )}
   </button>
 );
-
 export default MeetingRoomPage;

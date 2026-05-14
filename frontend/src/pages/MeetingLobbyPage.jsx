@@ -9,6 +9,7 @@ import {
   CopyIcon,
   CheckIcon,
   ArrowRightIcon,
+  ArrowLeftIcon,
   PlusIcon,
   CalendarIcon,
   UsersIcon,
@@ -113,6 +114,17 @@ const MeetingLobbyPage = () => {
       <Helmet>
         <title>Meeting Lobby | Streamify</title>
       </Helmet>
+
+      {/* BACK BUTTON */}
+      <div className="p-4 sm:p-6">
+        <button
+          onClick={() => navigate("/")}
+          className="btn btn-ghost btn-sm gap-2 text-base-content/60 hover:text-base-content hover:bg-base-200 rounded-xl transition-all"
+        >
+          <ArrowLeftIcon className="size-4" />
+          Back
+        </button>
+      </div>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-5xl">
