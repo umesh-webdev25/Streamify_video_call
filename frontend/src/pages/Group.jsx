@@ -40,21 +40,21 @@ const Group = () => {
   const messagesEndRef = useRef(null);
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [groups, setGroups]               = useState([]);
-  const [contacts, setContacts]           = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [openModal, setOpenModal]         = useState(false);
-  const [openChat, setOpenChat]           = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [search, setSearch]               = useState("");
-  const [message, setMessage]             = useState("");
-  const [messages, setMessages]           = useState([]);      // ✅ empty — no fake data
-  const [chatLoading, setChatLoading]     = useState(false);
-  const [imageFile, setImageFile]         = useState(null);
-  const [submitting, setSubmitting]       = useState(false);
-  const [editingGroup, setEditingGroup]   = useState(null);
-  const [imagePreview, setImagePreview]   = useState(null);
-  const [groupData, setGroupData]         = useState({ groupName: "", groupBio: "" });
+  const [search, setSearch] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]); // ✅ empty — no fake data
+  const [chatLoading, setChatLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [groupData, setGroupData] = useState({ groupName: "", groupBio: "" });
 
   // ── Fetch Groups from API ──────────────────────────────────────────────────
   const fetchGroups = async () => {
@@ -71,7 +71,7 @@ const Group = () => {
           } catch (e) {
             return { ...g, members: [] };
           }
-        })
+        }),
       );
 
       setGroups(groupsWithMembers);
@@ -87,7 +87,7 @@ const Group = () => {
   const fetchContacts = async () => {
     try {
       const data = await getAllContacts();
-      setContacts(data || []);                                  // ✅ store array not data.length
+      setContacts(data || []); // ✅ store array not data.length
     } catch (err) {
       console.error("fetchContacts error:", err);
       setContacts([]);
@@ -144,7 +144,7 @@ const Group = () => {
     } finally {
       setChatLoading(false);
     }
-    setMessages([]);                                            // ✅ no fake data injected
+    setMessages([]); // ✅ no fake data injected
     setOpenChat(true);
 
     // Uncomment when you have a messages API:
@@ -182,19 +182,22 @@ const Group = () => {
     try {
       const formData = new FormData();
       formData.append("groupName", groupData.groupName);
-      formData.append("groupBio",  groupData.groupBio);
+      formData.append("groupBio", groupData.groupBio);
       if (imageFile) formData.append("groupImage", imageFile);
-      formData.append("members", JSON.stringify([{ user: authUser._id, isAdmin: true }]));
-      formData.append("admins",  JSON.stringify([authUser._id]));
+      formData.append(
+        "members",
+        JSON.stringify([{ user: authUser._id, isAdmin: true }]),
+      );
+      formData.append("admins", JSON.stringify([authUser._id]));
 
       let response;
       if (editingGroup) {
-        response = await updateGroup(editingGroup._id, formData);   // ✅ real API call
+        response = await updateGroup(editingGroup._id, formData); // ✅ real API call
         setGroups((prev) =>
-          prev.map((g) => (g._id === editingGroup._id ? response : g))
+          prev.map((g) => (g._id === editingGroup._id ? response : g)),
         );
       } else {
-        response = await createGroup(formData);                     // ✅ real API call
+        response = await createGroup(formData); // ✅ real API call
         setGroups((prev) => [response, ...prev]);
       }
 
@@ -272,22 +275,22 @@ const Group = () => {
   const filteredGroups = useMemo(
     () =>
       groups.filter((g) =>
-        g.groupName?.toLowerCase().includes(search.toLowerCase())
+        g.groupName?.toLowerCase().includes(search.toLowerCase()),
       ),
-    [groups, search]
+    [groups, search],
   );
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-white p-4 md:p-6">
-
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Groups</h1>
           {/* ✅ real counts from API */}
           <p className="text-sm text-gray-500 mt-1">
-            {groups.length} group{groups.length !== 1 ? "s" : ""} · {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
+            {groups.length} group{groups.length !== 1 ? "s" : ""} ·{" "}
+            {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
           </p>
         </div>
 
@@ -303,7 +306,10 @@ const Group = () => {
             />
           </div>
 
-          <button onClick={openCreateModal} className="btn btn-primary rounded-2xl gap-2">
+          <button
+            onClick={openCreateModal}
+            className="btn btn-primary rounded-2xl gap-2"
+          >
             <PlusIcon className="w-5 h-5" />
             Create Group
           </button>
@@ -324,7 +330,6 @@ const Group = () => {
               className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
             >
               <div className="flex items-center justify-between gap-4">
-
                 <div className="flex items-center gap-4 min-w-0">
                   {/* ✅ real image from backend */}
                   <img
@@ -347,7 +352,7 @@ const Group = () => {
                     <div className="flex items-center gap-2 mt-2 text-sm text-gray-400">
                       <UsersIcon className="w-4 h-4" />
                       {/* ✅ real member count from populated members array */}
-                      <span>  Members {group.contactCount ?? 0}</span>
+                      <span> Members {group.contactCount ?? 0}</span>
                     </div>
                     {/* <p className="text-sm text-gray-500 mt-1">
                       {group.contactCount ?? 0} Contacts
@@ -386,9 +391,13 @@ const Group = () => {
         ) : (
           <div className="border border-gray-200 rounded-3xl p-10 text-center bg-white">
             <UsersIcon className="w-14 h-14 mx-auto text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-800 mt-4">No Groups Found</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mt-4">
+              No Groups Found
+            </h2>
             <p className="text-sm text-gray-500 mt-2">
-              {search ? `No results for "${search}"` : "Create your first group"}
+              {search
+                ? `No results for "${search}"`
+                : "Create your first group"}
             </p>
           </div>
         )}
@@ -417,14 +426,23 @@ const Group = () => {
               <div className="flex flex-col items-center gap-3">
                 <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center bg-gray-50">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <UploadIcon className="w-8 h-8 text-gray-300" />
                   )}
                 </div>
                 <label className="cursor-pointer text-sm text-blue-600 hover:underline font-medium">
                   {imagePreview ? "Change Image" : "Upload Image"}
-                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </label>
               </div>
 
@@ -440,7 +458,21 @@ const Group = () => {
                   onChange={handleChange}
                   required
                   placeholder="Enter group name"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  className="
+    w-full
+    bg-white
+    text-black
+    placeholder:text-gray-400
+    border border-gray-200
+    rounded-xl
+    px-4 py-3
+    text-sm
+    outline-none
+    focus:border-blue-400
+    focus:ring-1
+    focus:ring-blue-100
+    transition
+  "
                 />
               </div>
 
@@ -455,7 +487,22 @@ const Group = () => {
                   onChange={handleChange}
                   placeholder="Short description..."
                   rows={3}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition resize-none"
+                  className="
+    w-full
+    bg-white
+    text-black
+    placeholder:text-gray-400
+    border border-gray-200
+    rounded-xl
+    px-4 py-3
+    text-sm
+    outline-none
+    focus:border-blue-400
+    focus:ring-1
+    focus:ring-blue-100
+    transition
+    resize-none
+  "
                 />
               </div>
 
@@ -473,8 +520,12 @@ const Group = () => {
                   className="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition"
                 >
                   {submitting
-                    ? editingGroup ? "Saving…" : "Creating…"
-                    : editingGroup ? "Save Changes" : "Create Group"}
+                    ? editingGroup
+                      ? "Saving…"
+                      : "Creating…"
+                    : editingGroup
+                      ? "Save Changes"
+                      : "Create Group"}
                 </button>
               </div>
             </form>
@@ -486,11 +537,13 @@ const Group = () => {
       {openChat && selectedGroup && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white w-full sm:max-w-md sm:rounded-3xl shadow-2xl flex flex-col h-[85vh] sm:h-[600px] overflow-hidden">
-
             {/* Header — real group data from API */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
               <img
-                src={resolveImageSrc(selectedGroup.groupImage, selectedGroup.groupName)}
+                src={resolveImageSrc(
+                  selectedGroup.groupImage,
+                  selectedGroup.groupName,
+                )}
                 alt={selectedGroup.groupName}
                 onError={(e) => {
                   e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedGroup.groupName || "G")}&background=random`;
@@ -499,9 +552,13 @@ const Group = () => {
               />
               <div className="flex-1 min-w-0">
                 {/* ✅ real group name */}
-                <p className="font-semibold text-gray-900 truncate">{selectedGroup.groupName}</p>
+                <p className="font-semibold text-gray-900 truncate">
+                  {selectedGroup.groupName}
+                </p>
                 {/* ✅ real member count */}
-                <p className="text-xs text-gray-400">{selectedGroup.members?.length ?? 0} members</p>
+                <p className="text-xs text-gray-400">
+                  {selectedGroup.members?.length ?? 0} members
+                </p>
               </div>
               <button
                 onClick={() => setOpenChat(false)}

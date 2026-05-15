@@ -170,35 +170,70 @@ export async function deleteGroup(groupId) {
 
 //contact API
 
-export async function createContact(contactData) {
-  const response = await axiosInstance.post("/contacts", contactData);
+export async function createContact(
+  formData
+) {
+  const response =
+    await axiosInstance.post(
+      "/contacts",
+      formData,
+      {
+        headers: {
+          "Content-Type":
+            "multipart/form-data",
+        },
+      }
+    );
 
   return response.data.data;
 }
 
 export async function getAllContacts() {
-  const response = await axiosInstance.get("/contacts");
+  const response =
+    await axiosInstance.get(
+      "/contacts"
+    );
 
   return response.data.data;
 }
 
-export async function getContactById(contactId) {
-  const response = await axiosInstance.get(`/contacts/${contactId}`);
+export async function getContactById(
+  contactId
+) {
+  const response =
+    await axiosInstance.get(
+      `/contacts/${contactId}`
+    );
 
   return response.data.data;
 }
 
-export async function updateContact(contactId, updateData) {
-  const response = await axiosInstance.put(
-    `/contacts/${contactId}`,
-    updateData,
-  );
+export async function updateContact(
+  contactId,
+  formData
+) {
+  const response =
+    await axiosInstance.put(
+      `/contacts/${contactId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type":
+            "multipart/form-data",
+        },
+      }
+    );
 
   return response.data.data;
 }
 
-export async function deleteContact(contactId) {
-  const response = await axiosInstance.delete(`/contacts/${contactId}`);
+export async function deleteContact(
+  contactId
+) {
+  const response =
+    await axiosInstance.delete(
+      `/contacts/${contactId}`
+    );
 
   return response.data;
 }

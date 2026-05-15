@@ -29,6 +29,19 @@ const contactSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Contact Image
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    // Designation
+    designation: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     // Soft Delete
     isDeleted: {
       type: Boolean,
@@ -56,3 +69,4 @@ const Contact =
   );
 
 export default Contact;
+

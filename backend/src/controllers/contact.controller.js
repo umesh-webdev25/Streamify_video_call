@@ -5,12 +5,32 @@ import * as contactService from "../services/contact.service.js";
 /**
  * CREATE CONTACT
  */
-export const createContact = async (req, res) => {
+export const createContact = async (
+  req,
+  res
+) => {
   try {
+    const {
+      groupId,
+      name,
+      email,
+      mobileNumber,
+      designation,
+    } = req.body;
+
+    const profileImage = req.file
+      ? `/uploads/${req.file.filename}`
+      : "";
+
     const contact =
-      await contactService.createContact(
-        req.body
-      );
+      await contactService.createContact({
+        groupId,
+        name,
+        email,
+        mobileNumber,
+        designation,
+        profileImage,
+      });
 
     return res.status(201).json({
       success: true,
@@ -87,10 +107,29 @@ export const updateContact = async (
   res
 ) => {
   try {
+    const {
+      name,
+      email,
+      mobileNumber,
+      designation,
+    } = req.body;
+
+    const updateData = {
+      name,
+      email,
+      mobileNumber,
+      designation,
+    };
+
+    // update image only if uploaded
+    if (req.file) {
+      updateData.profileImage = `/uploads/${req.file.filename}`;
+    }
+
     const contact =
       await contactService.updateContact(
         req.params.id,
-        req.body
+        updateData
       );
 
     if (!contact) {
@@ -111,7 +150,6 @@ export const updateContact = async (
     });
   }
 };
-
 /**
  * DELETE CONTACT
  */
