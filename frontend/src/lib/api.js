@@ -23,10 +23,12 @@ export const getAuthUser = async () => {
     return null;
   }
 };
-
-export const completeOnboarding = async (userData) => {
-  const response = await axiosInstance.post("/auth/onboarding", userData);
-  return response.data.data;
+// lib/api.js
+export const completeOnboarding = (formData) => {
+  // ✅ must match exactly what's registered in your routes
+  return axiosInstance.post("/auth/onboarding", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };
 
 export async function getUserFriends() {
@@ -55,7 +57,9 @@ export async function getFriendRequests() {
 }
 
 export async function acceptFriendRequest(requestId) {
-  const response = await axiosInstance.put(`/users/friend-request/${requestId}/accept`);
+  const response = await axiosInstance.put(
+    `/users/friend-request/${requestId}/accept`,
+  );
   return response.data.data;
 }
 
@@ -90,7 +94,6 @@ export async function getMeetingToken() {
   return response.data.data;
 }
 
-
 // Session API
 
 export async function getAllSessions() {
@@ -104,33 +107,88 @@ export async function getMySessions() {
 }
 
 export async function getSessionById(sessionId) {
-  const response = await axiosInstance.get(
-    `/sessions/${sessionId}`
-  );
+  const response = await axiosInstance.get(`/sessions/${sessionId}`);
 
   return response.data.data;
 }
 
 export async function deleteSession(sessionId) {
-  const response = await axiosInstance.delete(
-    `/sessions/${sessionId}`
-  );
+  const response = await axiosInstance.delete(`/sessions/${sessionId}`);
 
   return response.data;
 }
 
 export async function deleteAllMySessions() {
-  const response = await axiosInstance.delete(
-    "/sessions/me/all"
-  );
+  const response = await axiosInstance.delete("/sessions/me/all");
 
   return response.data;
 }
 
 export async function invalidateSession(sessionId) {
+  const response = await axiosInstance.put(`/sessions/${sessionId}/invalidate`);
+
+  return response.data.data;
+}
+
+// Group API
+
+export async function createGroup(formData) {
+  const response = await axiosInstance.post("/groups", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data.data; // data should include saved group with persistent groupImage URL
+}
+
+export async function getAllGroups() {
+  const response = await axiosInstance.get("/groups");
+
+  return response.data.data;
+}
+
+export async function getGroupById(groupId) {
+  const response = await axiosInstance.get(`/groups/${groupId}`);
+
+  return response.data.data;
+}
+
+export async function updateGroup(groupId, formData) {
+  const response = await axiosInstance.put(`/groups/${groupId}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data.data;
+}
+
+//contact API
+
+export async function createContact(contactData) {
+  const response = await axiosInstance.post("/contacts", contactData);
+
+  return response.data.data;
+}
+
+export async function getAllContacts() {
+  const response = await axiosInstance.get("/contacts");
+
+  return response.data.data;
+}
+
+export async function getContactById(contactId) {
+  const response = await axiosInstance.get(`/contacts/${contactId}`);
+
+  return response.data.data;
+}
+
+export async function updateContact(contactId, updateData) {
   const response = await axiosInstance.put(
-    `/sessions/${sessionId}/invalidate`
+    `/contacts/${contactId}`,
+    updateData,
   );
 
   return response.data.data;
+}
+
+export async function deleteContact(contactId) {
+  const response = await axiosInstance.delete(`/contacts/${contactId}`);
+
+  return response.data;
 }

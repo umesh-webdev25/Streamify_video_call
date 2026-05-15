@@ -15,7 +15,7 @@ router.post("/logout", logout);
 router.post("/refresh", refresh);
 router.get("/verify-email/:token", verifyEmail);
 
-router.post("/onboarding", protectRoute, upload.single("profilePic"), validate(onboardingSchema), onboard);
+router.post("/onboarding", protectRoute, upload.single("profilePic"), onboard);
 
 // check if user is logged in
 router.get("/me", protectRoute, (req, res) => {

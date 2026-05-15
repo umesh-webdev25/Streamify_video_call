@@ -49,11 +49,7 @@ const Sidebar = () => {
       label: "Home",
       path: "/",
     },
-    {
-      icon: UsersIcon,
-      label: "Friends",
-      path: "/friends",
-    },
+  
     {
       icon: GroupIcon,
       label: "Groups",

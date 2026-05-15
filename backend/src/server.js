@@ -14,6 +14,8 @@ import userRoutes from "./routes/user.route.js";
 import chatRoutes from "./routes/chat.route.js";
 import meetingRoutes from "./routes/meeting.routes.js";
 import sessionRoutes from "./routes/session.route.js";
+import groupRouter from "./routes/group.routes.js";
+import contectRouter from "./routes/contact.routes.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
@@ -67,12 +69,14 @@ app.use(
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", timestamp: new Date() });
 });
-
+app.use("/uploads", express.static("uploads"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/sessions", sessionRoutes);
+app.use("/api/groups", groupRouter);
+app.use("/api/contacts", contectRouter);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   app.get("*", (req, res) => {

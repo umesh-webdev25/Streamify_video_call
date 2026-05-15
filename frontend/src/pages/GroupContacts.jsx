@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  useEffect,
+} from "react";
 
 import {
-  ArrowLeftIcon,
   PlusIcon,
   MailIcon,
   PhoneIcon,
@@ -13,308 +15,350 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
+import {
+  createContact,
+  getAllContacts,
+  updateContact,
+  deleteContact,
+} from "../lib/api";
 
 const GroupContacts = () => {
-  const navigate = useNavigate();
-
   const { groupId } = useParams();
 
-  const [openModal, setOpenModal] = useState(false);
+  const [openModal, setOpenModal] =
+    useState(false);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
-  const [contactData, setContactData] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    designation: "",
-    
-  });
-const handleEditContact = (contact) => {
-  console.log("Edit:", contact);
-};
+  const [contacts, setContacts] =
+    useState([]);
 
-const handleDeleteContact = (id) => {
-  setContacts((prev) =>
-    prev.filter((c) => c.id !== id)
-  );
-};
+  const [selectedContact, setSelectedContact] =
+    useState(null);
 
-  const [contacts, setContacts] = useState([
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      email: "rahul@gmail.com",
-      mobile: "+91 9876543210",
-      designation: "Software Engineer",
-    },
-    {
-      id: 2,
-      name: "Aman Verma",
-      email: "aman@gmail.com",
-      mobile: "+91 9876543211",
-      designation: "Software Engineer",
-    },
-    {
-      id: 3,
-      name: "Sneha Patel",
-      email: "sneha@gmail.com",
-      mobile: "+91 9876543212",
-      designation: "Software Engineer",
-    },
-  ]);
+  const [contactData, setContactData] =
+    useState({
+      name: "",
+      email: "",
+      mobileNumber: "",
+    });
 
+  /**
+   * GET CONTACTS
+   */
+  const fetchContacts = async () => {
+    try {
+      const data =
+        await getAllContacts();
+
+      const filtered =
+        data.filter(
+          (contact) =>
+            contact.groupId?._id ===
+            groupId
+        );
+
+      setContacts(filtered);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  /**
+   * INPUT CHANGE
+   */
   const handleChange = (e) => {
     setContactData({
       ...contactData,
-      [e.target.name]: e.target.value,
+      [e.target.name]:
+        e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  /**
+   * CREATE / UPDATE
+   */
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newContact = {
-      id: Date.now(),
-      ...contactData,
-    };
+    try {
+      /**
+       * UPDATE
+       */
+      if (selectedContact) {
+        const updated =
+          await updateContact(
+            selectedContact._id,
+            contactData
+          );
 
-    setContacts([newContact, ...contacts]);
+        setContacts((prev) =>
+          prev.map((c) =>
+            c._id === updated._id
+              ? updated
+              : c
+          )
+        );
+      } else {
+        /**
+         * CREATE
+         */
+        const payload = {
+          ...contactData,
+          groupId,
+        };
 
-    setContactData({
-      name: "",
-      email: "",
-      mobile: "",
-      designation: "",
-    });
+        const newContact =
+          await createContact(
+            payload
+          );
 
-    setOpenModal(false);
+        setContacts((prev) => [
+          newContact,
+          ...prev,
+        ]);
+      }
+
+      /**
+       * RESET
+       */
+      setContactData({
+        name: "",
+        email: "",
+        mobileNumber: "",
+      });
+
+      setSelectedContact(null);
+
+      setOpenModal(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  /**
+   * DELETE
+   */
+  const handleDeleteContact =
+    async (id) => {
+      try {
+        await deleteContact(id);
+
+        setContacts((prev) =>
+          prev.filter(
+            (c) => c._id !== id
+          )
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  /**
+   * EDIT
+   */
+  const handleEditContact = (
+    contact
+  ) => {
+    setSelectedContact(contact);
+
+    setContactData({
+      name: contact.name,
+      email: contact.email,
+      mobileNumber:
+        contact.mobileNumber,
+    });
+
+    setOpenModal(true);
+  };
+
+  /**
+   * FILTER
+   */
+  const filteredContacts =
+    contacts.filter((contact) =>
+      contact.name
+        .toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
+    );
 
   return (
     <div className="min-h-screen bg-white p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        {/* Left */}
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Group Contacts
+        </h1>
+
         <div className="flex items-center gap-3">
-          {/* <button
-            onClick={() => navigate(-1)}
-            className="
-              btn btn-sm btn-circle
-              btn-ghost
-            "
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-          </button> */}
-
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 ml-4">Group Contacts</h1>
-
-            {/* <p className="text-sm text-gray-500 mt-1">Group ID: {groupId}</p> */}
-          </div>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-3">
-          {/* Search */}
+          {/* SEARCH */}
           <div
             className="
-    flex items-center gap-3
-    bg-white
-    border border-gray-200
-    rounded-2xl
-    px-4
-    h-12
-    min-w-[280px]
-    focus-within:border-blue-400
-    focus-within:ring-4
-    focus-within:ring-blue-50
-    transition-all
-  "
+              flex items-center gap-3
+              bg-white
+              border border-gray-200
+              rounded-2xl
+              px-4
+              h-12
+              min-w-[280px]
+            "
           >
             <SearchIcon className="w-4 h-4 text-gray-400" />
 
             <input
               type="text"
-              placeholder="Search contacts..."
+              placeholder="Search..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) =>
+                setSearch(
+                  e.target.value
+                )
+              }
               className="
-      w-full
-      bg-transparent
-      outline-none
-      text-sm
-      text-gray-700
-      placeholder:text-gray-400
-    "
+                w-full
+                bg-transparent
+                outline-none
+              "
             />
           </div>
 
-          {/* Add */}
+          {/* ADD */}
           <button
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setSelectedContact(
+                null
+              );
+
+              setContactData({
+                name: "",
+                email: "",
+                mobileNumber: "",
+              });
+
+              setOpenModal(true);
+            }}
             className="
               btn btn-primary
               rounded-2xl
             "
           >
             <PlusIcon className="w-5 h-5" />
+
             Add Contact
           </button>
         </div>
       </div>
 
-      {/* Contact List */}
-   <div className="space-y-3">
-  {filteredContacts.map((contact) => (
-    <div
-      key={contact.id}
-      className="
-        border border-gray-200
-        rounded-3xl
-        px-5 py-4
-        hover:border-blue-300
-        hover:shadow-md
-        transition-all
-        bg-white
-        group
-      "
-    >
-      <div className="flex items-center justify-between gap-4">
-        {/* Left */}
-        <div className="flex items-center gap-4 min-w-0">
-          {/* Avatar */}
-          <div
-            className="
-              w-16 h-16
-              rounded-2xl
-              bg-blue-100
-              flex items-center justify-center
-              shrink-0
-            "
-          >
-            <UserIcon className="w-7 h-7 text-blue-600" />
-          </div>
-
-          {/* Content */}
-          <div className="min-w-0">
-            {/* Name */}
-            <h2
-              className="
-                text-xl
-                font-semibold
-                text-gray-900
-                truncate
-              "
-            >
-              {contact.name}
-            </h2>
-
-            {/* Email */}
+      {/* CONTACT LIST */}
+      <div className="space-y-3">
+        {filteredContacts.map(
+          (contact) => (
             <div
+              key={contact._id}
               className="
-                flex items-center gap-2
-                mt-2
-                text-sm
-                text-gray-500
+                border border-gray-200
+                rounded-3xl
+                px-5 py-4
+                bg-white
               "
             >
-              <MailIcon className="w-4 h-4 shrink-0" />
+              <div className="flex items-center justify-between">
+                {/* LEFT */}
+                <div className="flex items-center gap-4">
+                  <div
+                    className="
+                      w-16 h-16
+                      rounded-2xl
+                      bg-blue-100
+                      flex items-center justify-center
+                    "
+                  >
+                    <UserIcon className="w-7 h-7 text-blue-600" />
+                  </div>
 
-              <span className="truncate">
-                {contact.email}
-              </span>
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      {contact.name}
+                    </h2>
+
+                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                      <MailIcon className="w-4 h-4" />
+
+                      <span>
+                        {
+                          contact.email
+                        }
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                      <PhoneIcon className="w-4 h-4" />
+
+                      <span>
+                        {
+                          contact.mobileNumber
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex items-center gap-2">
+                  {/* EDIT */}
+                  <button
+                    onClick={() =>
+                      handleEditContact(
+                        contact
+                      )
+                    }
+                    className="
+                      w-11 h-11
+                      rounded-2xl
+                      bg-blue-50
+                      text-blue-600
+                      hover:bg-blue-100
+                      flex items-center justify-center
+                    "
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+
+                  {/* DELETE */}
+                  <button
+                    onClick={() =>
+                      handleDeleteContact(
+                        contact._id
+                      )
+                    }
+                    className="
+                      w-11 h-11
+                      rounded-2xl
+                      bg-red-50
+                      text-red-500
+                      hover:bg-red-100
+                      flex items-center justify-center
+                    "
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
-
-            {/* Mobile */}
-            <div
-              className="
-                flex items-center gap-2
-                mt-1.5
-                text-sm
-                text-gray-500
-              "
-            >
-              <PhoneIcon className="w-4 h-4 shrink-0" />
-
-              <span>
-                {contact.mobile}
-              </span>
-            </div>
-
-            {/* Designation */}
-            <div
-              className="
-                flex items-center gap-2
-                mt-1.5
-                text-sm
-                text-gray-500
-              "
-            >
-              <BriefcaseIcon className="w-4 h-4 shrink-0" />
-
-              <span>
-                {contact.designation}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Edit */}
-          <button
-  onClick={() => {
-    setSelectedContact(contact);
-
-    setOpenModal(true);
-  }}
-  className="
-    w-11 h-11
-    rounded-2xl
-    bg-blue-50
-    text-blue-600
-    hover:bg-blue-100
-    hover:scale-105
-    transition-all
-    flex items-center justify-center
-  "
->
-  <PencilIcon className="w-4 h-4" />
-</button>
-
-          {/* Delete */}
-          <button
-            onClick={() =>
-              handleDeleteContact(
-                contact.id
-              )
-            }
-            className="
-              w-11 h-11
-              rounded-2xl
-              bg-red-50
-              text-red-500
-              hover:bg-red-100
-              hover:scale-105
-              transition-all
-              flex items-center justify-center
-            "
-          >
-            <Trash2Icon className="w-4 h-4" />
-          </button>
-        </div>
+          )
+        )}
       </div>
-    </div>
-  ))}
-</div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {openModal && (
         <div
           className="
@@ -333,9 +377,11 @@ const handleDeleteContact = (id) => {
               relative
             "
           >
-            {/* Close */}
+            {/* CLOSE */}
             <button
-              onClick={() => setOpenModal(false)}
+              onClick={() =>
+                setOpenModal(false)
+              }
               className="
                 btn btn-sm btn-circle
                 absolute top-4 right-4
@@ -344,85 +390,68 @@ const handleDeleteContact = (id) => {
               <XIcon className="w-4 h-4" />
             </button>
 
-            <h2 className="text-2xl font-bold mb-6">Add Contact</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              {selectedContact
+                ? "Update Contact"
+                : "Add Contact"}
+            </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Name */}
-              <div>
-                <label className="label">
-                  <span className="label-text">Name</span>
-                </label>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
+              {/* NAME */}
+              <input
+                type="text"
+                name="name"
+                value={
+                  contactData.name
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Name"
+                className="
+                  input input-bordered
+                  w-full rounded-2xl
+                "
+              />
 
-                <input
-                  type="text"
-                  name="name"
-                  value={contactData.name}
-                  onChange={handleChange}
-                  placeholder="Enter name"
-                  className="
-                    input input-bordered
-                    w-full rounded-2xl
-                  "
-                />
-              </div>
+              {/* EMAIL */}
+              <input
+                type="email"
+                name="email"
+                value={
+                  contactData.email
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Email"
+                className="
+                  input input-bordered
+                  w-full rounded-2xl
+                "
+              />
 
-              {/* Email */}
-              <div>
-                <label className="label">
-                  <span className="label-text">Email</span>
-                </label>
+              {/* MOBILE */}
+              <input
+                type="text"
+                name="mobileNumber"
+                value={
+                  contactData.mobileNumber
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Mobile Number"
+                className="
+                  input input-bordered
+                  w-full rounded-2xl
+                "
+              />
 
-                <input
-                  type="email"
-                  name="email"
-                  value={contactData.email}
-                  onChange={handleChange}
-                  placeholder="Enter email"
-                  className="
-                    input input-bordered
-                    w-full rounded-2xl
-                  "
-                />
-              </div>
-
-              {/* Mobile */}
-              <div>
-                <label className="label">
-                  <span className="label-text">Mobile Number</span>
-                </label>
-
-                <input
-                  type="text"
-                  name="mobile"
-                  value={contactData.mobile}
-                  onChange={handleChange}
-                  placeholder="Enter mobile number"
-                  className="
-                    input input-bordered
-                    w-full rounded-2xl
-                  "
-                />
-              </div>
-              {/* Designation */}
-              <div>
-                <label className="label">
-                  <span className="label-text">Designation</span>
-                </label>
-
-                <input
-                  type="text"
-                  name="designation"
-                  value={contactData.designation}
-                  onChange={handleChange}
-                  placeholder="Enter designation"
-                  className="
-                    input input-bordered
-                    w-full rounded-2xl
-                  "
-                />
-              </div>
-
-              {/* Submit */}
+              {/* BUTTON */}
               <button
                 type="submit"
                 className="
@@ -431,7 +460,10 @@ const handleDeleteContact = (id) => {
                 "
               >
                 <PlusIcon className="w-5 h-5" />
-                Add Contact
+
+                {selectedContact
+                  ? "Update Contact"
+                  : "Add Contact"}
               </button>
             </form>
           </div>

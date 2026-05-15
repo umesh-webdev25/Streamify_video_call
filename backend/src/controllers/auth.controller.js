@@ -126,17 +126,25 @@ export const onboard = asyncHandler(async (req, res) => {
     throw new AppError("Missing onboarding fields", 400);
   }
 
-  let profilePic = req.body.profilePic; // Fallback if it's already a URL
-  
+  // ✅ let instead of const — needs reassignment
+  let profilePic = "";
+
   if (req.file) {
-    const fileBase64 = req.file.buffer.toString("base64");
-    profilePic = `data:${req.file.mimetype};base64,${fileBase64}`;
+    // ✅ diskStorage → use filename, not buffer
+    profilePic = `/uploads/${req.file.filename}`;
+  } else if (req.body.profilePic) {
+    // ✅ random avatar URL sent as text field from frontend
+    profilePic = req.body.profilePic;
   }
 
   const updatedUser = await authService.updateOnboarding(userId, {
-    ...req.body,
-    profilePic
+    fullName,
+    bio,
+    nativeLanguage,
+    learningLanguage,
+    location,
+    profilePic,
   });
-  
+
   return ApiResponse.success(res, updatedUser, "Onboarding completed");
 });
