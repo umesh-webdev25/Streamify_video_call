@@ -124,6 +124,10 @@ const GroupContacts = () => {
           newContact,
           ...prev,
         ]);
+        // Notify other parts of the app (groups list) to refresh
+        try {
+          window.dispatchEvent(new CustomEvent("groups:updated"));
+        } catch (e) {}
       }
 
       /**
@@ -156,6 +160,10 @@ const GroupContacts = () => {
             (c) => c._id !== id
           )
         );
+        // Notify other parts of the app (groups list) to refresh
+        try {
+          window.dispatchEvent(new CustomEvent("groups:updated"));
+        } catch (e) {}
       } catch (error) {
         console.log(error);
       }

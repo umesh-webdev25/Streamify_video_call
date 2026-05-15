@@ -60,3 +60,17 @@ export const updateGroup = async (id, data) => {
     runValidators: true,
   });
 };
+
+/**
+ * Soft-delete a group
+ */
+export const deleteGroup = async (id) => {
+  return await Group.findByIdAndUpdate(
+    id,
+    {
+      isDeleted: true,
+      deletedAt: new Date(),
+    },
+    { new: true }
+  );
+};

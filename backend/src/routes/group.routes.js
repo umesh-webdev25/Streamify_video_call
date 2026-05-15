@@ -5,6 +5,7 @@ import {
   getAllGroups,
   getGroupById,
   updateGroup,
+  deleteGroup,
 } from "../controllers/group.controller.js";
 
 const router = express.Router();
@@ -31,5 +32,10 @@ router.get("/:id", getGroupById);
  * PUT   /api/groups/:id
  */
 router.put("/:id", upload.single("groupImage"), updateGroup);
+
+/**
+ * DELETE /api/groups/:id
+ */
+router.delete("/:id", deleteGroup);
 
 export default router;

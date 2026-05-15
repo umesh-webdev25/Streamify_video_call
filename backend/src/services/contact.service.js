@@ -1,6 +1,7 @@
 // services/contact.service.js
 
 import Contact from "../models/contect.js";
+import Group from "../models/group.js";
 
 /**
  * CREATE CONTACT
@@ -8,7 +9,19 @@ import Contact from "../models/contect.js";
 export const createContact = async (
   data
 ) => {
-  return await Contact.create(data);
+  const contact = await Contact.create(data);
+
+  // Increment group's contactCount
+  try {
+    if (contact.groupId) {
+      await Group.findByIdAndUpdate(contact.groupId, { $inc: { contactCount: 1 } });
+    }
+  } catch (err) {
+    // Log but don't fail the contact creation
+    console.error("Failed to increment group contactCount:", err);
+  }
+
+  return contact;
 };
 
 /**
@@ -57,6 +70,20 @@ export const updateContact = async (
 export const deleteContact = async (
   id
 ) => {
+  // Find the contact first to get its groupId
+  const contact = await Contact.findById(id);
+  if (!contact) return null;
+
+  // Decrement group's contactCount
+  try {
+    if (contact.groupId) {
+      await Group.findByIdAndUpdate(contact.groupId, { $inc: { contactCount: -1 } });
+    }
+  } catch (err) {
+    console.error("Failed to decrement group contactCount:", err);
+  }
+
+  // Soft-delete the contact
   return await Contact.findByIdAndUpdate(
     id,
     {

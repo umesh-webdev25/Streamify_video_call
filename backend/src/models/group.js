@@ -54,6 +54,12 @@ const groupSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Cached contact count for the group
+    contactCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { SearchIcon, XIcon, UserIcon, MessageSquareIcon, VideoIcon, CommandIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserFriends } from "../lib/api";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState("");

@@ -1,3 +1,4 @@
+
 import { axiosInstance } from "./axios";
 
 export const signup = async (signupData) => {
@@ -118,6 +119,10 @@ export async function deleteSession(sessionId) {
   return response.data;
 }
 
+// Groups API
+// Groups API
+
+// Contacts
 export async function deleteAllMySessions() {
   const response = await axiosInstance.delete("/sessions/me/all");
 
@@ -156,6 +161,11 @@ export async function updateGroup(groupId, formData) {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data.data;
+}
+
+export async function deleteGroup(groupId) {
+  const response = await axiosInstance.delete(`/groups/${groupId}`);
+  return response.data;
 }
 
 //contact API

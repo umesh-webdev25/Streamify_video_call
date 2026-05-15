@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import useAuthUser from "../hooks/useAuthUser";
 import { BellIcon, LogOutIcon, MoonIcon, ShipWheelIcon, SunIcon } from "lucide-react";
 import useLogout from "../hooks/useLogout";

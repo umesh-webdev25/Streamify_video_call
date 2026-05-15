@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ShipWheelIcon, UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import useSignUp from "../hooks/useSignUp";
 import { Helmet } from "react-helmet-async";
 

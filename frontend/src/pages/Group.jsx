@@ -16,6 +16,8 @@ import {
   getAllGroups,
   updateGroup,
   getAllContacts,
+  getGroupById,
+  deleteGroup,
 } from "../lib/api";
 
 /** Replace with real auth user from your store/context */
@@ -59,7 +61,20 @@ const Group = () => {
     try {
       setLoading(true);
       const data = await getAllGroups();
-      setGroups(data || []);                                    // ✅ real data from backend
+      // Ensure each group has a populated `members` array (some APIs return partial data)
+      const groupsWithMembers = await Promise.all(
+        (data || []).map(async (g) => {
+          if (Array.isArray(g.members)) return g;
+          try {
+            const full = await getGroupById(g._id);
+            return { ...g, members: full?.members || [] };
+          } catch (e) {
+            return { ...g, members: [] };
+          }
+        })
+      );
+
+      setGroups(groupsWithMembers);
     } catch (err) {
       console.error("fetchGroups error:", err);
       setGroups([]);
@@ -82,6 +97,13 @@ const Group = () => {
   useEffect(() => {
     fetchGroups();
     fetchContacts();
+  }, []);
+
+  // Refresh groups when contacts or groups change elsewhere
+  useEffect(() => {
+    const handler = () => fetchGroups();
+    window.addEventListener("groups:updated", handler);
+    return () => window.removeEventListener("groups:updated", handler);
   }, []);
 
   // ── Scroll chat to bottom on new message ───────────────────────────────────
@@ -111,7 +133,17 @@ const Group = () => {
   // ── Open Chat — clears messages, ready for real API ───────────────────────
   const handleOpenChat = async (e, group) => {
     e.stopPropagation();
-    setSelectedGroup(group);
+    // Fetch full group details to guarantee members array is available
+    try {
+      setChatLoading(true);
+      const full = await getGroupById(group._id);
+      setSelectedGroup(full || group);
+    } catch (err) {
+      console.error("getGroupById error:", err);
+      setSelectedGroup(group);
+    } finally {
+      setChatLoading(false);
+    }
     setMessages([]);                                            // ✅ no fake data injected
     setOpenChat(true);
 
@@ -175,10 +207,22 @@ const Group = () => {
   };
 
   // ── Delete group ───────────────────────────────────────────────────────────
-  const handleDeleteGroup = (e, id) => {
+  const handleDeleteGroup = async (e, id) => {
     e.stopPropagation();
-    setGroups((prev) => prev.filter((g) => g._id !== id));
-    // TODO: call deleteGroup(id) API here
+
+    // Optimistic UI: remove immediately
+    const prev = groups;
+    setGroups((p) => p.filter((g) => g._id !== id));
+
+    try {
+      await deleteGroup(id);
+      // notify others if needed
+      window.dispatchEvent(new CustomEvent("groups:updated"));
+    } catch (err) {
+      console.error("Failed to delete group:", err);
+      // revert UI
+      setGroups(prev);
+    }
   };
 
   // ── Open edit modal pre-filled with real group data ────────────────────────
@@ -303,8 +347,11 @@ const Group = () => {
                     <div className="flex items-center gap-2 mt-2 text-sm text-gray-400">
                       <UsersIcon className="w-4 h-4" />
                       {/* ✅ real member count from populated members array */}
-                      <span>{group.members?.length ?? 0} Members</span>
+                      <span>  Members {group.contactCount ?? 0}</span>
                     </div>
+                    {/* <p className="text-sm text-gray-500 mt-1">
+                      {group.contactCount ?? 0} Contacts
+                    </p> */}
                   </div>
                 </div>
 

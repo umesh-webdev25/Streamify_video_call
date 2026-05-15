@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import { BellIcon, HomeIcon, UsersIcon, SettingsIcon, SearchIcon, VideoIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";

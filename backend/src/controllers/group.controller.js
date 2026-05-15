@@ -133,3 +133,21 @@ export const updateGroup = async (req, res) => {
     });
   }
 };
+
+/**
+ * DELETE Group (soft)
+ * DELETE /api/groups/:id
+ */
+export const deleteGroup = async (req, res) => {
+  try {
+    const group = await groupService.deleteGroup(req.params.id);
+
+    if (!group) {
+      return res.status(404).json({ success: false, message: "Group not found" });
+    }
+
+    return res.status(200).json({ success: true, message: "Group deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
