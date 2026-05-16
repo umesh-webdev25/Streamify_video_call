@@ -18,18 +18,11 @@ import {
   getAllContacts,
   updateContact,
   deleteContact,
+  getGroupById,
 } from "../lib/api";
 
 const GroupContacts = () => {
   const { groupId } = useParams();
-
-  const resolveImageSrc = (img, name) => {
-    if (!img) return "";
-    if (/^https?:\/\//i.test(img)) return img;
-    const base = (import.meta?.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
-    const path = img.startsWith("/") ? img : `/${img}`;
-    return `${base}${path}`;
-  };
 
   const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -45,21 +38,46 @@ const GroupContacts = () => {
     designation: "",
     profileImage: null,
   });
+  const [menuPosition, setMenuPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const [group, setGroup] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  /** GET GROUP INFO */
+  const fetchGroupInfo = async () => {
+    try {
+      const data = await getGroupById(groupId);
+      setGroup(data);
+    } catch (error) {
+      console.log("Error fetching group info:", error);
+    }
+  };
 
   /** GET CONTACTS */
   const fetchContacts = async () => {
     try {
+      setLoading(true);
       const data = await getAllContacts();
-      const filtered = data.filter((contact) => contact.groupId?._id === groupId);
+      const filtered = (data || []).filter((contact) => {
+        // Handle both populated and non-populated groupId
+        const cid = typeof contact.groupId === "object" ? contact.groupId?._id : contact.groupId;
+        return cid === groupId;
+      });
       setContacts(filtered);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    fetchGroupInfo();
     fetchContacts();
-  }, []);
+  }, [groupId]);
 
   // Close menu on outside click
   useEffect(() => {
@@ -167,14 +185,22 @@ const GroupContacts = () => {
   "
       >
         {/* Left */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Group Contacts
-          </h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => window.history.back()}
+            className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-all"
+          >
+            <XIcon className="w-5 h-5 rotate-45" /> {/* Simple back arrow surrogate */}
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {group?.groupName || "Group Contacts"}
+            </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
-            Manage and organize your group contacts
-          </p>
+            <p className="text-sm text-gray-500 mt-1">
+              {group?.groupBio || "Manage and organize your group contacts"}
+            </p>
+          </div>
         </div>
 
         {/* Right */}
@@ -384,10 +410,19 @@ const GroupContacts = () => {
                         <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {contact.profileImage ? (
                             <img
-                              src={resolveImageSrc(contact.profileImage, contact.name)}
+                              src={
+                                contact.profileImage?.startsWith("/")
+                                  ? contact.profileImage
+                                  : `/${contact.profileImage}`
+                              }
                               alt={contact.name}
                               className="w-full h-full object-cover"
-                              onError={(e) => { e.currentTarget.style.display = "none"; }}
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                    contact.name
+                                  )}&background=random`;
+                              }}
                             />
                           ) : (
                             <UserIcon className="w-4 h-4 text-blue-600" />
@@ -399,15 +434,15 @@ const GroupContacts = () => {
 
                     {/* Email */}
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 -ml-10">
                         <MailIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 truncate">{contact.email}</span>
+                        <span className="text-sm text-gray-600 truncate ">{contact.email}</span>
                       </div>
                     </td>
 
                     {/* Mobile */}
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 -ml-6">
                         <PhoneIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                         <span className="text-sm text-gray-600">{contact.mobileNumber}</span>
                       </div>
@@ -426,36 +461,107 @@ const GroupContacts = () => {
                     </td>
 
                     {/* Action Menu */}
-                    <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block">
+                    <div className="flex items-center justify-center" >
+                      <td
+                        // left: rect.right - 250,
+                        className="px-4 py-3.5 text-center  "
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setMenuOpenId(menuOpenId === contact._id ? null : contact._id);
+
+                            const rect = e.currentTarget.getBoundingClientRect();
+
+                            setMenuPosition({
+                              top: rect.bottom + 8,
+                              left: rect.right - 170,
+                            });
+
+                            setMenuOpenId(
+                              menuOpenId === contact._id ? null : contact._id
+                            );
                           }}
-                          className="w-8 h-8 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 flex items-center justify-center transition-colors"
+                          className="
+      w-8 h-8
+      rounded-lg
+      border border-gray-200
+      bg-white
+      hover:bg-gray-50
+      text-gray-500
+      flex items-center justify-center
+      transition-colors
+    "
                         >
                           <MoreVerticalIcon className="w-4 h-4" />
                         </button>
 
                         {menuOpenId === contact._id && (
-                          <div className="absolute right-0 top-9 z-30 bg-white border border-gray-200 rounded-xl shadow-xl min-w-[140px] overflow-hidden">
+                          <div
+                            className="
+        fixed
+        z-[99999]
+        w-44
+        bg-white
+        border border-gray-200
+        rounded-2xl
+        shadow-2xl
+        overflow-hidden
+        animate-in fade-in zoom-in-95 duration-150
+      "
+                            style={{
+                              top: `${menuPosition.top}px`,
+                              left: `${menuPosition.left}px`,
+                            }}
+                          >
+                            {/* Edit */}
                             <button
-                              onClick={() => { handleEditContact(contact); setMenuOpenId(null); }}
-                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-amber-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                              onClick={() => {
+                                handleEditContact(contact);
+                                setMenuOpenId(null);
+                              }}
+                              className="
+          w-full
+          px-4 py-3
+          text-left
+          text-sm
+          font-medium
+          text-amber-600
+          hover:bg-amber-50
+          flex items-center gap-2
+          transition-colors
+        "
                             >
-                              <PencilIcon className="w-4 h-4" /> Edit
+                              <PencilIcon className="w-4 h-4" />
+                              Edit
                             </button>
+
+                            {/* Delete */}
                             <button
-                              onClick={() => { handleDeleteContact(contact._id); setMenuOpenId(null); }}
-                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-500 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                              onClick={() => {
+                                handleDeleteContact(contact._id);
+                                setMenuOpenId(null);
+                              }}
+                              className="
+          w-full
+          px-4 py-3
+          text-left
+          text-sm
+          font-medium
+          text-red-500
+          hover:bg-red-50
+          flex items-center gap-2
+          transition-colors
+        "
                             >
-                              <Trash2Icon className="w-4 h-4" /> Delete
+                              <Trash2Icon className="w-4 h-4" />
+                              Delete
                             </button>
                           </div>
                         )}
-                      </div>
-                    </td>
+                      </td>
+                    </div>
+
                   </tr>
                 ))
               )}

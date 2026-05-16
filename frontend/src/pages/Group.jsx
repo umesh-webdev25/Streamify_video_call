@@ -62,6 +62,7 @@ const Group = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [groupData, setGroupData] = useState({ groupName: "", groupBio: "", status: "active" });
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -90,6 +91,8 @@ const Group = () => {
     }
   };
 
+
+  console.log("groups", groups);
   // ── Fetch Contacts from API ────────────────────────────────────────────────
   const fetchContacts = async () => {
     try {
@@ -523,130 +526,165 @@ const Group = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[22%]">Name</th>
-                {/* <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[18%]">Department</th> */}
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[25%]">Description</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[12%]">Status</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[10%]">Members</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[13%]">Action</th>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Group</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Members</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Updated</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {loading ? (
+            <tbody className="divide-y divide-gray-50">
+              {pagedGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-20">
-                    <span className="loading loading-spinner loading-lg text-blue-600" />
-                  </td>
-                </tr>
-              ) : pagedGroups.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-                        <UsersIcon className="w-8 h-8 text-blue-400" />
-                      </div>
-                      <p className="text-base font-semibold text-gray-700">No Groups Found</p>
-                      <p className="text-sm text-gray-400">
-                        {search ? `No results for "${search}"` : "Create your first group to get started"}
-                      </p>
-                    </div>
+                  <td colSpan="5" className="px-4 py-10 text-center text-gray-500">
+                    No groups found.
                   </td>
                 </tr>
               ) : (
-                pagedGroups.map((group, idx) => (
+                pagedGroups.map((group) => (
                   <tr
                     key={group._id}
                     onClick={() => navigate(`/groups/${group._id}`)}
-                    className={`cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-gray-50/50" : "bg-white"}`}
+                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
                   >
-                    {/* Name */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <img
                           src={resolveImageSrc(group.groupImage, group.groupName)}
                           alt={group.groupName}
+                          className="w-10 h-10 rounded-xl object-cover"
                           onError={(e) => {
                             e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(group.groupName || "G")}&background=random`;
                           }}
-                          className="w-9 h-9 rounded-xl object-cover border border-gray-100 flex-shrink-0"
                         />
-                        <span className="text-sm font-semibold text-blue-600 truncate">{group.groupName}</span>
+                        <div>
+                          <p className="
+  text-[15px]
+  font-semibold
+  text-gray-800
+  tracking-tight
+  leading-5
+">{group.groupName}</p>
+                          {/* <p className="text-xs text-gray-500 truncate max-w-[200px]">{group.groupBio || "No description"}</p> */}
+                        </div>
                       </div>
+
                     </td>
-
-                    {/* Department (status label) */}
-                    {/* <td className="px-4 py-3.5">
-                      <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                        {group.status === "active" ? "Active Group" : "Inactive Group"}
-                      </span>
-                    </td> */}
-
-                    {/* Description */}
                     <td className="px-4 py-3.5">
-                      <span className="text-sm text-gray-500 truncate block max-w-[220px]">
-                        {group.groupBio || "N/A"}
-                      </span>
+                      <p className="
+  text-[15px]
+  font-semibold
+  text-gray-800
+  tracking-tight
+  leading-5
+">
+                        {group.groupBio || "No description"}
+                      </p>
                     </td>
 
-                    {/* Status Badge */}
-                    <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${group.status === "active"
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-gray-100 text-gray-500 border-gray-200"
-                          }`}
-                      >
-                        <span className={` w-1.5 h-1.5 rounded-full ${group.status === "active" ? "bg-green-500" : "bg-gray-400"}`} />
-                        {group.status === "active" ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-
-                    {/* Members Count */}
                     <td className="px-4 py-3.5 text-center">
-                      <span className="inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-full bg-blue-50 text-blue-600 text-xs font-bold border border-blue-100">
-                        {group.contactCount ?? 0}
+                      <span
+                        className="
+      inline-flex
+      items-center
+      justify-center
+      min-w-[30px]
+      h-7
+      px-2.5
+      rounded-full
+      bg-blue-50
+      text-blue-600
+      text-xs
+      font-bold
+      border border-blue-100 -ml-[9rem]
+    "
+                      >
+                        {group.members?.length || 0}
                       </span>
                     </td>
 
-                    {/* Action Menu */}
-                    <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                        {group.status}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3.5 text-sm text-gray-600">
+                      {new Date(group.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-4 py-3.5 text-sm text-gray-600">
+                      {new Date(group.updatedAt).toLocaleDateString()}
+                    </td>
+                    <td
+                      className="px-4 py-3.5 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="relative inline-block">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPosition({
+                              top: rect.bottom + 8,
+                              left: rect.right - 180,
+                            });
                             setMenuOpenId(menuOpenId === group._id ? null : group._id);
                           }}
                           className="w-8 h-8 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 flex items-center justify-center transition-colors"
                         >
                           <MoreVerticalIcon className="w-4 h-4" />
                         </button>
-
-                        {menuOpenId === group._id && (
-                          <div className="absolute right-0 top-9 z-30 bg-white border border-gray-200 rounded-xl shadow-xl min-w-[148px] overflow-hidden">
-                            <button
-                              onClick={(e) => { handleOpenChat(e, group); setMenuOpenId(null); }}
-                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-blue-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                            >
-                              <MessageCircleIcon className="w-4 h-4" /> Open Chat
-                            </button>
-                            <button
-                              onClick={(e) => { handleEditGroup(e, group); setMenuOpenId(null); }}
-                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-amber-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                            >
-                              <PencilIcon className="w-4 h-4" /> Edit Group
-                            </button>
-                            <button
-                              onClick={(e) => { handleDeleteGroup(e, group._id); setMenuOpenId(null); }}
-                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-500 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                            >
-                              <Trash2Icon className="w-4 h-4" /> Delete
-                            </button>
-                          </div>
-                        )}
                       </div>
+
+                      {menuOpenId === group._id && (
+                        <div
+                          className="fixed z-[99999] w-44 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                          style={{
+                            top: `${menuPosition.top}px`,
+                            left: `${menuPosition.left}px`,
+                          }}
+                        >
+                          <button
+                            onClick={(e) => {
+                              handleOpenChat(e, group);
+                              setMenuOpenId(null);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors"
+                          >
+                            <MessageCircleIcon className="w-4 h-4" />
+                            Open Chat
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              handleEditGroup(e, group);
+                              setMenuOpenId(null);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-amber-600 hover:bg-amber-50 flex items-center gap-2 transition-colors"
+                          >
+                            <PencilIcon className="w-4 h-4" />
+                            Edit Group
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              handleDeleteGroup(e, group._id);
+                              setMenuOpenId(null);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-red-500 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                          >
+                            <Trash2Icon className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
