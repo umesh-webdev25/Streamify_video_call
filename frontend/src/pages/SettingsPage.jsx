@@ -20,6 +20,8 @@ const SettingsPage = () => {
     setSearchParams({ tab });
   };
 
+ console.log(authUser.profilePic);
+
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto space-y-10">
       <Helmet>

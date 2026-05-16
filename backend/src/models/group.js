@@ -20,6 +20,13 @@ const groupSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Group Status
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+
     // Members
     members: [
       {

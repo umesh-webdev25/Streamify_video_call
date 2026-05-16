@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import {
   PlusIcon,
   MailIcon,
@@ -10,10 +9,10 @@ import {
   BriefcaseIcon,
   PencilIcon,
   Trash2Icon,
+  MoreVerticalIcon,
+  DownloadIcon,
 } from "lucide-react";
-
 import { useParams } from "react-router-dom";
-
 import {
   createContact,
   getAllContacts,
@@ -24,7 +23,6 @@ import {
 const GroupContacts = () => {
   const { groupId } = useParams();
 
-  // Resolve image URL similar to Group page
   const resolveImageSrc = (img, name) => {
     if (!img) return "";
     if (/^https?:\/\//i.test(img)) return img;
@@ -34,13 +32,12 @@ const GroupContacts = () => {
   };
 
   const [openModal, setOpenModal] = useState(false);
-
   const [search, setSearch] = useState("");
-
   const [contacts, setContacts] = useState([]);
-
   const [selectedContact, setSelectedContact] = useState(null);
-
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [contactData, setContactData] = useState({
     name: "",
     email: "",
@@ -49,17 +46,11 @@ const GroupContacts = () => {
     profileImage: null,
   });
 
-  /**
-   * GET CONTACTS
-   */
+  /** GET CONTACTS */
   const fetchContacts = async () => {
     try {
       const data = await getAllContacts();
-
-      const filtered = data.filter(
-        (contact) => contact.groupId?._id === groupId,
-      );
-
+      const filtered = data.filter((contact) => contact.groupId?._id === groupId);
       setContacts(filtered);
     } catch (error) {
       console.log(error);
@@ -70,110 +61,66 @@ const GroupContacts = () => {
     fetchContacts();
   }, []);
 
-  /**
-   * INPUT CHANGE
-   */
+  // Close menu on outside click
+  useEffect(() => {
+    const close = () => setMenuOpenId(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  /** INPUT CHANGE */
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    setContactData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
+    setContactData((prev) => ({ ...prev, [name]: files ? files[0] : value }));
   };
 
-  /**
-   * CREATE / UPDATE
-   */
+  /** CREATE / UPDATE */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      /**
-       * UPDATE
-       */
       if (selectedContact) {
-        // Prepare multipart form data for update
         const formData = new FormData();
         formData.append("name", contactData.name);
         formData.append("email", contactData.email);
         formData.append("mobileNumber", contactData.mobileNumber);
         formData.append("designation", contactData.designation || "");
-        if (contactData.profileImage) {
-          formData.append("profileImage", contactData.profileImage);
-        }
-
+        if (contactData.profileImage) formData.append("profileImage", contactData.profileImage);
         const updated = await updateContact(selectedContact._id, formData);
-
-        setContacts((prev) =>
-          prev.map((c) => (c._id === updated._id ? updated : c)),
-        );
+        setContacts((prev) => prev.map((c) => (c._id === updated._id ? updated : c)));
       } else {
-        /**
-         * CREATE
-         */
-        // Prepare FormData for create
         const formData = new FormData();
         formData.append("name", contactData.name);
         formData.append("email", contactData.email);
         formData.append("mobileNumber", contactData.mobileNumber);
         formData.append("designation", contactData.designation || "");
         formData.append("groupId", groupId);
-        if (contactData.profileImage) {
-          formData.append("profileImage", contactData.profileImage);
-        }
-
+        if (contactData.profileImage) formData.append("profileImage", contactData.profileImage);
         const newContact = await createContact(formData);
-
         setContacts((prev) => [newContact, ...prev]);
-        // Notify other parts of the app (groups list) to refresh
-        try {
-          window.dispatchEvent(new CustomEvent("groups:updated"));
-        } catch (e) {}
+        try { window.dispatchEvent(new CustomEvent("groups:updated")); } catch (e) { }
       }
-
-      /**
-       * RESET
-       */
-      setContactData({
-        name: "",
-        email: "",
-        mobileNumber: "",
-        designation: "",
-        profileImage: null,
-      });
-
+      setContactData({ name: "", email: "", mobileNumber: "", designation: "", profileImage: null });
       setSelectedContact(null);
-
       setOpenModal(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  /**
-   * DELETE
-   */
+  /** DELETE */
   const handleDeleteContact = async (id) => {
     try {
       await deleteContact(id);
-
       setContacts((prev) => prev.filter((c) => c._id !== id));
-      // Notify other parts of the app (groups list) to refresh
-      try {
-        window.dispatchEvent(new CustomEvent("groups:updated"));
-      } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent("groups:updated")); } catch (e) { }
     } catch (error) {
       console.log(error);
     }
   };
 
-  /**
-   * EDIT
-   */
+  /** EDIT */
   const handleEditContact = (contact) => {
     setSelectedContact(contact);
-
     setContactData({
       name: contact.name,
       email: contact.email,
@@ -181,377 +128,511 @@ const GroupContacts = () => {
       designation: contact.designation || "",
       profileImage: null,
     });
-
     setOpenModal(true);
   };
 
-  /**
-   * FILTER
-   */
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(search.toLowerCase()),
+  /** Export CSV */
+  const handleExport = () => {
+    const csv = [
+      "Name,Email,Mobile,Designation",
+      ...contacts.map((c) => `"${c.name}","${c.email}","${c.mobileNumber}","${c.designation || ""}"`)
+    ].join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "contacts.csv";
+    a.click();
+  };
+
+  /** FILTER & PAGINATE */
+  const filteredContacts = contacts.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filteredContacts.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedContacts = filteredContacts.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Group Contacts</h1>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
 
-        <div className="flex items-center gap-3">
-          {/* SEARCH */}
-          <div
-            className="
-              flex items-center gap-3
-              bg-white
-              border border-gray-200
-              rounded-2xl
-              px-4
-              h-12
-              min-w-[280px]
-            "
-          >
-            <SearchIcon className="w-4 h-4 text-gray-400" />
+      {/* ── PAGE HEADER ── */}
+      <div
+        className="
+    flex items-center justify-between
+    mb-6
+    bg-white
+    border border-gray-200
+    rounded-2xl
+    px-6 py-5
+    shadow-sm
+  "
+      >
+        {/* Left */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Group Contacts
+          </h1>
 
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="
-                w-full
-                bg-transparent
-                outline-none
-              "
-            />
+          <p className="text-sm text-gray-500 mt-1">
+            Manage and organize your group contacts
+          </p>
+        </div>
+
+        {/* Right */}
+        <button
+          className="
+      w-10 h-10
+      rounded-xl
+      flex items-center justify-center
+      text-gray-400
+      hover:text-gray-700
+      hover:bg-gray-100
+      transition-all
+    "
+        >
+          <MoreVerticalIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* ── STAT CARDS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-6">
+
+        {/* Total Contacts */}
+        <div
+          className="
+      bg-white
+      border border-gray-200
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+        >
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Total Contacts
+            </p>
+
+            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+              {contacts.length}
+            </h2>
           </div>
 
-          {/* ADD */}
-          <button
-            onClick={() => {
-              setSelectedContact(null);
-
-              setContactData({
-                name: "",
-                email: "",
-                mobileNumber: "",
-              });
-
-              setOpenModal(true);
-            }}
+          <div
             className="
-              btn btn-primary
-              rounded-2xl
-            "
+        w-14 h-14
+        rounded-2xl
+        bg-blue-50
+        flex items-center justify-center
+        flex-shrink-0
+      "
           >
-            <PlusIcon className="w-5 h-5" />
-            Add Contact
-          </button>
+            <UserIcon className="w-7 h-7 text-blue-600" />
+          </div>
+        </div>
+
+        {/* With Designation */}
+        <div
+          className="
+      bg-white
+      border border-gray-200
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+        >
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              With Designation
+            </p>
+
+            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+              {contacts.filter((c) => c.designation).length}
+            </h2>
+          </div>
+
+          <div
+            className="
+        w-14 h-14
+        rounded-2xl
+        bg-purple-50
+        flex items-center justify-center
+        flex-shrink-0
+      "
+          >
+            <BriefcaseIcon className="w-7 h-7 text-purple-600" />
+          </div>
+        </div>
+
+        {/* Search Results */}
+        <div
+          className="
+      bg-white
+      border border-gray-200
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+        >
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Search Results
+            </p>
+
+            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+              {filteredContacts.length}
+            </h2>
+          </div>
+
+          <div
+            className="
+        w-14 h-14
+        rounded-2xl
+        bg-green-50
+        flex items-center justify-center
+        flex-shrink-0
+      "
+          >
+            <SearchIcon className="w-7 h-7 text-green-600" />
+          </div>
         </div>
       </div>
 
-      {/* CONTACT LIST */}
-      <div className="space-y-3">
-        {filteredContacts.map((contact) => (
-          <div
-            key={contact._id}
-            className="
-                border border-gray-200
-                rounded-3xl
-                px-5 py-4
-                bg-white
-              "
-          >
-            <div className="flex items-center justify-between">
-              {/* LEFT */}
-              <div className="flex items-center gap-4">
-                <div
-                  className="
-                      w-16 h-16
-                      rounded-2xl
-                      bg-blue-100
-                      flex items-center justify-center
-                    "
-                >
-                  {contact.profileImage ? (
-                    <img
-                      src={resolveImageSrc(contact.profileImage, contact.name)}
-                      alt={contact.name}
-                      className="w-full h-full object-cover rounded-2xl"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "";
-                      }}
-                    />
-                  ) : (
-                    <UserIcon className="w-7 h-7 text-blue-600" />
-                  )}
-                </div>
+      {/* ── TABLE CARD ── */}
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
-                <div>
-                  <h2 className="text-xl font-semibold">{contact.name}</h2>
-
-                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                    <MailIcon className="w-4 h-4" />
-
-                    <span>{contact.email}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                    <PhoneIcon className="w-4 h-4" />
-
-                    <span>{contact.mobileNumber}</span>
-                  </div>
-
-                  {contact.designation && (
-                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                      <BriefcaseIcon className="w-4 h-4" />
-                      <span>{contact.designation}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ACTIONS */}
-              <div className="flex items-center gap-2">
-                {/* EDIT */}
-                <button
-                  onClick={() => handleEditContact(contact)}
-                  className="
-                      w-11 h-11
-                      rounded-2xl
-                      bg-blue-50
-                      text-blue-600
-                      hover:bg-blue-100
-                      flex items-center justify-center
-                    "
-                >
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-
-                {/* DELETE */}
-                <button
-                  onClick={() => handleDeleteContact(contact._id)}
-                  className="
-                      w-11 h-11
-                      rounded-2xl
-                      bg-red-50
-                      text-red-500
-                      hover:bg-red-100
-                      flex items-center justify-center
-                    "
-                >
-                  <Trash2Icon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-gray-100">
+          {/* Search */}
+          <div className="flex items-center gap-2 flex-1 min-w-[220px] bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
+            <SearchIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+            />
           </div>
-        ))}
+
+          {/* Add Contact */}
+          <button
+            onClick={() => {
+              setSelectedContact(null);
+              setContactData({ name: "", email: "", mobileNumber: "", designation: "", profileImage: null });
+              setOpenModal(true);
+            }}
+            className="h-10 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <PlusIcon className="w-4 h-4" />
+            Add Contact
+          </button>
+
+          {/* Export */}
+          <button
+            onClick={handleExport}
+            className="h-10 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <DownloadIcon className="w-4 h-4" />
+            Export
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[28%]">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[25%]">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[18%]">Mobile</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[17%]">Designation</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[12%]">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagedContacts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+                        <UserIcon className="w-8 h-8 text-blue-400" />
+                      </div>
+                      <p className="text-base font-semibold text-gray-700">No Contacts Found</p>
+                      <p className="text-sm text-gray-400">
+                        {search ? `No results for "${search}"` : "Add your first contact to get started"}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                pagedContacts.map((contact, idx) => (
+                  <tr
+                    key={contact._id}
+                    className={`border-b border-gray-50 hover:bg-blue-50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-gray-50/50" : "bg-white"}`}
+                  >
+                    {/* Name + Avatar */}
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {contact.profileImage ? (
+                            <img
+                              src={resolveImageSrc(contact.profileImage, contact.name)}
+                              alt={contact.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.style.display = "none"; }}
+                            />
+                          ) : (
+                            <UserIcon className="w-4 h-4 text-blue-600" />
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-blue-600 truncate">{contact.name}</span>
+                      </div>
+                    </td>
+
+                    {/* Email */}
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <MailIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm text-gray-600 truncate">{contact.email}</span>
+                      </div>
+                    </td>
+
+                    {/* Mobile */}
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <PhoneIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm text-gray-600">{contact.mobileNumber}</span>
+                      </div>
+                    </td>
+
+                    {/* Designation */}
+                    <td className="px-4 py-3.5">
+                      {contact.designation ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
+                          <BriefcaseIcon className="w-3 h-3" />
+                          {contact.designation}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">N/A</span>
+                      )}
+                    </td>
+
+                    {/* Action Menu */}
+                    <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="relative inline-block">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpenId(menuOpenId === contact._id ? null : contact._id);
+                          }}
+                          className="w-8 h-8 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 flex items-center justify-center transition-colors"
+                        >
+                          <MoreVerticalIcon className="w-4 h-4" />
+                        </button>
+
+                        {menuOpenId === contact._id && (
+                          <div className="absolute right-0 top-9 z-30 bg-white border border-gray-200 rounded-xl shadow-xl min-w-[140px] overflow-hidden">
+                            <button
+                              onClick={() => { handleEditContact(contact); setMenuOpenId(null); }}
+                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-amber-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                            >
+                              <PencilIcon className="w-4 h-4" /> Edit
+                            </button>
+                            <button
+                              onClick={() => { handleDeleteContact(contact._id); setMenuOpenId(null); }}
+                              className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-500 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                            >
+                              <Trash2Icon className="w-4 h-4" /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── PAGINATION ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-gray-100">
+          {/* Rows per page */}
+          <div className="flex items-center gap-2">
+            <select
+              value={rowsPerPage}
+              onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
+              className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+            >
+              {[5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <span className="text-sm text-gray-500">Items per page</span>
+          </div>
+
+          {/* Page Buttons */}
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(1)} disabled={safePage === 1}
+              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">«</button>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1}
+              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">‹</button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+              .reduce((acc, p, i, arr) => {
+                if (i > 0 && p - arr[i - 1] > 1) acc.push("…");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "…" ? (
+                  <span key={`e-${i}`} className="w-8 text-center text-sm text-gray-400">…</span>
+                ) : (
+                  <button key={p} onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage ? "bg-blue-600 text-white border-0" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}>
+                    {p}
+                  </button>
+                )
+              )}
+
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">›</button>
+            <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages}
+              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">»</button>
+          </div>
+
+          {/* Jump to */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Jump to</span>
+            <select
+              value={safePage}
+              onChange={(e) => setPage(Number(e.target.value))}
+              className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+            >
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* MODAL */}
+      {/* ── MODAL ── */}
       {openModal && (
         <div
-          className="
-      fixed inset-0 z-50
-      bg-black/40 backdrop-blur-sm
-      flex items-center justify-center
-      p-4
-    "
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setOpenModal(false)}
         >
-          <div
-            className="
-        bg-white
-        w-full max-w-md
-        rounded-3xl
-        shadow-2xl
-        relative
-        overflow-hidden
-      "
-          >
-            {/* HEADER */}
-            <div
-              className="
-          flex items-center justify-between
-          px-6 py-5
-          border-b border-gray-100
-        "
-            >
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900">
                   {selectedContact ? "Update Contact" : "Add Contact"}
                 </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Manage contact details
-                </p>
+                <p className="text-sm text-gray-500 mt-0.5">Manage contact details</p>
               </div>
-
               <button
                 onClick={() => setOpenModal(false)}
-                className="
-            w-10 h-10
-            rounded-2xl
-            bg-gray-100
-            hover:bg-gray-200
-            flex items-center justify-center
-            transition-all
-          "
+                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
               >
-                <XIcon className="w-5 h-5 text-gray-600" />
+                <XIcon className="w-4 h-4 text-gray-600" />
               </button>
             </div>
 
-            {/* FORM */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* IMAGE */}
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* Profile Image */}
               <div className="flex justify-center">
                 <label className="relative cursor-pointer">
-                  {contactData.profileImage ? (
-                    <img
-                      src={
-                        typeof contactData.profileImage === "string"
+                  <div className="w-20 h-20 rounded-2xl bg-blue-50 border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden">
+                    {contactData.profileImage ? (
+                      <img
+                        src={typeof contactData.profileImage === "string"
                           ? contactData.profileImage
-                          : URL.createObjectURL(contactData.profileImage)
-                      }
-                      alt="Preview"
-                      className="
-                  w-24 h-24
-                  rounded-3xl
-                  object-cover
-                  border-4 border-blue-100
-                "
-                    />
-                  ) : (
-                    <div
-                      className="
-                  w-24 h-24
-                  rounded-3xl
-                  bg-blue-100
-                  flex items-center justify-center
-                "
-                    >
-                      <UserIcon className="w-9 h-9 text-blue-600" />
-                    </div>
-                  )}
-
-                  <div
-                    className="
-                absolute bottom-0 right-0
-                w-8 h-8
-                rounded-xl
-                bg-blue-600
-                text-white
-                flex items-center justify-center
-              "
-                  >
-                    <PlusIcon className="w-4 h-4" />
+                          : URL.createObjectURL(contactData.profileImage)}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="w-8 h-8 text-blue-400" />
+                    )}
                   </div>
-
-                  <input
-                    type="file"
-                    name="profileImage"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="hidden"
-                  />
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-green-600 text-white flex items-center justify-center shadow">
+                    <PlusIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <input type="file" name="profileImage" accept="image/*" onChange={handleChange} className="hidden" />
                 </label>
               </div>
 
-              {/* NAME */}
-              <input
-                type="text"
-                name="name"
-                value={contactData.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="
-            input input-bordered
-            w-full rounded-2xl
-          "
-              />
-
-              {/* EMAIL */}
-              <input
-                type="email"
-                name="email"
-                value={contactData.email}
-                onChange={handleChange}
-                placeholder="Email Address"
-                className="
-            input input-bordered
-            w-full rounded-2xl
-          "
-              />
-
-              {/* MOBILE */}
-              <input
-                type="text"
-                name="mobileNumber"
-                value={contactData.mobileNumber}
-                onChange={handleChange}
-                placeholder="Mobile Number"
-                className="
-            input input-bordered
-            w-full rounded-2xl
-          "
-              />
-
-              {/* DESIGNATION */}
-              <div className="relative">
-                <BriefcaseIcon
-                  className="
-              absolute left-4 top-1/2
-              -translate-y-1/2
-              w-5 h-5 text-gray-400
-            "
-                />
-
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
                 <input
-                  type="text"
-                  name="designation"
-                  value={contactData.designation}
-                  onChange={handleChange}
-                  placeholder="Designation"
-                  className="
-              input input-bordered
-              w-full rounded-2xl
-              pl-12
-            "
+                  type="text" name="name" value={contactData.name} onChange={handleChange} required
+                  placeholder="Enter full name"
+                  className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
                 />
               </div>
 
-              {/* BUTTONS */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenModal(false)}
-                  className="
-              flex-1 h-12
-              rounded-2xl
-              border border-gray-200
-              hover:bg-gray-50
-              font-medium
-            "
-                >
-                  Cancel
-                </button>
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <div className="relative">
+                  <MailIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="email" name="email" value={contactData.email} onChange={handleChange}
+                    placeholder="Enter email"
+                    className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  />
+                </div>
+              </div>
 
+              {/* Mobile */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <div className="relative">
+                  <PhoneIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text" name="mobileNumber" value={contactData.mobileNumber} onChange={handleChange}
+                    placeholder="Enter mobile number"
+                    className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  />
+                </div>
+              </div>
+
+              {/* Designation */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                <div className="relative">
+                  <BriefcaseIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text" name="designation" value={contactData.designation} onChange={handleChange}
+                    placeholder="Enter designation"
+                    className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button" onClick={() => setOpenModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                >Cancel</button>
                 <button
                   type="submit"
-                  className="
-              flex-1 h-12
-              rounded-2xl
-              bg-blue-600
-              hover:bg-blue-700
-              text-white
-              font-medium
-              flex items-center justify-center gap-2
-            "
+                  className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition"
                 >
                   <PlusIcon className="w-4 h-4" />
-
-                  {selectedContact ? "Update" : "Add"}
+                  {selectedContact ? "Update" : "Add Contact"}
                 </button>
               </div>
             </form>

@@ -21,7 +21,7 @@ const parseJSON = (value, fallback = []) => {
  */
 export const createGroup = async (req, res) => {
   try {
-    const { groupName, groupBio, members, admins } = req.body;
+    const { groupName, groupBio, members, admins, status } = req.body;
 
     // multer saves the file and gives us req.file.filename
     const groupImage = req.file ? `/uploads/${req.file.filename}` : "";
@@ -30,8 +30,9 @@ export const createGroup = async (req, res) => {
       groupName,
       groupBio,
       groupImage,
-      members: parseJSON(members),   // front-end sends JSON.stringify([...])
-      admins:  parseJSON(admins),
+      status: status || "active",
+      members: parseJSON(members), // front-end sends JSON.stringify([...])
+      admins: parseJSON(admins),
     });
 
     return res.status(201).json({
@@ -103,13 +104,18 @@ export const getGroupById = async (req, res) => {
  */
 export const updateGroup = async (req, res) => {
   try {
-    const { groupName, groupBio } = req.body;
+    const { groupName, groupBio, status } = req.body;
 
     const updateData = { groupName, groupBio };
 
     // Only overwrite groupImage if a new file was uploaded
     if (req.file) {
       updateData.groupImage = `/uploads/${req.file.filename}`;
+    }
+
+    // If the client provided a status, include it in update
+    if (typeof status !== "undefined") {
+      updateData.status = status;
     }
 
     const group = await groupService.updateGroup(req.params.id, updateData);

@@ -10,13 +10,10 @@ export const createGroup = async (
 ) => {
   const group = await Group.create({
     groupName: data.groupName,
-
     groupBio: data.groupBio,
-
     groupImage: data.groupImage,
-
+    status: data.status || "active",
     members: data.members,
-
     admins: data.admins,
   });
 
