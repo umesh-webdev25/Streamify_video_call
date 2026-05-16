@@ -14,8 +14,10 @@ import {
   FolderIcon,
   MoreVerticalIcon,
   DownloadIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   createGroup,
   getAllGroups,
@@ -799,8 +801,8 @@ const Group = () => {
 
               {/* Group Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Group Name <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-base-content/70 mb-1">
+                  Group Name <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
@@ -809,41 +811,41 @@ const Group = () => {
                   onChange={handleChange}
                   required
                   placeholder="Enter group name"
-                  className="w-full bg-white text-black placeholder:text-gray-400 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition"
                 />
               </div>
 
               {/* Group Bio */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bio / Description</label>
+                <label className="block text-sm font-medium text-base-content/70 mb-1">Bio / Description</label>
                 <textarea
                   name="groupBio"
                   value={groupData.groupBio}
                   onChange={handleChange}
                   placeholder="Short description..."
                   rows={3}
-                  className="w-full bg-white text-black placeholder:text-gray-400 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition resize-none"
+                  className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition resize-none"
                 />
               </div>
 
               {/* Status Toggle */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Group Status</label>
-                <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+                <label className="block text-sm font-medium text-base-content/70 mb-2">Group Status</label>
+                <div className="flex items-center justify-between bg-base-200 border border-base-300 rounded-2xl px-4 py-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-sm font-semibold text-base-content">
                       {groupData.status === "active" ? "Active Group" : "Inactive Group"}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-base-content/50 mt-1">
                       {groupData.status === "active" ? "Group is enabled and visible" : "Group is temporarily disabled"}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setGroupData((prev) => ({ ...prev, status: prev.status === "active" ? "inactive" : "active" }))}
-                    className={`relative w-14 h-8 rounded-full transition-all duration-300 ${groupData.status === "active" ? "bg-green-500" : "bg-gray-300"}`}
+                    className={`relative w-14 h-8 rounded-full transition-all duration-300 ${groupData.status === "active" ? "bg-success" : "bg-base-300"}`}
                   >
-                    <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${groupData.status === "active" ? "translate-x-6" : "translate-x-0"}`} />
+                    <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-base-100 shadow-md transition-all duration-300 ${groupData.status === "active" ? "translate-x-6" : "translate-x-0"}`} />
                   </button>
                 </div>
               </div>
@@ -871,75 +873,217 @@ const Group = () => {
       )}
 
       {/* ── CHAT PANEL ──────────────────────────────────────────────────────── */}
-      {openChat && selectedGroup && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full sm:max-w-md sm:rounded-3xl shadow-2xl flex flex-col h-[85vh] sm:h-[600px] overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-              <img
-                src={resolveImageSrc(selectedGroup.groupImage, selectedGroup.groupName)}
-                alt={selectedGroup.groupName}
-                onError={(e) => {
-                  e.currentTarget.src = "/group.png";
-                }}
-                className="w-10 h-10 rounded-xl object-cover"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{selectedGroup.groupName}</p>
-                <p className="text-xs text-gray-400">{selectedGroup.members?.length ?? 0} members</p>
-              </div>
-              <button
-                onClick={() => setOpenChat(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500"
-              >
-                <XIcon className="w-4 h-4" />
-              </button>
-            </div>
+      <AnimatePresence>
+        {openChat && selectedGroup && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpenChat(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-              {chatLoading ? (
-                <div className="flex justify-center py-10">
-                  <span className="loading loading-spinner loading-md" />
+            {/* Modal Container */}
+            <motion.div
+              initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="
+                relative
+                bg-base-100/95
+                backdrop-blur-xl
+                w-full sm:max-w-md
+                h-[85vh] sm:h-[650px]
+                rounded-t-[2.5rem] sm:rounded-[2.5rem]
+                shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+                border border-base-300/50
+                flex flex-col
+                overflow-hidden
+                z-10
+              "
+            >
+              {/* Header - Sticky */}
+              <div className="sticky top-0 z-20 bg-base-100/80 backdrop-blur-md border-b border-base-300 px-6 py-4 flex items-center gap-4">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-tr from-primary to-secondary rounded-2xl opacity-20 group-hover:opacity-40 transition-opacity blur" />
+                  <img
+                    src={resolveImageSrc(selectedGroup.groupImage, selectedGroup.groupName)}
+                    alt={selectedGroup.groupName}
+                    onError={(e) => {
+                      e.currentTarget.src = "/group.png";
+                    }}
+                    className="relative w-12 h-12 rounded-2xl object-cover ring-2 ring-primary/20 shadow-md"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-base-100 rounded-full shadow-sm" />
                 </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                  <MessageCircleIcon className="w-10 h-10 mb-2 opacity-30" />
-                  <p className="text-sm">No messages yet. Say hello!</p>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base-content text-lg leading-tight truncate">
+                    {selectedGroup.groupName}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="flex h-2 w-2 rounded-full bg-success animate-pulse" />
+                    <p className="text-xs font-medium text-base-content/60">
+                      {selectedGroup.members?.length ?? 0} members · Online
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${msg.sender === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"}`}>
-                      {msg.text}
+
+                <button
+                  onClick={() => setOpenChat(false)}
+                  className="
+                    w-10 h-10
+                    flex items-center justify-center
+                    rounded-2xl
+                    bg-base-200/70
+                    text-base-content/60
+                    hover:bg-error hover:text-white
+                    hover:rotate-90
+                    hover:scale-95
+                    active:scale-90
+                    transition-all duration-300
+                  "
+                >
+                  <XIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Messages Area */}
+              <div
+                className="
+                  flex-1
+                  overflow-y-auto
+                  px-6 py-6
+                  space-y-6
+                  scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-transparent
+                "
+              >
+                {chatLoading ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    </div>
+                    <p className="text-sm font-medium text-base-content/40 animate-pulse">
+                      Encrypting connection...
+                    </p>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center space-y-4 px-10">
+                    <div className="w-20 h-20 rounded-3xl bg-base-200 flex items-center justify-center">
+                      <MessageSquareIcon className="w-10 h-10 text-base-content/20" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-base-content">No messages yet</h4>
+                      <p className="text-sm text-base-content/40 mt-1">
+                        Be the first to break the ice in {selectedGroup.groupName}
+                      </p>
                     </div>
                   </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Date Divider Placeholder */}
+                    <div className="flex items-center gap-4 py-2">
+                      <div className="h-px flex-1 bg-base-300/50" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-base-content/30 bg-base-200/50 px-3 py-1 rounded-full">
+                        Today
+                      </span>
+                      <div className="h-px flex-1 bg-base-300/50" />
+                    </div>
 
-            {/* Input */}
-            <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-3">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleMessageKeyDown}
-                placeholder="Type a message…"
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim()}
-                className="w-10 h-10 flex-shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center disabled:opacity-40 transition"
-              >
-                <SendIcon className="w-4 h-4" />
-              </button>
-            </div>
+                    {messages.map((msg, index) => (
+                      <motion.div
+                        key={msg.id || index}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div className="flex flex-col gap-1.5 max-w-[85%]">
+                          <div
+                            className={`
+                              relative
+                              px-5 py-3
+                              text-sm
+                              leading-relaxed
+                              shadow-sm
+                              transition-transform duration-200 hover:scale-[1.02]
+                              ${msg.sender === "me"
+                                ? "bg-gradient-to-br from-primary to-secondary text-white rounded-[1.25rem] rounded-br-[0.3rem] shadow-primary/20 shadow-lg"
+                                : "bg-base-200 text-base-content border border-base-300/50 rounded-[1.25rem] rounded-bl-[0.3rem]"
+                              }
+                            `}
+                          >
+                            {msg.text}
+
+                            {/* Glow Effect for user messages */}
+                            {msg.sender === "me" && (
+                              <div className="absolute inset-0 bg-white/10 rounded-[1.25rem] rounded-br-[0.3rem] blur-xl -z-10 opacity-50" />
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-medium text-base-content/30 ${msg.sender === "me" ? "text-right mr-1" : "ml-1"}`}>
+                            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Section - Glassmorphism */}
+              <div className="sticky bottom-0 bg-base-100/80 backdrop-blur-xl border-t border-base-300 px-5 py-4 sm:pb-6">
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleMessageKeyDown}
+                    placeholder="Message..."
+                    className="
+                      w-full
+                      bg-base-200
+                      text-base-content
+                      placeholder:text-base-content/30
+                      border border-base-300
+                      rounded-[1.25rem]
+                      pl-5 pr-14 py-3.5
+                      text-sm
+                      outline-none
+                      focus:border-primary/50
+                      focus:ring-4 focus:ring-primary/5
+                      transition-all duration-300
+                    "
+                  />
+
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    className="
+                      absolute right-2 top-2 bottom-2
+                      px-4
+                      bg-gradient-to-br from-primary to-secondary
+                      text-white
+                      rounded-xl
+                      flex items-center justify-center
+                      shadow-md shadow-primary/20
+                      hover:scale-105 active:scale-95
+                      disabled:opacity-40 disabled:grayscale disabled:scale-100
+                      transition-all duration-300
+                      z-10
+                    "
+                  >
+                    <SendIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };
