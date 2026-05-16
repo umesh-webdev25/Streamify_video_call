@@ -17,6 +17,7 @@ import MeetingSchedulePage from "./pages/MeetingSchedulePage.jsx";
 import History from "./pages/History.jsx";
 import Group from "./pages/Group.jsx";
 import GroupContacts from "./pages/GroupContacts.jsx";
+import VerifyOTPPage from "./pages/VerifyOTPPage.jsx";
 import { Toaster } from "react-hot-toast";
 
 import PageLoader from "./components/PageLoader.jsx";
@@ -53,6 +54,7 @@ const App = () => {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/verify-otp" element={<VerifyOTPPage />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
         </Route>
 

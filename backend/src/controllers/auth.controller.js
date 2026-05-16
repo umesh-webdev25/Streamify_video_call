@@ -34,17 +34,7 @@ export const signup = asyncHandler(async (req, res) => {
     profilePic: profilePicBase64 
   });
   
-  const reqInfo = {
-    ip: req.ip,
-    device: req.headers["user-agent"],
-  };
-
-  const { accessToken, refreshToken } = await authService.createSession(user._id, reqInfo);
-
-  res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
-  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
-  
-  return ApiResponse.success(res, user, "User registered successfully", 201);
+  return ApiResponse.success(res, user, "User registered successfully. Please verify your email.", 201);
 });
 
 /**
@@ -105,13 +95,29 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Verify email
- * @route   GET /api/auth/verify-email/:token
+ * @desc    Verify OTP
+ * @route   POST /api/auth/verify-otp
  */
-export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.params;
-  await authService.verifyEmail(token);
-  return ApiResponse.success(res, null, "Email verified successfully");
+export const verifyOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    throw new AppError("Email and OTP are required", 400);
+  }
+  const user = await authService.verifyOTP(email, otp);
+  return ApiResponse.success(res, user, "Email verified successfully");
+});
+
+/**
+ * @desc    Resend OTP
+ * @route   POST /api/auth/resend-otp
+ */
+export const resendOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new AppError("Email is required", 400);
+  }
+  await authService.resendOTP(email);
+  return ApiResponse.success(res, null, "OTP resent successfully");
 });
 
 /**

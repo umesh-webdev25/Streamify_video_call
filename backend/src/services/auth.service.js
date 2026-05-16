@@ -4,7 +4,8 @@ import userRepository from "../repositories/user.repository.js";
 import Session from "../models/Session.js";
 import AppError from "../utils/AppError.js";
 import { upsertStreamUser } from "../lib/stream.js";
-import { generateVerificationToken } from "../lib/email.js";
+import bcrypt from "bcryptjs";
+import { sendOTPEmail } from "./email.service.js";
 import queueService from "./queue.service.js";
 import cloudinary from "../lib/cloudinary.js";
 
@@ -33,22 +34,27 @@ class AuthService {
       profilePicUrl = `https://avatar.iran.liara.run/public/${idx}.png`;
     }
 
-    const verificationToken = generateVerificationToken();
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     const newUser = await userRepository.create({
       email,
       fullName,
       password,
       profilePic: profilePicUrl,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpires: verificationExpires,
+      emailOTP: hashedOTP,
+      otpExpires,
+      isVerified: false,
     });
 
-    // QUEUE: Send verification email
-    await queueService.addJob("email", "send-verification", {
-      userId: newUser._id,
-    });
+    // Send OTP email
+    try {
+      await sendOTPEmail(email, otp, fullName);
+    } catch (error) {
+      console.error("Failed to send initial OTP email:", error);
+    }
 
     return newUser;
   }
@@ -58,9 +64,67 @@ class AuthService {
     if (!user || !(await user.matchPassword(password))) {
       throw new AppError("Invalid email or password", 401);
     }
+
+    if (!user.isVerified) {
+      throw new AppError("Your email is not verified. Please verify your email to login.", 403);
+    }
     
     const tokens = await this.createSession(user._id, reqInfo);
     return { user, ...tokens };
+  }
+
+  async verifyOTP(email, otp) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.isVerified) {
+      throw new AppError("Email is already verified", 400);
+    }
+
+    if (!user.emailOTP || !user.otpExpires || user.otpExpires < new Date()) {
+      throw new AppError("OTP has expired. Please request a new one.", 400);
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.emailOTP);
+    if (!isMatch) {
+      throw new AppError("Invalid OTP code", 400);
+    }
+
+    user.isVerified = true;
+    user.emailOTP = null;
+    user.otpExpires = null;
+    await user.save();
+
+    // Sync with Stream after verification
+    await queueService.addJob("stream-sync", "upsert-user", {
+      userId: user._id,
+      name: user.fullName,
+      image: user.profilePic,
+    });
+
+    return user;
+  }
+
+  async resendOTP(email) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.isVerified) {
+      throw new AppError("Email is already verified", 400);
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+    user.emailOTP = hashedOTP;
+    user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendOTPEmail(email, otp, user.fullName);
+    return true;
   }
 
   async createSession(userId, { ip = "unknown", device = "unknown" }) {
@@ -106,27 +170,6 @@ class AuthService {
     await Session.findOneAndUpdate({ refreshToken }, { isValid: false });
   }
 
-  async verifyEmail(token) {
-    const user = await userRepository.findByVerificationToken(token);
-    if (!user) {
-      throw new AppError("Invalid or expired verification token", 400);
-    }
-
-    user.isEmailVerified = true;
-    user.emailVerificationToken = null;
-    user.emailVerificationExpires = null;
-    await user.save();
-
-    // QUEUE: Sync with Stream
-    await queueService.addJob("stream-sync", "upsert-user", {
-      userId: user._id,
-      name: user.fullName,
-      image: user.profilePic,
-    });
-
-    return user;
-  }
-
   async updateOnboarding(userId, onboardingData) {
     let { profilePic, ...rest } = onboardingData;
 
@@ -152,7 +195,7 @@ class AuthService {
     if (!user) throw new AppError("User not found", 404);
 
     // Sync with Stream if verified
-    if (user.isEmailVerified) {
+    if (user.isVerified) {
       await queueService.addJob("stream-sync", "upsert-user", {
         userId: user._id,
         name: user.fullName,

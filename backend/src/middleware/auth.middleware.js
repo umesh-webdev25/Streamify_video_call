@@ -26,6 +26,10 @@ export const protectRoute = asyncHandler(async (req, res, next) => {
       throw new AppError("Unauthorized - User not found", 401);
     }
 
+    if (!user.isVerified) {
+      throw new AppError("Email not verified. Please verify your email.", 403);
+    }
+
     // Pass user to request object
     req.user = user;
     next();

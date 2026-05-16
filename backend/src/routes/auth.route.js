@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, onboard, signup, verifyEmail, refresh } from "../controllers/auth.controller.js";
+import { login, logout, onboard, signup, verifyOTP, resendOTP, refresh } from "../controllers/auth.controller.js";
 import ApiResponse from "../utils/apiResponse.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import upload from "../middleware/upload.middleware.js";
@@ -13,7 +13,8 @@ router.post("/signup", validate(signupSchema), signup);
 router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 router.post("/refresh", refresh);
-router.get("/verify-email/:token", verifyEmail);
+router.post("/verify-otp", verifyOTP);
+router.post("/resend-otp", resendOTP);
 
 router.post("/onboarding", protectRoute, upload.single("profilePic"), onboard);
 

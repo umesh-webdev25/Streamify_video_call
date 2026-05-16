@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { ShipWheelIcon, UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useSignUp from "../hooks/useSignUp";
 import { Helmet } from "react-helmet-async";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const [signupData, setSignupData] = useState({
     fullName: "",
     email: "",
@@ -12,7 +13,9 @@ const SignUpPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isPending, error, signupMutation } = useSignUp();
+  const { isPending, error, signupMutation } = useSignUp(() => {
+    navigate("/verify-otp", { state: { email: signupData.email } });
+  });
 
   const handleSignup = (e) => {
     e.preventDefault();

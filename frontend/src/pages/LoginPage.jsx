@@ -37,8 +37,17 @@ const LoginPage = () => {
 
           {/* ERROR */}
           {error && (
-            <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none">
+            <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none flex flex-col items-start gap-2">
               <span>{error?.response?.data?.message || error?.message || "Authentication failed"}</span>
+              {error?.response?.data?.message?.includes("not verified") && (
+                <Link 
+                  to="/verify-otp" 
+                  state={{ email: loginData.email }}
+                  className="text-xs font-bold underline hover:no-underline"
+                >
+                  Verify your email now →
+                </Link>
+              )}
             </div>
           )}
 

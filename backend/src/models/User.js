@@ -41,15 +41,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isEmailVerified: {
+    isVerified: {
       type: Boolean,
       default: false,
     },
-    emailVerificationToken: {
+    emailOTP: {
       type: String,
       default: null,
     },
-    emailVerificationExpires: {
+    otpExpires: {
       type: Date,
       default: null,
     },

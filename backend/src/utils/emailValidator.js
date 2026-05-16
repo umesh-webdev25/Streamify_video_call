@@ -2,6 +2,10 @@ import validator from "validator";
 import dns from "dns";
 import { promisify } from "util";
 import net from "net";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const disposableDomains = require("disposable-email-domains");
 
 const resolveMx = promisify(dns.resolveMx);
 
@@ -140,18 +144,11 @@ async function verifySMTP(email, mxHost, timeout = 10000) {
   });
 }
 
-// Disposable email domains list (common temporary email services)
-const DISPOSABLE_DOMAINS = [
-  "tempmail.com", "10minutemail.com", "guerrillamail.com", 
-  "mailinator.com", "throwaway.email", "temp-mail.org",
-  "fakeinbox.com", "trashmail.com", "yopmail.com",
-  "maildrop.cc", "getnada.com", "emailondeck.com"
-];
 
 /**
  * Check if email is from a disposable/temporary email service
  */
 export function isDisposableEmail(email) {
   const domain = email.split("@")[1]?.toLowerCase();
-  return DISPOSABLE_DOMAINS.includes(domain);
+  return disposableDomains.includes(domain);
 }
