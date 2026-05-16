@@ -1,5 +1,9 @@
 import { useSearchParams } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import useAuthUser from "../hooks/useAuthUser";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { completeOnboarding } from "../lib/api";
 import {
   CameraIcon,
   SparklesIcon,
@@ -12,15 +16,87 @@ import SecurityPage from "./SecurityPage.jsx";
 
 const SettingsPage = () => {
   const { authUser } = useAuthUser();
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
+
+  const [formState, setFormState] = useState({
+    fullName: "",
+    bio: "",
+    nativeLanguage: "",
+    learningLanguage: "",
+    location: "",
+    profilePic: "",
+  });
+
+  const [profilePicFile, setProfilePicFile] = useState(null);
+
+  useEffect(() => {
+    if (authUser) {
+      setFormState({
+        fullName: authUser.fullName || "",
+        bio: authUser.bio || "",
+        nativeLanguage: authUser.nativeLanguage || "",
+        learningLanguage: authUser.learningLanguage || "",
+        location: authUser.location || "",
+        profilePic: authUser.profilePic || "",
+      });
+    }
+  }, [authUser]);
+
+  const { mutate: updateProfileMutation, isPending } = useMutation({
+    mutationFn: completeOnboarding,
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    },
+  });
 
   const setActiveTab = (tab) => {
     setSearchParams({ tab });
   };
 
- console.log(authUser.profilePic);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    setProfilePicFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setFormState((prev) => ({ ...prev, profilePic: e.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateProfile = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("fullName", formState.fullName);
+    formData.append("bio", formState.bio);
+    formData.append("nativeLanguage", formState.nativeLanguage);
+    formData.append("learningLanguage", formState.learningLanguage);
+    formData.append("location", formState.location);
+
+    if (profilePicFile) {
+      formData.append("profilePic", profilePicFile);
+    } else {
+      formData.append("profilePic", formState.profilePic);
+    }
+
+    updateProfileMutation(formData);
+  };
+
+  console.log(authUser.profilePic);
 
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto space-y-10">
@@ -58,15 +134,26 @@ const SettingsPage = () => {
                   <div className="relative shrink-0 group">
                     <div className="size-24 rounded-2xl overflow-hidden ring-2 ring-primary/20 shadow-lg bg-base-200">
                       <img
-                        src={authUser?.profilePic}
+                        src={formState.profilePic || "/avatar.png"}
                         alt="Profile"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                       />
                     </div>
 
-                    <button className="absolute -bottom-2 -right-2 p-2 bg-primary text-primary-content rounded-xl shadow-lg border-2 border-base-100 hover:scale-105 hover:bg-primary/90 transition-all">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -bottom-2 -right-2 p-2 bg-primary text-primary-content rounded-xl shadow-lg border-2 border-base-100 hover:scale-105 hover:bg-primary/90 transition-all"
+                    >
                       <CameraIcon className="size-4" />
                     </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
                   </div>
 
                   {/* User Info */}
@@ -103,9 +190,10 @@ const SettingsPage = () => {
 
                     <input
                       type="text"
-                      value={authUser?.fullName}
-                      readOnly
-                      className="input input-bordered w-full h-12 rounded-xl text-sm bg-base-200/40 border-base-300 focus:outline-none"
+                      value={formState.fullName}
+                      onChange={(e) => setFormState({ ...formState, fullName: e.target.value })}
+                      className="input input-bordered w-full h-12 rounded-xl text-sm bg-base-200/40 border-base-300 focus:border-primary transition-all"
+                      placeholder="Enter your full name"
                     />
                   </div>
 
@@ -130,12 +218,10 @@ const SettingsPage = () => {
                     </label>
 
                     <textarea
-                      readOnly
-                      className="textarea textarea-bordered w-full rounded-xl text-sm bg-base-200/40 border-base-300 h-28 resize-none focus:outline-none leading-relaxed"
-                      value={
-                        authUser?.bio ||
-                        "No bio set yet. Connect with others to share your professional goals!"
-                      }
+                      className="textarea textarea-bordered w-full rounded-xl text-sm bg-base-200/40 border-base-300 h-28 resize-none focus:border-primary transition-all leading-relaxed"
+                      placeholder="Tell us about yourself..."
+                      value={formState.bio}
+                      onChange={(e) => setFormState({ ...formState, bio: e.target.value })}
                     />
                   </div>
                 </div>
@@ -151,8 +237,12 @@ const SettingsPage = () => {
                       Cancel
                     </button>
 
-                    <button className="btn btn-primary rounded-xl px-6 shadow-md hover:shadow-lg transition-all flex-1 sm:flex-none">
-                      Update Profile
+                    <button
+                      onClick={handleUpdateProfile}
+                      disabled={isPending}
+                      className="btn btn-primary rounded-xl px-6 shadow-md hover:shadow-lg transition-all flex-1 sm:flex-none"
+                    >
+                      {isPending ? "Updating..." : "Update Profile"}
                     </button>
                   </div>
                 </div>

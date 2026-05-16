@@ -198,9 +198,10 @@ const MeetingSchedulePage = () => {
                       >
                         <div className="size-8 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
                           <img
-                            src={friend.profilePic}
+                            src={friend.profilePic || "/avatar.png"}
                             alt=""
                             className="w-full h-full object-cover"
+                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                           />
                         </div>
                         <div className="flex-1 min-w-0">

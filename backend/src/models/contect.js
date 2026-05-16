@@ -30,7 +30,7 @@ const contactSchema = new mongoose.Schema(
     },
 
     // Contact Image
-    profileImage: {
+    contactImage: {
       type: String,
       default: "",
     },

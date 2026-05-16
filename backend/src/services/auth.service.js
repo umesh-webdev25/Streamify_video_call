@@ -130,9 +130,10 @@ class AuthService {
   async updateOnboarding(userId, onboardingData) {
     let { profilePic, ...rest } = onboardingData;
 
-    if (profilePic && profilePic.startsWith("data:")) {
+    if (profilePic && (profilePic.startsWith("data:") || profilePic.startsWith("/uploads/") || profilePic.startsWith("uploads/"))) {
       try {
-        const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+        const uploadPath = profilePic.startsWith("data:") ? profilePic : `./${profilePic.startsWith("/") ? "" : "/"}${profilePic}`;
+        const uploadResponse = await cloudinary.uploader.upload(uploadPath, {
           folder: "streamify_profiles",
         });
         profilePic = uploadResponse.secure_url;

@@ -32,8 +32,7 @@ const authUser = {
 
 /** Resolve image URL from backend */
 const resolveImageSrc = (img, name) => {
-  if (!img)
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Group")}&background=random`;
+  if (!img) return "/group.png";
   if (/^https?:\/\//i.test(img)) return img;
   const base = (import.meta?.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
   const path = img.startsWith("/") ? img : `/${img}`;
@@ -559,7 +558,7 @@ const Group = () => {
                           alt={group.groupName}
                           className="w-10 h-10 rounded-xl object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(group.groupName || "G")}&background=random`;
+                            e.currentTarget.src = "/group.png";
                           }}
                         />
                         <div>
@@ -799,7 +798,7 @@ const Group = () => {
               <div className="flex flex-col items-center gap-3">
                 <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center bg-gray-50">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/group.png"; }} />
                   ) : (
                     <UploadIcon className="w-8 h-8 text-gray-300" />
                   )}
@@ -893,7 +892,7 @@ const Group = () => {
                 src={resolveImageSrc(selectedGroup.groupImage, selectedGroup.groupName)}
                 alt={selectedGroup.groupName}
                 onError={(e) => {
-                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedGroup.groupName || "G")}&background=random`;
+                  e.currentTarget.src = "/group.png";
                 }}
                 className="w-10 h-10 rounded-xl object-cover"
               />

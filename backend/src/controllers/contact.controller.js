@@ -1,36 +1,25 @@
-// controllers/contact.controller.js
-
 import * as contactService from "../services/contact.service.js";
 
 /**
  * CREATE CONTACT
  */
-export const createContact = async (
-  req,
-  res
-) => {
+export const createContact = async (req, res) => {
   try {
-    const {
+    const { groupId, name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
+    
+    let contactImage = contactImageBody || "";
+    if (req.file) {
+      contactImage = `/uploads/${req.file.filename}`;
+    }
+
+    const contact = await contactService.createContact({
       groupId,
       name,
       email,
       mobileNumber,
       designation,
-    } = req.body;
-
-    const profileImage = req.file
-      ? `/uploads/${req.file.filename}`
-      : "";
-
-    const contact =
-      await contactService.createContact({
-        groupId,
-        name,
-        email,
-        mobileNumber,
-        designation,
-        profileImage,
-      });
+      contactImage,
+    });
 
     return res.status(201).json({
       success: true,
@@ -47,13 +36,9 @@ export const createContact = async (
 /**
  * GET ALL CONTACTS
  */
-export const getAllContacts = async (
-  req,
-  res
-) => {
+export const getAllContacts = async (req, res) => {
   try {
-    const contacts =
-      await contactService.getAllContacts();
+    const contacts = await contactService.getAllContacts();
 
     return res.status(200).json({
       success: true,
@@ -70,15 +55,9 @@ export const getAllContacts = async (
 /**
  * GET CONTACT BY ID
  */
-export const getContactById = async (
-  req,
-  res
-) => {
+export const getContactById = async (req, res) => {
   try {
-    const contact =
-      await contactService.getContactById(
-        req.params.id
-      );
+    const contact = await contactService.getContactById(req.params.id);
 
     if (!contact) {
       return res.status(404).json({
@@ -102,17 +81,9 @@ export const getContactById = async (
 /**
  * UPDATE CONTACT
  */
-export const updateContact = async (
-  req,
-  res
-) => {
+export const updateContact = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      mobileNumber,
-      designation,
-    } = req.body;
+    const { name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
 
     const updateData = {
       name,
@@ -121,16 +92,15 @@ export const updateContact = async (
       designation,
     };
 
-    // update image only if uploaded
-    if (req.file) {
-      updateData.profileImage = `/uploads/${req.file.filename}`;
+    if (contactImageBody) {
+      updateData.contactImage = contactImageBody;
     }
 
-    const contact =
-      await contactService.updateContact(
-        req.params.id,
-        updateData
-      );
+    if (req.file) {
+      updateData.contactImage = `/uploads/${req.file.filename}`;
+    }
+
+    const contact = await contactService.updateContact(req.params.id, updateData);
 
     if (!contact) {
       return res.status(404).json({
@@ -150,18 +120,13 @@ export const updateContact = async (
     });
   }
 };
+
 /**
  * DELETE CONTACT
  */
-export const deleteContact = async (
-  req,
-  res
-) => {
+export const deleteContact = async (req, res) => {
   try {
-    const contact =
-      await contactService.deleteContact(
-        req.params.id
-      );
+    const contact = await contactService.deleteContact(req.params.id);
 
     if (!contact) {
       return res.status(404).json({
@@ -172,8 +137,7 @@ export const deleteContact = async (
 
     return res.status(200).json({
       success: true,
-      message:
-        "Contact deleted successfully",
+      message: "Contact deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({

@@ -20,7 +20,7 @@ const router = express.Router();
  */
 router.post(
   "/",
-  upload.single("profileImage"),
+  upload.single("contactImage"),
   createContact
 );
 
@@ -39,7 +39,7 @@ router.get("/:id", getContactById);
  */
 router.put(
   "/:id",
-  upload.single("profileImage"),
+  upload.single("contactImage"),
   updateContact
 );
 

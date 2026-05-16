@@ -174,9 +174,10 @@ const MeetingLobbyPage = () => {
                   <div className="absolute bottom-3 left-3 glass px-3 py-1.5 rounded-xl flex items-center gap-2">
                     <div className="size-6 rounded-full overflow-hidden ring-1 ring-white/20">
                       <img
-                        src={authUser.profilePic}
+                        src={authUser.profilePic || "/avatar.png"}
                         alt=""
                         className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                       />
                     </div>
                     <span className="text-xs font-bold text-base-content">

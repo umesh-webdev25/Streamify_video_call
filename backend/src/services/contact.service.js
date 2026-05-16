@@ -1,97 +1,102 @@
-// services/contact.service.js
-
 import Contact from "../models/contect.js";
-import Group from "../models/group.js";
+import cloudinary from "../lib/cloudinary.js";
+import fs from "fs";
 
 /**
  * CREATE CONTACT
  */
-export const createContact = async (
-  data
-) => {
-  const contact = await Contact.create(data);
-
-  // Increment group's contactCount
+export const createContact = async (contactData) => {
   try {
-    if (contact.groupId) {
-      await Group.findByIdAndUpdate(contact.groupId, { $inc: { contactCount: 1 } });
-    }
-  } catch (err) {
-    // Log but don't fail the contact creation
-    console.error("Failed to increment group contactCount:", err);
-  }
+    let { contactImage } = contactData;
 
-  return contact;
+    // If image is a local path or base64, upload to cloudinary
+    if (contactImage && (contactImage.startsWith("/uploads") || contactImage.startsWith("data:image"))) {
+      const uploadResponse = await cloudinary.uploader.upload(
+        contactImage.startsWith("/") ? `.${contactImage}` : contactImage,
+        { folder: "contacts" }
+      );
+      contactImage = uploadResponse.secure_url;
+
+      // Clean up local file if it was a local path
+      if (contactData.contactImage.startsWith("/uploads")) {
+        try { fs.unlinkSync(`.${contactData.contactImage}`); } catch (e) {}
+      }
+    }
+
+    const contact = new Contact({
+      ...contactData,
+      contactImage,
+    });
+
+    await contact.save();
+    return contact;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 /**
  * GET ALL CONTACTS
  */
 export const getAllContacts = async () => {
-  return await Contact.find({
-    isDeleted: false,
-  })
-    .populate("groupId", "groupName")
-    .sort({ createdAt: -1 });
+  try {
+    const contacts = await Contact.find().sort({ createdAt: -1 });
+    return contacts;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 /**
  * GET CONTACT BY ID
  */
-export const getContactById = async (
-  id
-) => {
-  return await Contact.findOne({
-    _id: id,
-    isDeleted: false,
-  }).populate("groupId", "groupName");
+export const getContactById = async (id) => {
+  try {
+    const contact = await Contact.findById(id);
+    return contact;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 /**
  * UPDATE CONTACT
  */
-export const updateContact = async (
-  id,
-  data
-) => {
-  return await Contact.findByIdAndUpdate(
-    id,
-    data,
-    {
-      new: true,
-      runValidators: true,
+export const updateContact = async (id, updateData) => {
+  try {
+    let { contactImage } = updateData;
+
+    if (contactImage && (contactImage.startsWith("/uploads") || contactImage.startsWith("data:image"))) {
+      const uploadResponse = await cloudinary.uploader.upload(
+        contactImage.startsWith("/") ? `.${contactImage}` : contactImage,
+        { folder: "contacts" }
+      );
+      contactImage = uploadResponse.secure_url;
+
+      if (updateData.contactImage.startsWith("/uploads")) {
+        try { fs.unlinkSync(`.${updateData.contactImage}`); } catch (e) {}
+      }
     }
-  );
+
+    const contact = await Contact.findByIdAndUpdate(
+      id,
+      { ...updateData, contactImage },
+      { new: true }
+    );
+    return contact;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 /**
  * DELETE CONTACT
  */
-export const deleteContact = async (
-  id
-) => {
-  // Find the contact first to get its groupId
-  const contact = await Contact.findById(id);
-  if (!contact) return null;
-
-  // Decrement group's contactCount
+export const deleteContact = async (id) => {
   try {
-    if (contact.groupId) {
-      await Group.findByIdAndUpdate(contact.groupId, { $inc: { contactCount: -1 } });
-    }
-  } catch (err) {
-    console.error("Failed to decrement group contactCount:", err);
+    const contact = await Contact.findByIdAndDelete(id);
+    return contact;
+  } catch (error) {
+    throw new Error(error.message);
   }
-
-  // Soft-delete the contact
-  return await Contact.findByIdAndUpdate(
-    id,
-    {
-      isDeleted: true,
-      deletedAt: new Date(),
-    },
-    {
-      new: true,
-    }
-  );
 };

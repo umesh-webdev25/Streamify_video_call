@@ -423,9 +423,10 @@ const HomePage = () => {
                             <div className="flex items-start gap-4">
                               <div className="size-14 sm:size-16 rounded-xl overflow-hidden ring-2 ring-gray-100 shrink-0">
                                 <img
-                                  src={user.profilePic}
+                                  src={user.profilePic || "/avatar.png"}
                                   alt={user.fullName}
                                   className="w-full h-full object-cover"
+                                  onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                                 />
                               </div>
                               <div className="min-w-0 flex-1">

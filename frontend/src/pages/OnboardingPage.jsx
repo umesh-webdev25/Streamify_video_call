@@ -155,9 +155,10 @@ const OnboardingPage = () => {
                         src={formState.profilePic}
                         alt="Profile Preview"
                         className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                       />
                     ) : (
-                      <ShipWheelIcon className="size-10 text-base-content/20" />
+                      <img src="/avatar.png" alt="Avatar" className="w-full h-full object-cover opacity-20" />
                     )}
 
                     {/* HOVER OVERLAY */}

@@ -164,9 +164,10 @@ const Sidebar = () => {
           <div className="relative shrink-0">
             <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-lg bg-base-300">
               <img
-                src={authUser?.profilePic}
+                src={authUser?.profilePic || "/avatar.png"}
                 alt={authUser?.fullName || "User Avatar"}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
               />
             </div>
           </div>

@@ -88,9 +88,10 @@ const NotificationsPage = () => {
                       <div className="flex items-center gap-3">
                         <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
                           <img
-                            src={request.sender?.profilePic}
+                            src={request.sender?.profilePic || "/avatar.png"}
                             alt={request.sender?.fullName}
                             className="w-full h-full object-cover"
+                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                           />
                         </div>
                         <div className="min-w-0">
@@ -141,9 +142,10 @@ const NotificationsPage = () => {
                     <div className="flex items-center gap-3">
                       <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
                         <img
-                          src={notification.recipient?.profilePic}
+                          src={notification.recipient?.profilePic || "/avatar.png"}
                           alt={notification.recipient?.fullName}
                           className="w-full h-full object-cover"
+                          onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">

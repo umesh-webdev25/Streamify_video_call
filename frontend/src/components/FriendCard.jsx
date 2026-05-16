@@ -61,7 +61,7 @@ const FriendCard = memo(({ friend }) => {
   } = friend;
 
   const handleAvatarError = (e) => {
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3b82f6&color=fff&size=80`;
+    e.target.src = "/avatar.png";
   };
 
   const nativeFlag = getLanguageFlag(nativeLanguage);
@@ -74,7 +74,7 @@ const FriendCard = memo(({ friend }) => {
           <div className="relative shrink-0">
             <div className="size-16 sm:size-20 rounded-xl overflow-hidden ring-2 ring-gray-100">
               <img
-                src={profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3b82f6&color=fff&size=80`}
+                src={profilePic || "/avatar.png"}
                 alt={fullName}
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -97,9 +97,8 @@ const FriendCard = memo(({ friend }) => {
                   </div>
                 )}
               </div>
-              <span className={`shrink-0 text-[10px] font-medium px-2 py-1 rounded-md ${
-                isOnline ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400"
-              }`}>
+              <span className={`shrink-0 text-[10px] font-medium px-2 py-1 rounded-md ${isOnline ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400"
+                }`}>
                 {isOnline ? "Online" : "Offline"}
               </span>
             </div>

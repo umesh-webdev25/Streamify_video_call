@@ -138,10 +138,10 @@ const ChatPage = () => {
                 {/* HEADER */}
                 <div className="sticky top-0 z-30 px-4 sm:px-6 py-3 sm:py-4 border-b border-base-300/50 bg-base-100/80 backdrop-blur-2xl">
                   <div className="flex items-center justify-between">
-                    
+
                     {/* LEFT */}
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      
+
                       {/* MOBILE BACK */}
                       <button
                         onClick={() => navigate(-1)}
@@ -155,9 +155,10 @@ const ChatPage = () => {
                         <div className="absolute inset-0 rounded-2xl bg-primary/15 blur-xl opacity-70 group-hover:opacity-100 transition duration-500" />
                         <div className="relative size-11 sm:size-14 rounded-2xl overflow-hidden ring-2 ring-base-300/60 shadow-lg">
                           <img
-                            src={targetUser?.image}
+                            src={targetUser?.image || "/avatar.png"}
                             alt={targetUser?.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                           />
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 size-3.5 sm:size-4 rounded-full bg-success border-[3px] border-base-100 shadow-sm" />
@@ -193,11 +194,10 @@ const ChatPage = () => {
 
                       <button
                         onClick={() => setShowInfo(!showInfo)}
-                        className={`hidden sm:flex items-center justify-center size-9 sm:size-10 rounded-xl border transition-all hover:scale-105 ${
-                          showInfo
+                        className={`hidden sm:flex items-center justify-center size-9 sm:size-10 rounded-xl border transition-all hover:scale-105 ${showInfo
                             ? "bg-primary text-primary-content border-primary shadow-md shadow-primary/20"
                             : "bg-base-200/80 hover:bg-base-300/80 border-base-300/50 text-base-content/50 hover:text-base-content"
-                        }`}
+                          }`}
                       >
                         <InfoIcon className="size-4" />
                       </button>
@@ -247,7 +247,7 @@ const ChatPage = () => {
                     {/* AVATAR */}
                     <div className="relative">
                       <div className="size-28 sm:size-32 rounded-3xl overflow-hidden ring-4 ring-primary/10 ring-offset-4 ring-offset-base-100 shadow-2xl">
-                        <img src={targetUser?.image} alt="" className="w-full h-full object-cover" />
+                        <img src={targetUser?.image || "/avatar.png"} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/avatar.png"; }} />
                       </div>
                       <div className="absolute -bottom-2 -right-2 bg-success px-3 py-1 rounded-full border-4 border-base-100 shadow-lg">
                         <span className="text-[10px] font-black text-white uppercase tracking-widest">Online</span>
@@ -287,7 +287,7 @@ const ChatPage = () => {
                           "Passionate about learning languages and connecting with people worldwide."
                         </p>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-2 pt-2">
                         {['English', 'Spanish', 'French'].map(lang => (
                           <span key={lang} className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg border border-primary/20">

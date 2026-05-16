@@ -120,9 +120,10 @@ const SearchModal = ({ isOpen, onClose }) => {
                         <div className="flex items-center gap-3">
                           <div className="size-8 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
                             <img
-                              src={friend.profilePic}
+                              src={friend.profilePic || "/avatar.png"}
                               alt={friend.fullName}
                               className="w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
                             />
                           </div>
                           <div>
