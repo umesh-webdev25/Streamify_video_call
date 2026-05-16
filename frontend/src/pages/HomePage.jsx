@@ -126,7 +126,7 @@ const HomePage = () => {
   }, [outgoingFriendReqs]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-base-100">
       <Helmet>
         <title>Dashboard | Streamify</title>
       </Helmet>
@@ -136,23 +136,23 @@ const HomePage = () => {
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8 sm:space-y-10">
 
             {/* HERO */}
-            <motion.section variants={itemVariants} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 lg:p-10 shadow-sm">
+            <motion.section variants={itemVariants} className="rounded-2xl border border-base-300 bg-base-100 p-6 sm:p-8 lg:p-10 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-base-content">
                     Welcome back,{" "}
-                    <span className="text-blue-600">
+                    <span className="text-primary">
                       {authUser?.fullName?.split(" ")[0] || "User"}
                     </span>
                   </h1>
-                  <p className="text-sm sm:text-base text-gray-500 mt-1">
+                  <p className="text-sm sm:text-base text-base-content/60 mt-1">
                     Start or join meetings instantly
                   </p>
                 </div>
 
                 <button
                   onClick={() => navigate("/meeting/schedule")}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                 >
                   <CalendarIcon className="size-4" />
                   Schedule
@@ -163,17 +163,17 @@ const HomePage = () => {
                 {statsCards.map((stat) => (
                   <div
                     key={stat.label}
-                    className="border border-gray-200 rounded-2xl p-4 sm:p-5"
+                    className="border border-base-300 rounded-2xl p-4 sm:p-5"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-blue-50">
-                        <stat.icon className="size-4 sm:size-5 text-blue-600" />
+                      <div className="p-2.5 rounded-xl bg-primary/10">
+                        <stat.icon className="size-4 sm:size-5 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        <p className="text-xs sm:text-sm text-base-content/50 truncate">
                           {stat.label}
                         </p>
-                        <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                        <p className="text-lg sm:text-2xl font-bold text-base-content">
                           {stat.value}
                         </p>
                       </div>
@@ -185,24 +185,24 @@ const HomePage = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => navigate("/meeting/lobby")}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-sm"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-content font-semibold rounded-xl hover:bg-primary/90 transition-all duration-200 shadow-sm"
                 >
                   <VideoIcon className="size-4 sm:size-5" />
                   Start Meeting
                 </button>
                 <button
                   onClick={() => navigate("/meeting/lobby")}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-gray-700 font-semibold bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                 >
                   <LogInIcon className="size-4 sm:size-5" />
                   Join Meeting
                 </button>
                 <button
                   onClick={copyInviteLink}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-gray-700 font-semibold bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                 >
                   {copied ? (
-                    <CheckCircleIcon className="size-4 sm:size-5 text-green-500" />
+                    <CheckCircleIcon className="size-4 sm:size-5 text-success" />
                   ) : (
                     <CopyIcon className="size-4 sm:size-5" />
                   )}
@@ -214,25 +214,25 @@ const HomePage = () => {
             {/* QUICK ACTIONS */}
             <motion.section variants={itemVariants}>
               <div className="flex items-center justify-between mb-4 sm:mb-5">
-                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                   Quick Actions
                 </h2>
-                <span className="text-xs text-gray-400">4 available</span>
+                <span className="text-xs text-base-content/30">4 available</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 {quickActions.map((action) => (
                   <button
                     key={action.label}
                     onClick={() => navigate(action.path)}
-                    className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 text-left hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                    className="rounded-2xl border border-base-300 bg-base-100 p-5 sm:p-6 text-left hover:border-base-400 hover:shadow-sm transition-all duration-200"
                   >
-                    <div className="size-10 sm:size-12 rounded-xl bg-blue-50 flex items-center justify-center mb-3 sm:mb-4">
-                      <action.icon className="size-5 sm:size-6 text-blue-600" />
+                    <div className="size-10 sm:size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                      <action.icon className="size-5 sm:size-6 text-primary" />
                     </div>
-                    <p className="text-sm sm:text-base font-semibold text-gray-900">
+                    <p className="text-sm sm:text-base font-semibold text-base-content">
                       {action.label}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-base-content/50 mt-1">
                       {action.desc}
                     </p>
                   </button>
@@ -248,12 +248,12 @@ const HomePage = () => {
                 <motion.section variants={itemVariants}>
                   <div className="flex items-center justify-between mb-4 sm:mb-5">
                     <div className="flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-green-500" />
-                      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <span className="size-2 rounded-full bg-success" />
+                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                         Live Now
                       </h2>
                     </div>
-                    <Link to="/meeting/lobby" className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1">
+                    <Link to="/meeting/lobby" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                       View all <ArrowRightIcon className="size-3" />
                     </Link>
                   </div>
@@ -263,52 +263,52 @@ const HomePage = () => {
                       activeMeetings.map((meeting) => (
                         <div
                           key={meeting.id}
-                          className="border border-gray-200 rounded-2xl p-5 sm:p-6 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                          className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="size-2 rounded-full bg-green-500" />
-                                <span className="text-[10px] font-semibold text-green-600 uppercase tracking-wider">Live</span>
+                                <span className="size-2 rounded-full bg-success" />
+                                <span className="text-[10px] font-semibold text-success uppercase tracking-wider">Live</span>
                               </div>
-                              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mt-2 truncate">
+                              <h3 className="text-base sm:text-lg font-semibold text-base-content mt-2 truncate">
                                 {meeting.name}
                               </h3>
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-base-content/50 mt-1">
                                 Hosted by {meeting.host}
                               </p>
                             </div>
                             <Link
                               to="/meeting/lobby"
-                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-all duration-200 shrink-0"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-content text-sm font-medium rounded-xl hover:bg-primary/90 transition-all duration-200 shrink-0"
                             >
                               <LogInIcon className="size-3.5" />
                               Join
                             </Link>
                           </div>
 
-                          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-base-200">
                             <div className="flex -space-x-2">
                               {[1, 2, 3].slice(0, Math.min(meeting.participants, 3)).map((i) => (
-                                <div key={i} className="size-7 rounded-full bg-blue-100 ring-2 ring-white flex items-center justify-center">
-                                  <span className="text-[9px] font-bold text-blue-600">
+                                <div key={i} className="size-7 rounded-full bg-primary/20 ring-2 ring-base-100 flex items-center justify-center">
+                                  <span className="text-[9px] font-bold text-primary">
                                     {String.fromCharCode(64 + i)}
                                   </span>
                                 </div>
                               ))}
                             </div>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-base-content/50">
                               {meeting.participants} participant{meeting.participants !== 1 ? "s" : ""}
                             </span>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-full border border-dashed border-gray-200 rounded-2xl p-10 sm:p-12 text-center">
-                        <div className="size-12 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                          <VideoIcon className="size-6 text-gray-300" />
+                      <div className="col-span-full border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
+                        <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
+                          <VideoIcon className="size-6 text-base-content/20" />
                         </div>
-                        <p className="text-sm font-medium text-gray-500">No active meetings</p>
+                        <p className="text-sm font-medium text-base-content/50">No active meetings</p>
                       </div>
                     )}
                   </div>
@@ -318,14 +318,14 @@ const HomePage = () => {
                 <motion.section variants={itemVariants}>
                   <div className="flex items-center justify-between mb-4 sm:mb-5">
                     <div>
-                      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                         Connections
                       </h2>
-                      <p className="text-xs text-gray-400 mt-0.5">Your language exchange partners</p>
+                      <p className="text-xs text-base-content/40 mt-0.5">Your language exchange partners</p>
                     </div>
                     <Link
                       to="/friends"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                     >
                       <UsersIcon className="size-3.5" />
                       View All
@@ -335,12 +335,12 @@ const HomePage = () => {
                   {loadingFriends ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {[1, 2].map((i) => (
-                        <div key={i} className="bg-white rounded-2xl p-5 space-y-4 border border-gray-200">
+                        <div key={i} className="bg-base-100 rounded-2xl p-5 space-y-4 border border-base-300">
                           <div className="flex items-center gap-4">
-                            <Skeleton className="size-16 rounded-xl" />
+                            <Skeleton className="size-16 rounded-xl bg-base-300" />
                             <div className="space-y-2 flex-1">
-                              <Skeleton className="h-5 w-3/4 rounded" />
-                              <Skeleton className="h-3 w-1/2 rounded" />
+                              <Skeleton className="h-5 w-3/4 rounded bg-base-300" />
+                              <Skeleton className="h-3 w-1/2 rounded bg-base-300" />
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -366,7 +366,7 @@ const HomePage = () => {
 
                   {friends.length > 4 && (
                     <div className="mt-4 text-center">
-                      <Link to="/friends" className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-blue-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                      <Link to="/friends" className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-primary bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200">
                         <UsersIcon className="size-3.5" />
                         View all {friends.length} connections
                       </Link>
@@ -378,10 +378,10 @@ const HomePage = () => {
                 <motion.section variants={itemVariants}>
                   <div className="flex items-center justify-between mb-4 sm:mb-5">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                         Suggested Partners
                       </h2>
-                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
                         <SparklesIcon className="size-3" />
                         AI Matched
                       </span>
@@ -405,11 +405,11 @@ const HomePage = () => {
                       ))}
                     </div>
                   ) : recommendedUsers.length === 0 ? (
-                    <div className="border border-dashed border-gray-200 rounded-2xl p-10 sm:p-12 text-center">
-                      <div className="size-12 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                        <SparklesIcon className="size-6 text-gray-300" />
+                    <div className="border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
+                      <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
+                        <SparklesIcon className="size-6 text-base-content/20" />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">No suggestions right now</p>
+                      <p className="text-sm font-medium text-base-content/50">No suggestions right now</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -418,10 +418,10 @@ const HomePage = () => {
                         return (
                           <div
                             key={user._id}
-                            className="border border-gray-200 rounded-2xl p-5 sm:p-6 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                            className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
                           >
                             <div className="flex items-start gap-4">
-                              <div className="size-14 sm:size-16 rounded-xl overflow-hidden ring-2 ring-gray-100 shrink-0">
+                              <div className="size-14 sm:size-16 rounded-xl overflow-hidden ring-2 ring-base-200 shrink-0">
                                 <img
                                   src={user.profilePic || "/avatar.png"}
                                   alt={user.fullName}
@@ -458,7 +458,7 @@ const HomePage = () => {
                             </div>
 
                             {user.bio && (
-                              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed line-clamp-2 mt-4">
+                              <p className="text-xs sm:text-sm text-base-content/50 leading-relaxed line-clamp-2 mt-4">
                                 {user.bio}
                               </p>
                             )}
@@ -467,8 +467,8 @@ const HomePage = () => {
                               className={cn(
                                 "mt-4 w-full py-2 text-sm font-medium rounded-xl transition-all duration-200",
                                 hasRequestBeenSent
-                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                  : "bg-blue-600 text-white hover:bg-blue-700"
+                                  ? "bg-base-200 text-base-content/30 cursor-not-allowed"
+                                  : "bg-primary text-primary-content hover:bg-primary/90"
                               )}
                               onClick={() => sendRequestMutation(user._id)}
                               disabled={hasRequestBeenSent || isPending}
@@ -496,14 +496,14 @@ const HomePage = () => {
                 <motion.section variants={itemVariants}>
                   <div className="flex items-center justify-between mb-4 sm:mb-5">
                     <div>
-                      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                         Upcoming Meetings
                       </h2>
-                      <p className="text-xs text-gray-400 mt-0.5">Your scheduled calls</p>
+                      <p className="text-xs text-base-content/40 mt-0.5">Your scheduled calls</p>
                     </div>
                     <button
                       onClick={() => navigate("/meeting/schedule")}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                     >
                       <CalendarIcon className="size-3.5" />
                       Schedule
@@ -515,13 +515,13 @@ const HomePage = () => {
                       {upcomingMeetings.map((meeting) => (
                         <div
                           key={meeting.id}
-                          className="border border-gray-200 rounded-2xl p-5 sm:p-6 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                          className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
                         >
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-base-content/50 mb-3">
                             <ClockIcon className="size-3.5" />
                             {meeting.time}
                           </div>
-                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3">
+                          <h3 className="text-sm sm:text-base font-semibold text-base-content mb-3">
                             {meeting.title}
                           </h3>
                           <div className="flex items-center justify-between">
@@ -530,21 +530,21 @@ const HomePage = () => {
                                 {meeting.participants.map((name, i) => (
                                   <div
                                     key={i}
-                                    className="size-6 rounded-full bg-blue-100 ring-2 ring-white flex items-center justify-center"
+                                    className="size-6 rounded-full bg-primary/10 ring-2 ring-base-100 flex items-center justify-center"
                                   >
-                                    <span className="text-[8px] font-bold text-blue-600">
+                                    <span className="text-[8px] font-bold text-primary">
                                       {name[0]}
                                     </span>
                                   </div>
                                 ))}
                               </div>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-base-content/50">
                                 +{meeting.total - meeting.participants.length} more
                               </span>
                             </div>
                             <button
                               onClick={() => navigate("/meeting/lobby")}
-                              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                              className="px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                             >
                               Join
                             </button>
@@ -553,11 +553,11 @@ const HomePage = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="border border-dashed border-gray-200 rounded-2xl p-10 sm:p-12 text-center">
-                      <div className="size-12 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                        <CalendarIcon className="size-6 text-gray-300" />
+                    <div className="border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
+                      <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
+                        <CalendarIcon className="size-6 text-base-content/20" />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">No upcoming meetings</p>
+                      <p className="text-sm font-medium text-base-content/50">No upcoming meetings</p>
                     </div>
                   )}
                 </motion.section>
@@ -568,7 +568,7 @@ const HomePage = () => {
               <div className="xl:col-span-1 space-y-6">
                 <button
                   onClick={() => setShowActivity(!showActivity)}
-                  className="xl:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                  className="xl:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
                 >
                   <ActivityIcon className="size-4" />
                   {showActivity ? "Hide Activity" : "Show Activity"}
@@ -578,10 +578,10 @@ const HomePage = () => {
                   <div className="space-y-6">
 
                     {/* ACTIVITY FEED */}
-                    <section className="border border-gray-200 rounded-2xl p-5 sm:p-6">
+                    <section className="border border-base-300 rounded-2xl p-5 sm:p-6">
                       <div className="flex items-center gap-2 mb-5">
-                        <span className="size-2 rounded-full bg-blue-600" />
-                        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <span className="size-2 rounded-full bg-primary" />
+                        <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
                           Recent Activity
                         </h2>
                       </div>
@@ -599,36 +599,36 @@ const HomePage = () => {
                           return (
                             <div
                               key={idx}
-                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-base-200 transition-all duration-200"
                             >
-                              <div className="size-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                                <Icon className="size-4 text-gray-500" />
+                              <div className="size-8 rounded-xl bg-base-300 flex items-center justify-center shrink-0">
+                                <Icon className="size-4 text-base-content/50" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs text-gray-700 leading-relaxed">
-                                  <span className="font-semibold text-gray-900">{activity.user}</span>{" "}
+                                <p className="text-xs text-base-content/80 leading-relaxed">
+                                  <span className="font-semibold text-base-content">{activity.user}</span>{" "}
                                   {activity.action}
                                 </p>
-                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                <p className="text-[10px] text-base-content/30 mt-0.5">
                                   {activity.time}
                                 </p>
                               </div>
                               {activity.type === "message" && (
-                                <span className="size-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                                <span className="size-2 rounded-full bg-primary shrink-0 mt-1.5" />
                               )}
                             </div>
                           );
                         })}
                       </div>
 
-                      <button className="w-full mt-3 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors text-center pt-3 border-t border-gray-100">
+                      <button className="w-full mt-3 text-xs font-medium text-primary hover:text-primary/80 transition-colors text-center pt-3 border-t border-base-200">
                         View all activity
                       </button>
                     </section>
 
                     {/* WEEKLY STATS */}
-                    <section className="border border-gray-200 rounded-2xl p-5 sm:p-6">
-                      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                    <section className="border border-base-300 rounded-2xl p-5 sm:p-6">
+                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-4">
                         This Week
                       </h2>
                       <div className="space-y-3">
@@ -637,12 +637,12 @@ const HomePage = () => {
                           { label: "Messages sent", value: "48", change: "+12" },
                           { label: "New connections", value: "5", change: "+2" },
                         ].map((stat, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-base-200 border border-base-300">
                             <div>
-                              <p className="text-xs text-gray-500">{stat.label}</p>
-                              <p className="text-lg font-bold text-gray-900">{stat.value}</p>
+                              <p className="text-xs text-base-content/50">{stat.label}</p>
+                              <p className="text-lg font-bold text-base-content">{stat.value}</p>
                             </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                            <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-lg">
                               {stat.change}
                             </span>
                           </div>

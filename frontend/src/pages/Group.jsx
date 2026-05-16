@@ -287,15 +287,15 @@ const Group = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
+    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
 
       {/* ── PAGE HEADER ── */}
       <div
         className="
     flex items-center justify-between
     mb-5
-    bg-white
-    border border-gray-200
+    bg-base-100
+    border border-base-300
     rounded-2xl
     px-6 py-5
     shadow-sm
@@ -303,11 +303,11 @@ const Group = () => {
       >
         {/* Left Content */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-base-content">
             Groups
           </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-base-content/50 mt-1">
             Manage your groups and contacts easily
           </p>
         </div>
@@ -318,9 +318,9 @@ const Group = () => {
       w-10 h-10
       rounded-xl
       flex items-center justify-center
-      text-gray-400
-      hover:text-gray-700
-      hover:bg-gray-100
+      text-base-content/40
+      hover:text-base-content
+      hover:bg-base-200
       transition-all
     "
         >
@@ -334,8 +334,8 @@ const Group = () => {
         {/* Total Groups */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -345,11 +345,11 @@ const Group = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Total Groups
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {groups.length}
             </h2>
           </div>
@@ -358,20 +358,20 @@ const Group = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-blue-50
+        bg-primary/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <UsersIcon className="w-7 h-7 text-blue-600" />
+            <UsersIcon className="w-7 h-7 text-primary" />
           </div>
         </div>
 
         {/* Total Contacts */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -381,11 +381,11 @@ const Group = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Total Contacts
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {contacts.length}
             </h2>
           </div>
@@ -394,20 +394,20 @@ const Group = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-green-50
+        bg-success/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <ContactIcon className="w-7 h-7 text-green-600" />
+            <ContactIcon className="w-7 h-7 text-success" />
           </div>
         </div>
 
         {/* Active Groups */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -417,11 +417,11 @@ const Group = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Active Groups
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {groups.filter((g) => g.members?.length > 0).length}
             </h2>
           </div>
@@ -430,20 +430,20 @@ const Group = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-purple-50
+        bg-secondary/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <ActivityIcon className="w-7 h-7 text-purple-600" />
+            <ActivityIcon className="w-7 h-7 text-secondary" />
           </div>
         </div>
 
         {/* Inactive Groups */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -453,11 +453,11 @@ const Group = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Inactive Groups
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {groups.filter((g) => g.status === "inactive").length}
             </h2>
           </div>
@@ -466,30 +466,30 @@ const Group = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-orange-50
+        bg-warning/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <FolderIcon className="w-7 h-7 text-orange-500" />
+            <FolderIcon className="w-7 h-7 text-warning" />
           </div>
         </div>
       </div>
 
       {/* ── TABLE CARD ── */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-gray-100">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-base-200">
           {/* Search */}
-          <div className="flex items-center gap-2 flex-1 min-w-[220px] bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
-            <SearchIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-center gap-2 flex-1 min-w-[220px] bg-base-200 border border-base-300 rounded-xl px-3 h-10">
+            <SearchIcon className="w-4 h-4 text-base-content/40 flex-shrink-0" />
             <input
               type="text"
               placeholder="Search Name/Bio/Description"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+              className="w-full bg-transparent outline-none text-sm text-base-content placeholder:text-base-content/40"
             />
           </div>
 
@@ -497,7 +497,7 @@ const Group = () => {
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+            className="h-10 px-3 rounded-xl border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -507,7 +507,7 @@ const Group = () => {
           {/* Add New */}
           <button
             onClick={openCreateModal}
-            className="h-10 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center gap-1.5 transition-colors"
+            className="h-10 px-4 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
           >
             <PlusIcon className="w-4 h-4" />
             Add New
@@ -516,7 +516,7 @@ const Group = () => {
           {/* Export */}
           <button
             onClick={handleExport}
-            className="h-10 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold flex items-center gap-1.5 transition-colors"
+            className="h-10 px-4 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
           >
             <DownloadIcon className="w-4 h-4" />
             Export
@@ -527,14 +527,13 @@ const Group = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Group</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Members</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Updated</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Actions</th>
+              <tr className="bg-base-200 border-b border-base-300">
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Group</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Members</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Created</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Updated</th>
+                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -549,7 +548,7 @@ const Group = () => {
                   <tr
                     key={group._id}
                     onClick={() => navigate(`/groups/${group._id}`)}
-                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    className="hover:bg-base-200/50 transition-colors cursor-pointer"
                   >
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
@@ -565,7 +564,7 @@ const Group = () => {
                           <p className="
   text-[15px]
   font-semibold
-  text-gray-800
+  text-base-content
   tracking-tight
   leading-5
 ">{group.groupName}</p>
@@ -573,17 +572,6 @@ const Group = () => {
                         </div>
                       </div>
 
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="
-  text-[15px]
-  font-semibold
-  text-gray-800
-  tracking-tight
-  leading-5
-">
-                        {group.groupBio || "No description"}
-                      </p>
                     </td>
 
                     <td className="px-4 py-3.5 text-center">
@@ -596,11 +584,11 @@ const Group = () => {
       h-7
       px-2.5
       rounded-full
-      bg-blue-50
-      text-blue-600
+      bg-primary/10
+      text-primary
       text-xs
       font-bold
-      border border-blue-100 -ml-[9rem]
+      border border-primary/20 -ml-[9rem]
     "
                       >
                         {group.members?.length || 0}
@@ -609,16 +597,16 @@ const Group = () => {
 
 
                     <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === "active" ? "bg-success/10 text-success" : "bg-base-200 text-base-content/60"}`}>
                         {group.status}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3.5 text-sm text-gray-600">
+                    <td className="px-4 py-3.5 text-sm text-base-content/60">
                       {new Date(group.createdAt).toLocaleDateString()}
                     </td>
 
-                    <td className="px-4 py-3.5 text-sm text-gray-600">
+                    <td className="px-4 py-3.5 text-sm text-base-content/60">
                       {new Date(group.updatedAt).toLocaleDateString()}
                     </td>
                     <td
@@ -636,7 +624,7 @@ const Group = () => {
                             });
                             setMenuOpenId(menuOpenId === group._id ? null : group._id);
                           }}
-                          className="w-8 h-8 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 flex items-center justify-center transition-colors"
+                          className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/40 flex items-center justify-center transition-colors"
                         >
                           <MoreVerticalIcon className="w-4 h-4" />
                         </button>
@@ -644,7 +632,7 @@ const Group = () => {
 
                       {menuOpenId === group._id && (
                         <div
-                          className="fixed z-[99999] w-44 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                          className="fixed z-[99999] w-44 bg-base-100 border border-base-300 rounded-xl shadow-2xl overflow-hidden"
                           style={{
                             top: `${menuPosition.top}px`,
                             left: `${menuPosition.left}px`,
@@ -655,7 +643,7 @@ const Group = () => {
                               handleOpenChat(e, group);
                               setMenuOpenId(null);
                             }}
-                            className="w-full px-4 py-3 text-left text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-primary hover:bg-primary/10 flex items-center gap-2 transition-colors"
                           >
                             <MessageCircleIcon className="w-4 h-4" />
                             Open Chat
@@ -677,7 +665,7 @@ const Group = () => {
                               handleDeleteGroup(e, group._id);
                               setMenuOpenId(null);
                             }}
-                            className="w-full px-4 py-3 text-left text-sm font-medium text-red-500 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-error hover:bg-error/10 flex items-center gap-2 transition-colors"
                           >
                             <Trash2Icon className="w-4 h-4" />
                             Delete
@@ -693,17 +681,17 @@ const Group = () => {
         </div>
 
         {/* ── PAGINATION ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-base-200">
           {/* Rows per page */}
           <div className="flex items-center gap-2">
             <select
               value={rowsPerPage}
               onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-              className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+              className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
             >
               {[5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
-            <span className="text-sm text-gray-500">Items per page</span>
+            <span className="text-sm text-base-content/50">Items per page</span>
           </div>
 
           {/* Page Buttons */}
@@ -712,13 +700,13 @@ const Group = () => {
             <button
               onClick={() => setPage(1)}
               disabled={safePage === 1}
-              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
             >«</button>
             {/* Prev */}
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage === 1}
-              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
             >‹</button>
 
             {/* Page numbers */}
@@ -737,8 +725,8 @@ const Group = () => {
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage
-                      ? "bg-blue-600 text-white border-0"
-                      : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-primary text-primary-content border-0"
+                      : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
                       }`}
                   >{p}</button>
                 )
@@ -748,23 +736,23 @@ const Group = () => {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage === totalPages}
-              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
             >›</button>
             {/* Last */}
             <button
               onClick={() => setPage(totalPages)}
               disabled={safePage === totalPages}
-              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
             >»</button>
           </div>
 
           {/* Jump to page */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Jump to</span>
+            <span className="text-sm text-base-content/50">Jump to</span>
             <select
               value={safePage}
               onChange={(e) => setPage(Number(e.target.value))}
-              className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+              className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
             >
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -780,30 +768,30 @@ const Group = () => {
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
+          <div className="bg-base-100 rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
             {/* Close */}
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition"
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-base-200 hover:bg-base-300 text-base-content/50 transition"
             >
               <XIcon className="w-4 h-4" />
             </button>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <h2 className="text-xl font-bold text-base-content mb-6">
               {editingGroup ? "Edit Group" : "Add New Group"}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Image Upload */}
               <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center bg-gray-50">
+                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-base-300 overflow-hidden flex items-center justify-center bg-base-200">
                   {imagePreview ? (
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/group.png"; }} />
                   ) : (
-                    <UploadIcon className="w-8 h-8 text-gray-300" />
+                    <UploadIcon className="w-8 h-8 text-base-content/20" />
                   )}
                 </div>
-                <label className="cursor-pointer text-sm text-blue-600 hover:underline font-medium">
+                <label className="cursor-pointer text-sm text-primary hover:underline font-medium">
                   {imagePreview ? "Change Image" : "Upload Image"}
                   <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                 </label>

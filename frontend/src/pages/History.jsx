@@ -20,15 +20,15 @@ const History = () => {
   const expiredSessions = sessions?.filter((s) => !s.isValid).length ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
+    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
 
       {/* ── PAGE HEADER ── */}
       <div
         className="
     flex items-center justify-between
     mb-6
-    bg-white
-    border border-gray-200
+    bg-base-100
+    border border-base-300
     rounded-2xl
     px-6 py-5
     shadow-sm
@@ -36,11 +36,11 @@ const History = () => {
       >
         {/* Left */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-base-content">
             Session History
           </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-base-content/50 mt-1">
             Monitor and manage all user sessions
           </p>
         </div>
@@ -51,9 +51,9 @@ const History = () => {
       w-10 h-10
       rounded-xl
       flex items-center justify-center
-      text-gray-400
-      hover:text-gray-700
-      hover:bg-gray-100
+      text-base-content/40
+      hover:text-base-content
+      hover:bg-base-200
       transition-all
     "
         >
@@ -67,8 +67,8 @@ const History = () => {
         {/* Total Sessions */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -78,11 +78,11 @@ const History = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Total Sessions
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {totalSessions}
             </h2>
           </div>
@@ -91,20 +91,20 @@ const History = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-blue-50
+        bg-primary/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <Clock3Icon className="w-7 h-7 text-blue-600" />
+            <Clock3Icon className="w-7 h-7 text-primary" />
           </div>
         </div>
 
         {/* Active Sessions */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -114,11 +114,11 @@ const History = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Active Sessions
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {activeSessions}
             </h2>
           </div>
@@ -127,20 +127,20 @@ const History = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-green-50
+        bg-success/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <ShieldCheckIcon className="w-7 h-7 text-green-600" />
+            <ShieldCheckIcon className="w-7 h-7 text-success" />
           </div>
         </div>
 
         {/* Expired Sessions */}
         <div
           className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -150,11 +150,11 @@ const History = () => {
     "
         >
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/60">
               Expired Sessions
             </p>
 
-            <h2 className="text-4xl font-bold text-gray-900 mt-2">
+            <h2 className="text-4xl font-bold text-base-content mt-2">
               {expiredSessions}
             </h2>
           </div>
@@ -163,26 +163,26 @@ const History = () => {
             className="
         w-14 h-14
         rounded-2xl
-        bg-red-50
+        bg-error/10
         flex items-center justify-center
         flex-shrink-0
       "
           >
-            <Clock3Icon className="w-7 h-7 text-red-500" />
+            <Clock3Icon className="w-7 h-7 text-error" />
           </div>
         </div>
       </div>
 
       {/* ── TABLE CARD ── */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-base-200">
           <div className="flex items-center gap-2">
-            <Clock3Icon className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-semibold text-gray-700">All Login Sessions</span>
+            <Clock3Icon className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-base-content">All Login Sessions</span>
           </div>
-          <span className="ml-auto text-xs text-gray-400">
+          <span className="ml-auto text-xs text-base-content/40">
             {totalSessions} total
           </span>
         </div>
@@ -191,12 +191,12 @@ const History = () => {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[30%]">Device</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[18%]">IP Address</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[12%]">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[20%]">Created</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[20%]">Expires</th>
+              <tr className="bg-base-200">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[20%]">Device</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[15%]">IP Address</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[10%]">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[18%]">Created</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[17%]">Expires</th>
               </tr>
             </thead>
             <tbody>
@@ -204,8 +204,8 @@ const History = () => {
                 <tr>
                   <td colSpan={5} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      <p className="text-sm text-gray-500">Loading sessions...</p>
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sm text-base-content/50">Loading sessions...</p>
                     </div>
                   </td>
                 </tr>
@@ -213,11 +213,11 @@ const History = () => {
                 <tr>
                   <td colSpan={5} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-                        <Clock3Icon className="w-8 h-8 text-blue-400" />
+                      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <Clock3Icon className="w-8 h-8 text-primary" />
                       </div>
-                      <p className="text-base font-semibold text-gray-700">No Sessions Found</p>
-                      <p className="text-sm text-gray-400">No active login sessions available</p>
+                      <p className="text-base font-semibold text-base-content">No Sessions Found</p>
+                      <p className="text-sm text-base-content/40">No active login sessions available</p>
                     </div>
                   </td>
                 </tr>
@@ -225,15 +225,32 @@ const History = () => {
                 sessions.map((session, idx) => (
                   <tr
                     key={session._id}
-                    className={`border-b border-gray-50 hover:bg-blue-50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-gray-50/50" : "bg-white"}`}
+                    className={`border-b border-base-200 hover:bg-base-200/50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-base-200/20" : "bg-base-100"}`}
                   >
+                    {/* User */}
+                    {/* <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                          <img
+                            src={session.user?.profilePic || "/avatar.png"}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-gray-900 truncate">
+                          {session.user?.fullName || "Deleted User"}
+                        </span>
+                      </div>
+                    </td> */}
+
                     {/* Device */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                          <MonitorIcon className="w-4 h-4 text-blue-600" />
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <MonitorIcon className="w-4 h-4 text-primary" />
                         </div>
-                        <span className="text-sm font-semibold text-blue-600 truncate max-w-[180px]">
+                        <span className="text-sm font-semibold text-primary truncate max-w-[180px]">
                           {session.deviceInfo}
                         </span>
                       </div>
@@ -242,8 +259,8 @@ const History = () => {
                     {/* IP Address */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
-                        <WifiIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 font-mono">{session.ipAddress}</span>
+                        <WifiIcon className="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" />
+                        <span className="text-sm text-base-content/60 font-mono">{session.ipAddress}</span>
                       </div>
                     </td>
 
@@ -251,11 +268,11 @@ const History = () => {
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${session.isValid
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-red-50 text-red-500 border-red-200"
+                            ? "bg-success/10 text-success border-success/20"
+                            : "bg-error/10 text-error border-error/20"
                           }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${session.isValid ? "bg-green-500" : "bg-red-400"}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${session.isValid ? "bg-success" : "bg-error"}`} />
                         {session.isValid ? "Active" : "Expired"}
                       </span>
                     </td>
@@ -263,8 +280,8 @@ const History = () => {
                     {/* Created */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
-                        <CalendarIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">
+                        <CalendarIcon className="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" />
+                        <span className="text-sm text-base-content/60">
                           {new Date(session.createdAt).toLocaleString()}
                         </span>
                       </div>
@@ -273,8 +290,8 @@ const History = () => {
                     {/* Expires */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
-                        <Clock3Icon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className={`text-sm ${session.isValid ? "text-gray-600" : "text-red-400"}`}>
+                        <Clock3Icon className="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" />
+                        <span className={`text-sm ${session.isValid ? "text-base-content/60" : "text-error"}`}>
                           {new Date(session.expiresAt).toLocaleString()}
                         </span>
                       </div>
@@ -288,8 +305,8 @@ const History = () => {
 
         {/* Footer note */}
         {!isLoading && sessions?.length > 0 && (
-          <div className="px-4 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400">
+          <div className="px-4 py-3 border-t border-base-200">
+            <p className="text-xs text-base-content/40">
               Showing {sessions.length} session{sessions.length !== 1 ? "s" : ""} · {activeSessions} active · {expiredSessions} expired
             </p>
           </div>

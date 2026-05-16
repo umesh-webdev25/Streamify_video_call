@@ -170,15 +170,15 @@ const GroupContacts = () => {
   const pagedContacts = filteredContacts.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
 
   return (
-  <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
+  <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
 
     {/* ── PAGE HEADER ── */}
     <div
       className="
     flex items-center justify-between
     mb-6
-    bg-white
-    border border-gray-200
+    bg-base-100
+    border border-base-300
     rounded-2xl
     px-6 py-5
     shadow-sm
@@ -187,11 +187,11 @@ const GroupContacts = () => {
       {/* Left */}
       <div className="flex items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-base-content">
             {group?.groupName}
           </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-base-content/50 mt-1">
             {group?.groupBio || "Manage and organize your group contacts"}
           </p>
         </div>
@@ -203,9 +203,9 @@ const GroupContacts = () => {
       w-10 h-10
       rounded-xl
       flex items-center justify-center
-      text-gray-400
-      hover:text-gray-700
-      hover:bg-gray-100
+      text-base-content/40
+      hover:text-base-content
+      hover:bg-base-200
       transition-all
     "
       >
@@ -219,8 +219,8 @@ const GroupContacts = () => {
       {/* Total Contacts */}
       <div
         className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -230,11 +230,11 @@ const GroupContacts = () => {
     "
       >
         <div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-base-content/60">
             Total Contacts
           </p>
 
-          <h2 className="text-4xl font-bold text-gray-900 mt-2">
+          <h2 className="text-4xl font-bold text-base-content mt-2">
             {contacts.length}
           </h2>
         </div>
@@ -243,20 +243,20 @@ const GroupContacts = () => {
           className="
         w-14 h-14
         rounded-2xl
-        bg-blue-50
+        bg-primary/10
         flex items-center justify-center
         flex-shrink-0
       "
         >
-          <UserIcon className="w-7 h-7 text-blue-600" />
+          <UserIcon className="w-7 h-7 text-primary" />
         </div>
       </div>
 
       {/* With Designation */}
       <div
         className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -266,11 +266,11 @@ const GroupContacts = () => {
     "
       >
         <div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-base-content/60">
             With Designation
           </p>
 
-          <h2 className="text-4xl font-bold text-gray-900 mt-2">
+          <h2 className="text-4xl font-bold text-base-content mt-2">
             {contacts.filter((c) => c.designation).length}
           </h2>
         </div>
@@ -279,20 +279,20 @@ const GroupContacts = () => {
           className="
         w-14 h-14
         rounded-2xl
-        bg-purple-50
+        bg-secondary/10
         flex items-center justify-center
         flex-shrink-0
       "
         >
-          <BriefcaseIcon className="w-7 h-7 text-purple-600" />
+          <BriefcaseIcon className="w-7 h-7 text-secondary" />
         </div>
       </div>
 
       {/* Search Results */}
       <div
         className="
-      bg-white
-      border border-gray-200
+      bg-base-100
+      border border-base-300
       rounded-2xl
       px-6
       h-[120px]
@@ -302,11 +302,11 @@ const GroupContacts = () => {
     "
       >
         <div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-base-content/60">
             Search Results
           </p>
 
-          <h2 className="text-4xl font-bold text-gray-900 mt-2">
+          <h2 className="text-4xl font-bold text-base-content mt-2">
             {filteredContacts.length}
           </h2>
         </div>
@@ -315,30 +315,30 @@ const GroupContacts = () => {
           className="
         w-14 h-14
         rounded-2xl
-        bg-green-50
+        bg-success/10
         flex items-center justify-center
         flex-shrink-0
       "
         >
-          <SearchIcon className="w-7 h-7 text-green-600" />
+          <SearchIcon className="w-7 h-7 text-success" />
         </div>
       </div>
     </div>
 
     {/* ── TABLE CARD ── */}
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-gray-100">
+      <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-base-200">
         {/* Search */}
-        <div className="flex items-center gap-2 flex-1 min-w-[220px] bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
-          <SearchIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <div className="flex items-center gap-2 flex-1 min-w-[220px] bg-base-200 border border-base-300 rounded-xl px-3 h-10">
+          <SearchIcon className="w-4 h-4 text-base-content/40 flex-shrink-0" />
           <input
             type="text"
             placeholder="Search contacts..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+            className="w-full bg-transparent outline-none text-sm text-base-content placeholder:text-base-content/40"
           />
         </div>
 
@@ -349,7 +349,7 @@ const GroupContacts = () => {
             setContactData({ name: "", email: "", mobileNumber: "", designation: "", contactImage: null });
             setOpenModal(true);
           }}
-          className="h-10 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center gap-1.5 transition-colors"
+          className="h-10 px-4 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
         >
           <PlusIcon className="w-4 h-4" />
           Add Contact
@@ -358,7 +358,7 @@ const GroupContacts = () => {
         {/* Export */}
         <button
           onClick={handleExport}
-          className="h-10 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold flex items-center gap-1.5 transition-colors"
+          className="h-10 px-4 rounded-xl border border-base-300 bg-base-100 hover:bg-base-200 text-base-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
         >
           <DownloadIcon className="w-4 h-4" />
           Export
@@ -369,12 +369,12 @@ const GroupContacts = () => {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[28%]">Name</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[25%]">Email</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[18%]">Mobile</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[17%]">Designation</th>
-              <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[12%]">Action</th>
+            <tr className="bg-base-200">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[28%]">Name</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[25%]">Email</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[18%]">Mobile</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[17%]">Designation</th>
+              <th className="text-center px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[12%]">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -382,11 +382,11 @@ const GroupContacts = () => {
               <tr>
                 <td colSpan={5} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-                      <UserIcon className="w-8 h-8 text-blue-400" />
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                      <UserIcon className="w-8 h-8 text-primary" />
                     </div>
-                    <p className="text-base font-semibold text-gray-700">No Contacts Found</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-base font-semibold text-base-content">No Contacts Found</p>
+                    <p className="text-sm text-base-content/40">
                       {search ? `No results for "${search}"` : "Add your first contact to get started"}
                     </p>
                   </div>
@@ -396,12 +396,12 @@ const GroupContacts = () => {
               pagedContacts.map((contact, idx) => (
                 <tr
                   key={contact._id}
-                  className={`border-b border-gray-50 hover:bg-blue-50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-gray-50/50" : "bg-white"}`}
+                  className={`border-b border-base-200 hover:bg-base-200/50 transition-colors duration-150 ${idx % 2 === 1 ? "bg-base-200/20" : "bg-base-100"}`}
                 >
                   {/* Name + Avatar */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {contact.contactImage ? (
                           <img
                             src={contact.contactImage}
@@ -413,35 +413,35 @@ const GroupContacts = () => {
                           <img src="/contact.png" alt={contact.name} className="w-full h-full object-cover" />
                         )}
                       </div>
-                      <span className="text-sm font-semibold text-blue-600 truncate">{contact.name}</span>
+                      <span className="text-sm font-semibold text-primary truncate">{contact.name}</span>
                     </div>
                   </td>
 
                   {/* Email */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5 -ml-10">
-                      <MailIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm text-gray-600 truncate ">{contact.email}</span>
+                      <MailIcon className="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" />
+                      <span className="text-sm text-base-content/70 truncate ">{contact.email}</span>
                     </div>
                   </td>
 
                   {/* Mobile */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5 -ml-6">
-                      <PhoneIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{contact.mobileNumber}</span>
+                      <PhoneIcon className="w-3.5 h-3.5 text-base-content/40 flex-shrink-0" />
+                      <span className="text-sm text-base-content/70">{contact.mobileNumber}</span>
                     </div>
                   </td>
 
                   {/* Designation */}
                   <td className="px-4 py-3.5">
                     {contact.designation ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary/10 text-secondary border border-secondary/20">
                         <BriefcaseIcon className="w-3 h-3" />
                         {contact.designation}
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-400">N/A</span>
+                      <span className="text-sm text-base-content/40">N/A</span>
                     )}
                   </td>
 
@@ -470,10 +470,10 @@ const GroupContacts = () => {
                         className="
       w-8 h-8
       rounded-lg
-      border border-gray-200
-      bg-white
-      hover:bg-gray-50
-      text-gray-500
+      border border-base-300
+      bg-base-100
+      hover:bg-base-200
+      text-base-content/40
       flex items-center justify-center
       transition-colors
     "
@@ -487,8 +487,8 @@ const GroupContacts = () => {
         fixed
         z-[99999]
         w-44
-        bg-white
-        border border-gray-200
+        bg-base-100
+        border border-base-300
         rounded-2xl
         shadow-2xl
         overflow-hidden
@@ -511,8 +511,8 @@ const GroupContacts = () => {
           text-left
           text-sm
           font-medium
-          text-amber-600
-          hover:bg-amber-50
+          text-warning
+          hover:bg-warning/10
           flex items-center gap-2
           transition-colors
         "
@@ -533,8 +533,8 @@ const GroupContacts = () => {
           text-left
           text-sm
           font-medium
-          text-red-500
-          hover:bg-red-50
+          text-error
+          hover:bg-error/10
           flex items-center gap-2
           transition-colors
         "
@@ -555,25 +555,25 @@ const GroupContacts = () => {
       </div>
 
       {/* ── PAGINATION ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-gray-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-base-200">
         {/* Rows per page */}
         <div className="flex items-center gap-2">
           <select
             value={rowsPerPage}
             onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
-            className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+            className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
           >
             {[5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
-          <span className="text-sm text-gray-500">Items per page</span>
+          <span className="text-sm text-base-content/50">Items per page</span>
         </div>
 
         {/* Page Buttons */}
         <div className="flex items-center gap-1">
           <button onClick={() => setPage(1)} disabled={safePage === 1}
-            className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">«</button>
+            className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors">«</button>
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1}
-            className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">‹</button>
+            className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors">‹</button>
 
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
@@ -587,25 +587,25 @@ const GroupContacts = () => {
                 <span key={`e-${i}`} className="w-8 text-center text-sm text-gray-400">…</span>
               ) : (
                 <button key={p} onClick={() => setPage(p)}
-                  className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage ? "bg-blue-600 text-white border-0" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}>
+                  className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage ? "bg-primary text-primary-content border-0" : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"}`}>
                   {p}
                 </button>
               )
             )}
 
           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
-            className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">›</button>
+            className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors">›</button>
           <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages}
-            className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 disabled:text-gray-300 hover:bg-gray-50 transition-colors">»</button>
+            className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors">»</button>
         </div>
 
         {/* Jump to */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Jump to</span>
+          <span className="text-sm text-base-content/50">Jump to</span>
           <select
             value={safePage}
             onChange={(e) => setPage(Number(e.target.value))}
-            className="h-8 px-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white outline-none cursor-pointer"
+            className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
           >
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <option key={p} value={p}>{p}</option>
@@ -621,20 +621,20 @@ const GroupContacts = () => {
         className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
         onClick={(e) => e.target === e.currentTarget && setOpenModal(false)}
       >
-        <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden">
+        <div className="bg-base-100 w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-base-200">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-base-content">
                 {selectedContact ? "Update Contact" : "Add Contact"}
               </h2>
-              <p className="text-sm text-gray-500 mt-0.5">Manage contact details</p>
+              <p className="text-sm text-base-content/50 mt-0.5">Manage contact details</p>
             </div>
             <button
               onClick={() => setOpenModal(false)}
-              className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+              className="w-9 h-9 rounded-xl bg-base-200 hover:bg-base-300 flex items-center justify-center transition"
             >
-              <XIcon className="w-4 h-4 text-gray-600" />
+              <XIcon className="w-4 h-4 text-base-content/60" />
             </button>
           </div>
 
@@ -643,7 +643,7 @@ const GroupContacts = () => {
             {/* Profile Image */}
             <div className="flex justify-center">
               <label className="relative cursor-pointer">
-                <div className="w-20 h-20 rounded-2xl bg-blue-50 border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 border-2 border-dashed border-primary/20 flex items-center justify-center overflow-hidden">
                   {contactData.contactImage ? (
                     <img
                       src={typeof contactData.contactImage === "string"
@@ -657,7 +657,7 @@ const GroupContacts = () => {
                     <img src="/contact.png" alt="Preview" className="w-full h-full object-cover opacity-50" />
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-green-600 text-white flex items-center justify-center shadow">
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-success text-success-content flex items-center justify-center shadow">
                   <PlusIcon className="w-3.5 h-3.5" />
                 </div>
                 <input type="file" name="contactImage" accept="image/*" onChange={handleChange} className="hidden" />
@@ -666,49 +666,49 @@ const GroupContacts = () => {
 
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-base-content/70 mb-1">Full Name <span className="text-error">*</span></label>
               <input
                 type="text" name="name" value={contactData.name} onChange={handleChange} required
                 placeholder="Enter full name"
-                className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <label className="block text-sm font-medium text-base-content/70 mb-1">Email Address</label>
               <div className="relative">
-                <MailIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MailIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
                 <input
                   type="email" name="email" value={contactData.email} onChange={handleChange}
                   placeholder="Enter email"
-                  className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition"
                 />
               </div>
             </div>
 
             {/* Mobile */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <label className="block text-sm font-medium text-base-content/70 mb-1">Mobile Number</label>
               <div className="relative">
-                <PhoneIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <PhoneIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
                 <input
                   type="text" name="mobileNumber" value={contactData.mobileNumber} onChange={handleChange}
                   placeholder="Enter mobile number"
-                  className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition"
                 />
               </div>
             </div>
 
             {/* Designation */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+              <label className="block text-sm font-medium text-base-content/70 mb-1">Designation</label>
               <div className="relative">
-                <BriefcaseIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <BriefcaseIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
                 <input
                   type="text" name="designation" value={contactData.designation} onChange={handleChange}
                   placeholder="Enter designation"
-                  className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition"
+                  className="w-full bg-base-100 text-base-content placeholder:text-base-content/30 border border-base-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/10 transition"
                 />
               </div>
             </div>
@@ -717,11 +717,11 @@ const GroupContacts = () => {
             <div className="flex gap-3 pt-1">
               <button
                 type="button" onClick={() => setOpenModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                className="flex-1 py-2.5 rounded-xl border border-base-300 text-sm font-medium text-base-content/60 hover:bg-base-200 transition"
               >Cancel</button>
               <button
                 type="submit"
-                className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition"
+                className="flex-1 py-2.5 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold flex items-center justify-center gap-1.5 transition"
               >
                 <PlusIcon className="w-4 h-4" />
                 {selectedContact ? "Update" : "Add Contact"}

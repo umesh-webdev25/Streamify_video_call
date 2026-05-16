@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getMySessions } from "../lib/api";
+import { getAllSessions } from "../lib/api";
 
 const useSessions = () => {
   const sessionsQuery = useQuery({
     queryKey: ["sessions"],
-    queryFn: getMySessions,
+    queryFn: getAllSessions,
   });
 
   return {
