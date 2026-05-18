@@ -48,6 +48,7 @@ const itemVariants = {
 
 const statsCards = [
   { icon: UsersIcon, label: "Total Groups", value: "8" },
+  { icon: ActivityIcon, label: "Total Active Groups", value: "3" },
   { icon: UserIcon, label: "Total Connections", value: "3" },
   { icon: GlobeIcon, label: "Total Sessions", value: "24" },
 ];
@@ -160,30 +161,36 @@ const HomePage = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="grid grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 {statsCards.map((stat) => (
                   <div
                     key={stat.label}
-                    className="border border-base-300 rounded-2xl p-4 sm:p-5"
+                    className="border border-base-300 rounded-2xl px-5 py-6 sm:px-6 sm:py-7 min-h-[130px] flex items-center"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-primary/10">
-                        <stat.icon className="size-4 sm:size-5 text-primary" />
-                      </div>
+                    <div className="flex items-center justify-between w-full">
+
+                      {/* LEFT CONTENT */}
                       <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-base-content/50 truncate">
+                        <p className="text-sm sm:text-base text-base-content/50 truncate">
                           {stat.label}
                         </p>
-                        <p className="text-lg sm:text-2xl font-bold text-base-content">
+
+                        <p className="text-3xl sm:text-4xl font-bold text-base-content mt-2">
                           {stat.value}
                         </p>
                       </div>
+
+                      {/* RIGHT ICON */}
+                      <div className="p-4 sm:p-5 rounded-2xl bg-primary/10 shrink-0">
+                        <stat.icon className="size-7 sm:size-8 text-primary" />
+                      </div>
+
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              {/* <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => navigate("/meeting/lobby")}
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-content font-semibold rounded-xl hover:bg-primary/90 transition-all duration-200 shadow-sm"
@@ -209,7 +216,7 @@ const HomePage = () => {
                   )}
                   {copied ? "Copied!" : "Copy Link"}
                 </button>
-              </div>
+              </div> */}
             </motion.section>
 
             {/* QUICK ACTIONS */}
