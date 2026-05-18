@@ -27,6 +27,7 @@ import {
   GlobeIcon,
   MessageCircleIcon,
   LogInIcon,
+  UserIcon,
 } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
@@ -46,9 +47,9 @@ const itemVariants = {
 };
 
 const statsCards = [
-  { icon: UsersIcon, label: "Online Friends", value: "8" },
-  { icon: VideoIcon, label: "Active Meetings", value: "3" },
-  { icon: GlobeIcon, label: "Total Connections", value: "24" },
+  { icon: UsersIcon, label: "Total Groups", value: "8" },
+  { icon: UserIcon, label: "Total Connections", value: "3" },
+  { icon: GlobeIcon, label: "Total Sessions", value: "24" },
 ];
 
 const quickActions = [
@@ -132,7 +133,7 @@ const HomePage = () => {
       </Helmet>
 
       <div className="flex">
-        <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-6xl mx-auto w-full">
+        <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-8xl mx-auto w-full">
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8 sm:space-y-10">
 
             {/* HERO */}

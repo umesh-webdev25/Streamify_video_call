@@ -99,7 +99,7 @@ const SettingsPage = () => {
   console.log(authUser.profilePic);
 
   return (
-    <div className="p-6 sm:p-8 max-w-5xl mx-auto space-y-10">
+    <div className="p-6 sm:p-8 max-w-8xl mx-auto space-y-10">
       <Helmet>
         <title>Account Settings | Streamify</title>
       </Helmet>
