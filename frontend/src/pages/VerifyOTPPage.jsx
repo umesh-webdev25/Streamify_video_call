@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import {
@@ -10,11 +10,12 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { verifyOTP, resendOTP } from "../lib/api";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const VerifyOTPPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const email = location.state?.email;
 
@@ -28,6 +29,7 @@ const VerifyOTPPage = () => {
   ]);
 
   const [timer, setTimer] = useState(60);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const inputRefs = useRef([]);
 
@@ -56,12 +58,17 @@ const VerifyOTPPage = () => {
   const verifyMutation = useMutation({
     mutationFn: (data) => verifyOTP(data),
 
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(
-        "Email verified successfully!"
+        "Email verified successfully"
       );
 
-      navigate("/login");
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
+
+      setIsRedirecting(true);
+      setTimeout(() => {
+        navigate("/onboarding");
+      }, 1000);
     },
 
     onError: (error) => {
@@ -395,6 +402,30 @@ const VerifyOTPPage = () => {
           </span>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {isRedirecting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+              className="flex flex-col items-center text-center p-8 rounded-3xl bg-white shadow-2xl border border-blue-50 max-w-sm"
+            >
+              <div className="relative w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-br from-blue-100 to-sky-100 rounded-2xl">
+                <RefreshCcwIcon className="w-10 h-10 text-blue-600 animate-spin" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Redirecting to Onboarding</h2>
+              <p className="text-sm text-gray-500 mt-2">Setting up your secure environment...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

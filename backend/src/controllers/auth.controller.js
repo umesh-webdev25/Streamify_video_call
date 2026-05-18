@@ -104,6 +104,17 @@ export const verifyOTP = asyncHandler(async (req, res) => {
     throw new AppError("Email and OTP are required", 400);
   }
   const user = await authService.verifyOTP(email, otp);
+
+  const reqInfo = {
+    ip: req.ip,
+    device: req.headers["user-agent"],
+  };
+
+  const { accessToken, refreshToken } = await authService.createSession(user._id, reqInfo);
+
+  res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
+  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
+
   return ApiResponse.success(res, user, "Email verified successfully");
 });
 
