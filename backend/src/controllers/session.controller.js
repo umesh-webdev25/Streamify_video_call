@@ -1,133 +1,72 @@
 import sessionService from "../services/session.service.js";
+import ApiResponse from "../utils/apiResponse.js";
+import AppError from "../utils/AppError.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 /**
- * Get all sessions
+ * Get all sessions (scoped to logged-in user for privacy)
  */
-export const getAllSessions = async (req, res) => {
-  try {
-    const sessions = await sessionService.getAllSessions();
-
-    return res.status(200).json({
-      success: true,
-      count: sessions.length,
-      data: sessions,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const getAllSessions = asyncHandler(async (req, res) => {
+  const sessions = await sessionService.getUserSessions(req.user._id);
+  return ApiResponse.success(res, sessions);
+});
 
 /**
  * Get logged in user sessions
  */
-export const getMySessions = async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    const sessions = await sessionService.getUserSessions(
-      userId
-    );
-
-    return res.status(200).json({
-      success: true,
-      count: sessions.length,
-      data: sessions,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const getMySessions = asyncHandler(async (req, res) => {
+  const sessions = await sessionService.getUserSessions(req.user._id);
+  return ApiResponse.success(res, sessions);
+});
 
 /**
- * Get single session
+ * Get single session (ownership verified)
  */
-export const getSessionById = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const getSessionById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const session = await sessionService.getSessionById(id);
 
-    const session = await sessionService.getSessionById(id);
-
-    return res.status(200).json({
-      success: true,
-      data: session,
-    });
-  } catch (error) {
-    return res.status(404).json({
-      success: false,
-      message: error.message,
-    });
+  if (session.user._id.toString() !== req.user._id.toString()) {
+    throw new AppError("Unauthorized access to this session", 403);
   }
-};
+
+  return ApiResponse.success(res, session);
+});
 
 /**
- * Delete session
+ * Delete session (ownership verified)
  */
-export const deleteSession = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const deleteSession = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const session = await sessionService.getSessionById(id);
 
-    const response = await sessionService.deleteSession(id);
-
-    return res.status(200).json(response);
-  } catch (error) {
-    return res.status(404).json({
-      success: false,
-      message: error.message,
-    });
+  if (session.user._id.toString() !== req.user._id.toString()) {
+    throw new AppError("Unauthorized access to this session", 403);
   }
-};
+
+  const response = await sessionService.deleteSession(id);
+  return ApiResponse.success(res, null, response.message);
+});
 
 /**
  * Delete all sessions of logged in user
  */
-export const deleteAllMySessions = async (
-  req,
-  res
-) => {
-  try {
-    const userId = req.user._id;
-
-    const response =
-      await sessionService.deleteAllUserSessions(
-        userId
-      );
-
-    return res.status(200).json(response);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const deleteAllMySessions = asyncHandler(async (req, res) => {
+  const response = await sessionService.deleteAllUserSessions(req.user._id);
+  return ApiResponse.success(res, null, response.message);
+});
 
 /**
- * Invalidate session
+ * Invalidate session (ownership verified)
  */
-export const invalidateSession = async (
-  req,
-  res
-) => {
-  try {
-    const { id } = req.params;
+export const invalidateSession = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const session = await sessionService.getSessionById(id);
 
-    const session =
-      await sessionService.invalidateSession(id);
-
-    return res.status(200).json({
-      success: true,
-      data: session,
-    });
-  } catch (error) {
-    return res.status(404).json({
-      success: false,
-      message: error.message,
-    });
+  if (session.user._id.toString() !== req.user._id.toString()) {
+    throw new AppError("Unauthorized access to this session", 403);
   }
-};
+
+  const updated = await sessionService.invalidateSession(id);
+  return ApiResponse.success(res, updated, "Session invalidated successfully");
+});

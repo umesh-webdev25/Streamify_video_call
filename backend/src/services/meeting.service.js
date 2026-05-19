@@ -3,11 +3,45 @@ import meetingRepository from "../repositories/meeting.repository.js";
 import userRepository from "../repositories/user.repository.js";
 import AppError from "../utils/AppError.js";
 import Group from "../models/group.js";
+import User from "../models/User.js";
 import { generateStreamToken } from "../lib/stream.js";
 import notificationService from "./notification.service.js";
 import queueService from "./queue.service.js";
 
 class MeetingService {
+  async verifyMeetingAccess(roomId, userId) {
+    const meeting = await meetingRepository.findByRoomId(roomId);
+    if (!meeting) {
+      throw new AppError("Meeting not found", 404);
+    }
+    const hostId = meeting.hostId;
+    // 1. the host
+    if (hostId.toString() === userId.toString()) {
+      return meeting;
+    }
+    // 2. connected contact of the host (friends)
+    const hostUser = await User.findById(hostId);
+    if (hostUser && hostUser.friends.some((f) => f.toString() === userId.toString())) {
+      return meeting;
+    }
+    // 3. member of the group associated with the meeting
+    if (meeting.groupId) {
+      const group = await Group.findById(meeting.groupId);
+      if (group && !group.isDeleted) {
+        const isMember = group.members.some(m => m.user.toString() === userId.toString());
+        if (isMember) {
+          return meeting;
+        }
+      }
+    }
+    // 4. in the participants list (scheduled or already joined)
+    const isParticipant = meeting.participants.some(p => p.userId && p.userId.toString() === userId.toString());
+    if (isParticipant) {
+      return meeting;
+    }
+    throw new AppError("You do not have access to this meeting", 403);
+  }
+
   async createMeeting(userId, data) {
     const roomId = data.roomId || this.generateRoomId();
 
@@ -18,6 +52,7 @@ class MeetingService {
 
     const meeting = await meetingRepository.create({
       roomId,
+      meetingCode: data.meetingCode || "STD-" + crypto.randomBytes(3).toString("hex").toUpperCase(),
       title: data.title || `Meeting ${roomId}`,
       hostId: userId,
       participants: [{ userId, joinedAt: new Date() }],
@@ -33,25 +68,19 @@ class MeetingService {
     };
   }
 
-  async getMeeting(roomId) {
-    const meeting = await meetingRepository.findByRoomId(roomId);
-    if (!meeting) {
-      throw new AppError("Meeting not found", 404);
-    }
+  async getMeeting(roomId, userId) {
+    const meeting = await this.verifyMeetingAccess(roomId, userId);
     return meeting;
   }
 
   async joinMeeting(roomId, userId) {
-    const meeting = await meetingRepository.findByRoomId(roomId);
-    if (!meeting) {
-      throw new AppError("Meeting not found", 404);
-    }
+    const meeting = await this.verifyMeetingAccess(roomId, userId);
     if (meeting.status !== "active") {
       throw new AppError("Meeting is no longer active", 410);
     }
 
     const alreadyJoined = meeting.participants.some(
-      (p) => p.userId.toString() === userId.toString()
+      (p) => p.userId && p.userId.toString() === userId.toString()
     );
 
     if (!alreadyJoined) {
@@ -62,10 +91,7 @@ class MeetingService {
   }
 
   async endMeeting(roomId, userId) {
-    const meeting = await meetingRepository.findByRoomId(roomId);
-    if (!meeting) {
-      throw new AppError("Meeting not found", 404);
-    }
+    const meeting = await this.verifyMeetingAccess(roomId, userId);
     if (meeting.hostId.toString() !== userId.toString()) {
       throw new AppError("Only the host can end the meeting", 403);
     }

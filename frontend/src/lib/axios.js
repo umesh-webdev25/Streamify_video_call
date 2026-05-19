@@ -10,3 +10,17 @@ export const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 403) {
+      const message = error.response.data?.message || "";
+      // Avoid redirecting for verification errors, onboarding, or similar checks
+      if (!message.includes("Email not verified") && !message.includes("Please verify your email")) {
+        window.location.href = "/";
+      }
+    }
+    return Promise.reject(error);
+  }
+);

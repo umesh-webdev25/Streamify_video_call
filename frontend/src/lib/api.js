@@ -273,3 +273,8 @@ export async function deleteContact(
 
   return response.data;
 }
+
+export async function inviteContact(data) {
+  const response = await axiosInstance.post("/contacts/invite", data);
+  return response.data;
+}

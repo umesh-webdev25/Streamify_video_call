@@ -1,4 +1,7 @@
 import * as groupService from "../services/group.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/apiResponse.js";
+import AppError from "../utils/AppError.js";
 
 /**
  * Helper – safely parse a JSON string sent as a FormData text field.
@@ -15,145 +18,92 @@ const parseJSON = (value, fallback = []) => {
 /**
  * Create Group
  * POST /api/groups
- *
- * req.body  → groupName, groupBio, members (JSON string), admins (JSON string)
- * req.file  → uploaded image (set by multer)
  */
-export const createGroup = async (req, res) => {
-  try {
-    const { groupName, groupBio, members, admins, status } = req.body;
+export const createGroup = asyncHandler(async (req, res) => {
+  const { groupName, groupBio, members, admins, status } = req.body;
+  const groupImage = req.file ? `/uploads/${req.file.filename}` : "";
 
-    // multer saves the file and gives us req.file.filename
-    const groupImage = req.file ? `/uploads/${req.file.filename}` : "";
+  const creatorId = req.user._id;
+  let membersList = parseJSON(members).map(m => {
+    if (typeof m === "string") return { user: m, isAdmin: false };
+    return { user: m.user, isAdmin: !!m.isAdmin };
+  });
+  let adminsList = parseJSON(admins).map(a => typeof a === "string" ? a : a.toString());
 
-    const group = await groupService.createGroup({
-      groupName,
-      groupBio,
-      groupImage,
-      status: status || "active",
-      members: parseJSON(members), // front-end sends JSON.stringify([...])
-      admins: parseJSON(admins),
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Group created successfully",
-      data: group,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  // Ensure creator is in members and admins
+  if (!membersList.some(m => m.user.toString() === creatorId.toString())) {
+    membersList.push({ user: creatorId, isAdmin: true });
   }
-};
+  if (!adminsList.includes(creatorId.toString())) {
+    adminsList.push(creatorId.toString());
+  }
+
+  const group = await groupService.createGroup({
+    groupName,
+    groupBio,
+    groupImage,
+    status: status || "active",
+    members: membersList,
+    admins: adminsList,
+  });
+
+  return ApiResponse.success(res, group, "Group created successfully", 201);
+});
 
 /**
  * Get All Groups
  * GET /api/groups
  */
-export const getAllGroups = async (req, res) => {
-  try {
-    const groups = await groupService.getAllGroups();
-
-    return res.status(200).json({
-      success: true,
-      data: groups,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const getAllGroups = asyncHandler(async (req, res) => {
+  const groups = await groupService.getAllGroups(req.user._id);
+  return ApiResponse.success(res, groups);
+});
 
 /**
  * Get Single Group
  * GET /api/groups/:id
  */
-export const getGroupById = async (req, res) => {
-  try {
-    const group = await groupService.getGroupById(req.params.id);
-
-    if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: "Group not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: group,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+export const getGroupById = asyncHandler(async (req, res) => {
+  const group = await groupService.getGroupById(req.params.id, req.user._id);
+  if (!group) {
+    throw new AppError("Group not found", 404);
   }
-};
+  return ApiResponse.success(res, group);
+});
 
 /**
  * Update Group
  * PUT /api/groups/:id
- *
- * req.body  → groupName, groupBio  (text fields from FormData)
- * req.file  → new image (optional)
  */
-export const updateGroup = async (req, res) => {
-  try {
-    const { groupName, groupBio, status } = req.body;
+export const updateGroup = asyncHandler(async (req, res) => {
+  const { groupName, groupBio, status } = req.body;
 
-    const updateData = { groupName, groupBio };
+  const updateData = { groupName, groupBio };
 
-    // Only overwrite groupImage if a new file was uploaded
-    if (req.file) {
-      updateData.groupImage = `/uploads/${req.file.filename}`;
-    }
-
-    // If the client provided a status, include it in update
-    if (typeof status !== "undefined") {
-      updateData.status = status;
-    }
-
-    const group = await groupService.updateGroup(req.params.id, updateData);
-
-    if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: "Group not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Group updated successfully",
-      data: group,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  if (req.file) {
+    updateData.groupImage = `/uploads/${req.file.filename}`;
   }
-};
+
+  if (typeof status !== "undefined") {
+    updateData.status = status;
+  }
+
+  const group = await groupService.updateGroup(req.params.id, req.user._id, updateData);
+  if (!group) {
+    throw new AppError("Group not found", 404);
+  }
+
+  return ApiResponse.success(res, group, "Group updated successfully");
+});
 
 /**
- * DELETE Group (soft)
+ * DELETE Group
  * DELETE /api/groups/:id
  */
-export const deleteGroup = async (req, res) => {
-  try {
-    const group = await groupService.deleteGroup(req.params.id);
-
-    if (!group) {
-      return res.status(404).json({ success: false, message: "Group not found" });
-    }
-
-    return res.status(200).json({ success: true, message: "Group deleted successfully" });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+export const deleteGroup = asyncHandler(async (req, res) => {
+  const group = await groupService.deleteGroup(req.params.id, req.user._id);
+  if (!group) {
+    throw new AppError("Group not found", 404);
   }
-};
+  return ApiResponse.success(res, null, "Group deleted successfully");
+});

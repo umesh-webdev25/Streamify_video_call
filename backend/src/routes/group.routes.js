@@ -1,20 +1,20 @@
 import express from "express";
 import upload from "../middleware/upload.middleware.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 import {
-  createGroup,
-  getAllGroups,
-  getGroupById,
-  updateGroup,
-  deleteGroup,
+   createGroup,
+   getAllGroups,
+   getGroupById,
+   updateGroup,
+   deleteGroup,
 } from "../controllers/group.controller.js";
 
 const router = express.Router();
 
+router.use(protectRoute);
+
 /**
  * POST  /api/groups
- * upload.single("groupImage") parses the entire multipart body:
- *   → text fields land in req.body
- *   → the file lands in req.file
  */
 router.post("/",   upload.single("groupImage"), createGroup);
 

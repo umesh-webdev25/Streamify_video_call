@@ -1,148 +1,106 @@
 import * as contactService from "../services/contact.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/apiResponse.js";
+import AppError from "../utils/AppError.js";
 
 /**
  * CREATE CONTACT
  */
-export const createContact = async (req, res) => {
-  try {
-    const { groupId, name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
-    
-    let contactImage = contactImageBody || "";
-    if (req.file) {
-      contactImage = `/uploads/${req.file.filename}`;
-    }
+export const createContact = asyncHandler(async (req, res) => {
+  const { groupId, name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
 
-    const contact = await contactService.createContact({
-      groupId,
-      name,
-      email,
-      mobileNumber,
-      designation,
-      contactImage,
-    });
-
-    return res.status(201).json({
-      success: true,
-      data: contact,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  if (!groupId) {
+    throw new AppError("Group ID is required to create a contact", 400);
   }
-};
+
+  let contactImage = contactImageBody || "";
+  if (req.file) {
+    contactImage = `/uploads/${req.file.filename}`;
+  }
+
+  const contact = await contactService.createContact({
+    groupId,
+    name,
+    email,
+    mobileNumber,
+    designation,
+    contactImage,
+  }, req.user._id);
+
+  return ApiResponse.success(res, contact, "Contact created successfully", 201);
+});
 
 /**
  * GET ALL CONTACTS
  */
-export const getAllContacts = async (req, res) => {
-  try {
-    const contacts = await contactService.getAllContacts();
-
-    return res.status(200).json({
-      success: true,
-      data: contacts,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+export const getAllContacts = asyncHandler(async (req, res) => {
+  const contacts = await contactService.getAllContacts(req.user._id);
+  return ApiResponse.success(res, contacts);
+});
 
 /**
  * GET CONTACT BY ID
  */
-export const getContactById = async (req, res) => {
-  try {
-    const contact = await contactService.getContactById(req.params.id);
-
-    if (!contact) {
-      return res.status(404).json({
-        success: false,
-        message: "Contact not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: contact,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+export const getContactById = asyncHandler(async (req, res) => {
+  const contact = await contactService.getContactById(req.params.id, req.user._id);
+  if (!contact) {
+    throw new AppError("Contact not found", 404);
   }
-};
+  return ApiResponse.success(res, contact);
+});
 
 /**
  * UPDATE CONTACT
  */
-export const updateContact = async (req, res) => {
-  try {
-    const { name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
+export const updateContact = asyncHandler(async (req, res) => {
+  const { name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
 
-    const updateData = {
-      name,
-      email,
-      mobileNumber,
-      designation,
-    };
+  const updateData = {
+    name,
+    email,
+    mobileNumber,
+    designation,
+  };
 
-    if (contactImageBody) {
-      updateData.contactImage = contactImageBody;
-    }
-
-    if (req.file) {
-      updateData.contactImage = `/uploads/${req.file.filename}`;
-    }
-
-    const contact = await contactService.updateContact(req.params.id, updateData);
-
-    if (!contact) {
-      return res.status(404).json({
-        success: false,
-        message: "Contact not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: contact,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  if (contactImageBody) {
+    updateData.contactImage = contactImageBody;
   }
-};
+
+  if (req.file) {
+    updateData.contactImage = `/uploads/${req.file.filename}`;
+  }
+
+  const contact = await contactService.updateContact(req.params.id, req.user._id, updateData);
+  if (!contact) {
+    throw new AppError("Contact not found", 404);
+  }
+
+  return ApiResponse.success(res, contact, "Contact updated successfully");
+});
 
 /**
  * DELETE CONTACT
  */
-export const deleteContact = async (req, res) => {
-  try {
-    const contact = await contactService.deleteContact(req.params.id);
-
-    if (!contact) {
-      return res.status(404).json({
-        success: false,
-        message: "Contact not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Contact deleted successfully",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+export const deleteContact = asyncHandler(async (req, res) => {
+  const contact = await contactService.deleteContact(req.params.id, req.user._id);
+  if (!contact) {
+    throw new AppError("Contact not found", 404);
   }
-};
+  return ApiResponse.success(res, null, "Contact deleted successfully");
+});
+
+/**
+ * INVITE CONTACT / AUTOMATIC GROUP ACCESS
+ */
+export const inviteContact = asyncHandler(async (req, res) => {
+  const { name, email, designation, groupId } = req.body;
+  const io = req.app.get("io");
+
+  const result = await contactService.inviteExistingUserToContact(
+    req.user._id,
+    { name, email, designation, groupId },
+    io
+  );
+
+  return ApiResponse.success(res, result, "Invitation processed successfully");
+});

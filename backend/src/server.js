@@ -104,15 +104,59 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+import jwt from "jsonwebtoken";
+import Group from "./models/group.js";
+
+const parseCookies = (cookieString) => {
+  if (!cookieString) return {};
+  return cookieString.split(";").reduce((acc, cookie) => {
+    const parts = cookie.split("=");
+    if (parts.length >= 2) {
+      acc[parts[0].trim()] = parts.slice(1).join("=");
+    }
+    return acc;
+  }, {});
+};
+
 app.set("io", io);
 
 io.on("connection", (socket) => {
   console.log("A user connected via Socket.IO:", socket.id);
   
-  // They can join a room manually or the server can handle it
-  socket.on("join_group_room", (groupId) => {
-    socket.join(`group:${groupId}`);
-    console.log(`Socket ${socket.id} joined room group:${groupId}`);
+  socket.on("join_group_room", async (groupId) => {
+    try {
+      const cookies = parseCookies(socket.handshake.headers.cookie);
+      const token = cookies.jwt;
+      if (!token) {
+        console.log(`Unauthorized room join attempt: No token for socket ${socket.id}`);
+        return;
+      }
+      
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      if (!decoded || !decoded.userId) {
+        console.log(`Unauthorized room join attempt: Invalid token for socket ${socket.id}`);
+        return;
+      }
+
+      const group = await Group.findById(groupId);
+      if (!group || group.isDeleted) {
+        console.log(`Room join failed: Group ${groupId} not found or deleted`);
+        return;
+      }
+
+      const isMember = group.members.some(
+        (m) => m.user.toString() === decoded.userId.toString()
+      );
+
+      if (isMember) {
+        socket.join(`group:${groupId}`);
+        console.log(`Socket ${socket.id} (user: ${decoded.userId}) joined room group:${groupId}`);
+      } else {
+        console.log(`Unauthorized room join: User ${decoded.userId} not a member of group ${groupId}`);
+      }
+    } catch (e) {
+      console.error("Socket room join authorization failed:", e.message);
+    }
   });
 
   socket.on("disconnect", () => {

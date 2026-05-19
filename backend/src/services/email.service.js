@@ -83,3 +83,35 @@ export const sendOTPEmail = async (email, otp, fullName) => {
     throw new Error("Failed to send verification email");
   }
 };
+
+/**
+ * Send Added to Group Email
+ */
+export const sendAddedToGroupEmail = async ({ to, inviterName, groupName, designation }) => {
+  const mailOptions = {
+    from: `"Streamify" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `You were added to ${groupName} Group`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #4f46e5;">You were added to ${groupName} Group</h2>
+        <p>${inviterName} added you to ${groupName} Group as:</p>
+        <p><strong>${designation}</strong></p>
+        <p>You can now:</p>
+        <ul>
+          <li>access group chats</li>
+          <li>join meetings</li>
+          <li>see group members</li>
+          <li>collaborate with the team</li>
+        </ul>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Group addition email sent successfully to ${to}`);
+  } catch (error) {
+    console.error("❌ Error sending Group addition email:", error);
+  }
+};

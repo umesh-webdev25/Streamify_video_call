@@ -2,10 +2,22 @@ import userRepository from "../repositories/user.repository.js";
 import friendRequestRepository from "../repositories/friendRequest.repository.js";
 import AppError from "../utils/AppError.js";
 import User from "../models/User.js";
+import FriendRequest from "../models/FriendRequest.js";
 
 class UserService {
   async getRecommendedUsers(user) {
-    return await userRepository.findRecommended(user._id, user.friends);
+    const friendRequests = await FriendRequest.find({
+      $or: [{ sender: user._id }, { recipient: user._id }],
+    });
+
+    const excludeIds = new Set(user.friends.map(id => id.toString()));
+    for (const req of friendRequests) {
+      excludeIds.add(req.sender.toString());
+      excludeIds.add(req.recipient.toString());
+    }
+    excludeIds.add(user._id.toString());
+
+    return await userRepository.findRecommended(user._id, Array.from(excludeIds));
   }
 
   async getMyFriends(userId) {

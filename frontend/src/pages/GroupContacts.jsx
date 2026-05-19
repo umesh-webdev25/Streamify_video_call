@@ -19,7 +19,9 @@ import {
   updateContact,
   deleteContact,
   getGroupById,
+  inviteContact,
 } from "../lib/api";
+import toast from "react-hot-toast";
 
 const GroupContacts = () => {
   const { groupId } = useParams();
@@ -106,15 +108,15 @@ const GroupContacts = () => {
         const updated = await updateContact(selectedContact._id, formData);
         setContacts((prev) => prev.map((c) => (c._id === updated._id ? updated : c)));
       } else {
-        const formData = new FormData();
-        formData.append("name", contactData.name);
-        formData.append("email", contactData.email);
-        formData.append("mobileNumber", contactData.mobileNumber);
-        formData.append("designation", contactData.designation || "");
-        formData.append("groupId", groupId);
-        if (contactData.contactImage) formData.append("contactImage", contactData.contactImage);
-        const newContact = await createContact(formData);
-        setContacts((prev) => [newContact, ...prev]);
+        const invitePayload = {
+          name: contactData.name,
+          email: contactData.email,
+          designation: contactData.designation || "",
+          groupId: groupId,
+        };
+        await inviteContact(invitePayload);
+        toast.success("Invitation processed successfully");
+        await fetchContacts();
         try { window.dispatchEvent(new CustomEvent("groups:updated")); } catch (e) { }
       }
       setContactData({ name: "", email: "", mobileNumber: "", designation: "", contactImage: null });

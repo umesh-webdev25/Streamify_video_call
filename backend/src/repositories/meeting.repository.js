@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Meeting from "../models/Meeting.js";
 
 class MeetingRepository {
@@ -15,18 +16,6 @@ class MeetingRepository {
 
   async updateByRoomId(roomId, updateData) {
     return await Meeting.findOneAndUpdate({ roomId }, updateData, { new: true });
-  }
-
-  async addParticipant(roomId, userId) {
-    return await Meeting.findOneAndUpdate(
-      { roomId },
-      {
-        $push: {
-          participants: { userId, joinedAt: new Date() },
-        },
-      },
-      { new: true }
-    );
   }
 
   async markParticipantLeft(roomId, userId) {
@@ -75,8 +64,15 @@ class MeetingRepository {
     return await Meeting.findOne({ groupId, status: "active" });
   }
 
-  async addParticipant(meetingId, userId) {
-    const meeting = await Meeting.findById(meetingId);
+  async addParticipant(roomIdOrId, userId) {
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(roomIdOrId)) {
+      query = { _id: roomIdOrId };
+    } else {
+      query = { roomId: roomIdOrId };
+    }
+
+    const meeting = await Meeting.findOne(query);
     if (!meeting) return null;
 
     const existingParticipant = meeting.participants.find(

@@ -8,7 +8,7 @@ export const createMeeting = asyncHandler(async (req, res) => {
 });
 
 export const getMeeting = asyncHandler(async (req, res) => {
-  const meeting = await meetingService.getMeeting(req.params.roomId);
+  const meeting = await meetingService.getMeeting(req.params.roomId, req.user._id);
   return ApiResponse.success(res, meeting);
 });
 
