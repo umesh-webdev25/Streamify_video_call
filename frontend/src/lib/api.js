@@ -105,6 +105,32 @@ export async function getMeetingToken() {
   return response.data.data;
 }
 
+// Group Meeting API
+export async function createGroupMeeting(groupId) {
+  const response = await axiosInstance.post("/meetings/group/create", { groupId });
+  return response.data.data;
+}
+
+export async function joinGroupMeetingWithCode(meetingCode) {
+  const response = await axiosInstance.post("/meetings/group/join", { meetingCode });
+  return response.data.data;
+}
+
+export async function endGroupMeetingWithCode(meetingCode) {
+  const response = await axiosInstance.delete(`/meetings/group/${meetingCode}/end`);
+  return response.data.data;
+}
+
+export async function shareMeetingToGroup(meetingCode, groupId) {
+  const response = await axiosInstance.post("/meetings/group/share", { meetingCode, groupId });
+  return response.data.data;
+}
+
+export async function getMeetingByCode(meetingCode) {
+  const response = await axiosInstance.get(`/meetings/group/${meetingCode}`);
+  return response.data.data;
+}
+
 // Session API
 
 export async function getAllSessions() {

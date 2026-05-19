@@ -12,6 +12,28 @@ const meetingSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    groupId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+    },
+    meetingCode: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    maxParticipants: {
+      type: Number,
+      default: 50,
+    },
+    activeParticipants: {
+      type: Number,
+      default: 0,
+    },
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    },
     hostId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -49,6 +71,7 @@ const meetingSchema = new mongoose.Schema(
 
 meetingSchema.index({ hostId: 1, status: 1 });
 meetingSchema.index({ "participants.userId": 1 });
+meetingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const Meeting = mongoose.model("Meeting", meetingSchema);
 

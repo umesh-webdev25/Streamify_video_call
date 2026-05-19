@@ -2,6 +2,7 @@ import crypto from "crypto";
 import meetingRepository from "../repositories/meeting.repository.js";
 import userRepository from "../repositories/user.repository.js";
 import AppError from "../utils/AppError.js";
+import Group from "../models/group.js";
 import { generateStreamToken } from "../lib/stream.js";
 import notificationService from "./notification.service.js";
 import queueService from "./queue.service.js";
@@ -135,6 +136,79 @@ class MeetingService {
 
   generateRoomId() {
     return crypto.randomBytes(4).toString("hex").toUpperCase();
+  }
+
+  async createGroupMeeting(groupId, hostId) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new AppError("Group not found", 404);
+    
+    const isMember = group.members.some(m => m.user.toString() === hostId.toString());
+    if (!isMember) throw new AppError("Not a member of this group", 403);
+
+    const existing = await meetingRepository.findActiveMeetingByGroup(groupId);
+    if (existing) {
+      throw new AppError("Meeting already running for this group", 409, { existingCode: existing.meetingCode });
+    }
+
+    const meetingCode = "GRP-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+    const roomId = crypto.randomUUID();
+
+    const meeting = await meetingRepository.createMeeting({
+      roomId,
+      meetingCode,
+      hostId,
+      groupId,
+      participants: [{ userId: hostId, joinedAt: new Date() }],
+      status: "active",
+      activeParticipants: 1
+    });
+
+    return { meetingCode, roomId };
+  }
+
+  async getMeetingByCode(meetingCode, userId) {
+    const meeting = await meetingRepository.findMeetingByCode(meetingCode);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+
+    const group = await Group.findById(meeting.groupId);
+    const isMember = group?.members.some(m => m.user.toString() === userId.toString());
+    if (!isMember) throw new AppError("Not a member of this group", 403);
+
+    return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants };
+  }
+
+  async joinMeetingWithCode(meetingCode, userId) {
+    const meeting = await meetingRepository.findMeetingByCode(meetingCode);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+
+    const group = await Group.findById(meeting.groupId);
+    const isMember = group?.members.some(m => m.user.toString() === userId.toString());
+    if (!isMember) throw new AppError("Not a member of this group", 403);
+
+    await meetingRepository.addParticipant(meeting._id, userId);
+    
+    return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants + 1 };
+  }
+
+  async endMeetingWithCode(meetingCode, userId) {
+    const meeting = await meetingRepository.findMeetingByCode(meetingCode);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+    
+    if (meeting.hostId.toString() !== userId.toString()) {
+      throw new AppError("Only the host can end the meeting", 403);
+    }
+
+    await meetingRepository.endMeetingById(meeting._id);
+    return { roomId: meeting.roomId, groupId: meeting.groupId };
+  }
+
+  async shareMeetingToGroup(meetingCode, groupId, senderId) {
+    const meeting = await meetingRepository.findMeetingByCode(meetingCode);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+
+    // Normally create a DB message here. Since there is no message model, we bypass and just return success.
+    // The Socket.IO emission will happen in the controller.
+    return { success: true, message: { type: "meeting_invite", meta: { meetingCode, lobbyUrl: `/meeting/lobby?code=${meetingCode}` } } };
   }
 }
 

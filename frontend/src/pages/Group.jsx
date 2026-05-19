@@ -15,9 +15,12 @@ import {
   MoreVerticalIcon,
   DownloadIcon,
   MessageSquareIcon,
+  VideoIcon
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { io } from "socket.io-client";
+import { useMeeting } from "../hooks/useMeeting";
 import {
   createGroup,
   getAllGroups,
@@ -27,10 +30,7 @@ import {
   deleteGroup,
 } from "../lib/api";
 
-/** Replace with real auth user from your store/context */
-const authUser = {
-  _id: "664d8a1b2c9f8f0012345678",
-};
+import useAuthUser from "../hooks/useAuthUser";
 
 /** Resolve image URL from backend */
 const resolveImageSrc = (img, name) => {
@@ -44,6 +44,7 @@ const resolveImageSrc = (img, name) => {
 const Group = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const { authUser } = useAuthUser();
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [groups, setGroups] = useState([]);
@@ -66,6 +67,9 @@ const Group = () => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [activeMeetingCode, setActiveMeetingCode] = useState(null);
+  
+  const { handleCreateGroupMeeting } = useMeeting();
 
   // ── Fetch Groups from API ──────────────────────────────────────────────────
   const fetchGroups = async () => {
@@ -158,8 +162,37 @@ const Group = () => {
       setChatLoading(false);
     }
     setMessages([]);
+    setActiveMeetingCode(null);
     setOpenChat(true);
   };
+
+  useEffect(() => {
+    if (!selectedGroup) return;
+    
+    // Connect to backend
+    const socket = io(import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000");
+    
+    socket.emit("join_group_room", selectedGroup._id);
+
+    socket.on("meeting_started", (data) => {
+      if (data.groupId === selectedGroup._id) {
+        setActiveMeetingCode(data.meetingCode);
+        if (data.message) {
+          setMessages((prev) => [...prev, { id: Date.now(), sender: data.hostId === authUser._id ? "me" : "them", ...data.message }]);
+        }
+      }
+    });
+
+    socket.on("meeting_ended", (data) => {
+      if (data.groupId === selectedGroup._id) {
+        setActiveMeetingCode(null);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [selectedGroup]);
 
   // ── Form field change ──────────────────────────────────────────────────────
   const handleChange = (e) => {
@@ -951,6 +984,27 @@ const Group = () => {
                 </button>
               </div>
 
+              {/* Live Meeting Banner */}
+              {activeMeetingCode && (
+                <div className="bg-primary/10 border-b border-primary/20 px-6 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                      <VideoIcon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-primary">Group Call in Progress</p>
+                      <p className="text-xs font-medium text-primary/70">Join the ongoing discussion</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/meeting/lobby?code=${activeMeetingCode}`)}
+                    className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-primary/90 transition-colors shadow-sm"
+                  >
+                    Join Call
+                  </button>
+                </div>
+              )}
+
               {/* Messages Area */}
               <div
                 className="
@@ -1016,7 +1070,29 @@ const Group = () => {
                               }
                             `}
                           >
-                            {msg.text}
+                            {msg.type === "meeting_invite" ? (
+                              <div className="flex flex-col gap-2 min-w-[200px]">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <VideoIcon className="w-5 h-5" />
+                                  <span className="font-bold text-sm">Video Call Started</span>
+                                </div>
+                                <p className="text-xs opacity-90 leading-tight">
+                                  Join the group video meeting now!
+                                </p>
+                                <button 
+                                  onClick={() => navigate(msg.meta.lobbyUrl)}
+                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${
+                                    msg.sender === "me" 
+                                      ? "bg-white text-primary hover:bg-white/90" 
+                                      : "bg-primary text-white hover:bg-primary/90"
+                                  }`}
+                                >
+                                  Join Meeting
+                                </button>
+                              </div>
+                            ) : (
+                              <>{msg.text}</>
+                            )}
 
                             {/* Glow Effect for user messages */}
                             {msg.sender === "me" && (
@@ -1063,7 +1139,7 @@ const Group = () => {
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
                     className="
-                      absolute right-2 top-2 bottom-2
+                      absolute right-[3.5rem] top-2 bottom-2
                       px-4
                       bg-gradient-to-br from-primary to-secondary
                       text-white
@@ -1077,6 +1153,23 @@ const Group = () => {
                     "
                   >
                     <SendIcon className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleCreateGroupMeeting(selectedGroup._id)}
+                    className="
+                      absolute right-2 top-2 bottom-2
+                      w-10
+                      bg-base-200 hover:bg-base-300
+                      text-base-content/70 hover:text-primary
+                      rounded-xl
+                      flex items-center justify-center
+                      transition-all duration-300
+                      z-10 border border-base-300
+                    "
+                    title="Start Video Call"
+                  >
+                    <VideoIcon className="w-4 h-4" />
                   </button>
                 </div>
               </div>

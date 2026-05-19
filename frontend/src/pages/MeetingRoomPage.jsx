@@ -38,6 +38,8 @@ import PageLoader from "../components/PageLoader";
 import { cn } from "../lib/utils";
 import InCallChatPanel from "../components/meeting/InCallChatPanel";
 import LeaveMeetingModal from "../components/meeting/LeaveMeetingModal";
+import { useMeetingStore } from "../store/useMeetingStore";
+import { useMeeting } from "../hooks/useMeeting";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -66,6 +68,8 @@ const MeetingRoomPage = () => {
   const containerRef = useRef(null);
 
   const { authUser, isLoading } = useAuthUser();
+  const { activeMeeting, clearMeetingState } = useMeetingStore();
+  const { handleEndMeeting } = useMeeting();
 
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
@@ -181,10 +185,18 @@ const MeetingRoomPage = () => {
     setShowNewMsgToast(false);
   };
 
-  const handleEndCall = (endForEveryone) => {
+  const handleEndCall = async (endForEveryone) => {
     if (endForEveryone && callRef.current) {
       callRef.current.endCall();
+      if (activeMeeting?.meetingCode) {
+        try {
+          await handleEndMeeting(activeMeeting.meetingCode);
+        } catch (err) {
+          console.error("Failed to end group meeting record:", err);
+        }
+      }
     }
+    clearMeetingState();
   };
 
   if (isLoading || isConnecting) return <PageLoader />;

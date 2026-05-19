@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
-import FriendCard from "../components/FriendCard";
+import FriendCard, { getLanguageFlag } from "../components/FriendCard";
 import NoFriendsFound from "../components/NoFriendsFound";
 import Skeleton from "../components/ui/Skeleton";
 import { Helmet } from "react-helmet-async";

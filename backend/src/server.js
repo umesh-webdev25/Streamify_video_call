@@ -8,6 +8,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import { Server } from "socket.io";
 
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
@@ -95,6 +96,28 @@ app.use(errorMiddleware);
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   connectDB();
+});
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log("A user connected via Socket.IO:", socket.id);
+  
+  // They can join a room manually or the server can handle it
+  socket.on("join_group_room", (groupId) => {
+    socket.join(`group:${groupId}`);
+    console.log(`Socket ${socket.id} joined room group:${groupId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
 });
 
 // Graceful Shutdown

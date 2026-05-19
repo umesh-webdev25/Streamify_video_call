@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   VideoIcon,
@@ -19,6 +19,7 @@ import useAuthUser from "../hooks/useAuthUser";
 import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 import { cn } from "../lib/utils";
+import { useMeeting } from "../hooks/useMeeting";
 
 const generateMeetingCode = () => {
   // Safe characters excluding O, 0, I, 1
@@ -46,6 +47,16 @@ const MeetingLobbyPage = () => {
   const [showDevices, setShowDevices] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  
+  const [searchParams] = useSearchParams();
+  const codeParam = searchParams.get("code");
+  const { handleJoinMeeting } = useMeeting();
+
+  useEffect(() => {
+    if (codeParam) {
+      setRoomCode(codeParam);
+    }
+  }, [codeParam]);
 
   const generatedRoomId = useRef(generateMeetingCode());
 
@@ -107,12 +118,24 @@ const MeetingLobbyPage = () => {
     });
   };
 
-  const joinMeeting = () => {
+  const joinMeeting = async () => {
     if (!roomCode.trim()) {
       toast.error("Please enter a meeting code");
       return;
     }
-    navigate(`/meeting/room/${roomCode.trim().toUpperCase()}`);
+    
+    const code = roomCode.trim().toUpperCase();
+    
+    // Check if it is a group meeting code
+    if (code.startsWith("GRP-")) {
+      try {
+        await handleJoinMeeting(code);
+      } catch (error) {
+        console.error("Join meeting failed:", error);
+      }
+    } else {
+      navigate(`/meeting/room/${code}`);
+    }
   };
 
   return (
