@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShipWheelIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon, VideoIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import useLogin from "../hooks/useLogin";
 import { Helmet } from "react-helmet-async";
@@ -30,7 +30,7 @@ const LoginPage = () => {
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2.5 mb-10 w-fit">
             <div className="p-1.5 bg-primary rounded-lg">
-              <ShipWheelIcon className="size-5 text-primary-content" />
+              <VideoIcon className="size-5 text-primary-content" />
             </div>
             <span className="text-lg font-bold tracking-tight text-base-content">Streamify</span>
           </Link>
@@ -40,8 +40,8 @@ const LoginPage = () => {
             <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none flex flex-col items-start gap-2">
               <span>{error?.response?.data?.message || error?.message || "Authentication failed"}</span>
               {error?.response?.data?.message?.includes("not verified") && (
-                <Link 
-                  to="/verify-otp" 
+                <Link
+                  to="/verify-otp"
                   state={{ email: loginData.email }}
                   className="text-xs font-bold underline hover:no-underline"
                 >

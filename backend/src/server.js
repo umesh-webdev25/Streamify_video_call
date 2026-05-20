@@ -20,9 +20,7 @@ import contectRouter from "./routes/contact.routes.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
-import dns from "dns";
 
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
 // Load .env before using process.env
 dotenv.config();
 

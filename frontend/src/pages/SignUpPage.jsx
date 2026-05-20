@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShipWheelIcon, UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import {UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon , VideoIcon} from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import useSignUp from "../hooks/useSignUp";
 import { Helmet } from "react-helmet-async";
@@ -35,7 +35,7 @@ const SignUpPage = () => {
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2.5 mb-10 w-fit">
             <div className="p-1.5 bg-primary rounded-lg">
-              <ShipWheelIcon className="size-5 text-primary-content" />
+              <VideoIcon className="size-5 text-primary-content" />
             </div>
             <span className="text-lg font-bold tracking-tight text-base-content">Streamify</span>
           </Link>

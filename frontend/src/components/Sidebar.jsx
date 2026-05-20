@@ -49,7 +49,7 @@ const Sidebar = () => {
       label: "Home",
       path: "/",
     },
-  
+
     {
       icon: GroupIcon,
       label: "Groups",
@@ -99,7 +99,7 @@ const Sidebar = () => {
       <div className="h-16 px-6 flex items-center border-b border-base-200">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="p-1.5 bg-primary rounded-lg">
-            <ShipWheelIcon className="size-5 text-primary-content" />
+            <VideoIcon className="size-5 text-primary-content" />
           </div>
 
           <span className="text-lg font-bold tracking-tight text-base-content">
