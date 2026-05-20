@@ -97,7 +97,6 @@ const Group = () => {
   };
 
 
-  console.log("groups", groups);
   // ── Fetch Contacts from API ────────────────────────────────────────────────
   const fetchContacts = async () => {
     try {
@@ -626,7 +625,7 @@ const Group = () => {
       border border-primary/20 -ml-[9rem]
     "
                       >
-                        {group.members?.length || 0}
+                        {contacts.length}
                       </span>
                     </td>
 

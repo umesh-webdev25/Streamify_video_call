@@ -6,6 +6,9 @@ const BASE_URL =
   // Backend default port is 5001 (see backend/.env)
   (import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "/api");
 
+// Export base URL for use in image URLs
+export const API_BASE_URL = BASE_URL;
+
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,

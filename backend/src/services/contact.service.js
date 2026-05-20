@@ -1,6 +1,5 @@
 import Contact from "../models/contect.js";
 import cloudinary from "../lib/cloudinary.js";
-import fs from "fs";
 import User from "../models/User.js";
 import Group from "../models/group.js";
 import AppError from "../utils/AppError.js";
@@ -8,6 +7,58 @@ import { verifyGroupMembership } from "./group.service.js";
 import Notification from "../models/Notification.js";
 import notificationService from "./notification.service.js";
 import { sendAddedToGroupEmail } from "./email.service.js";
+
+const buildContactPayload = (contactData = {}) => ({
+  groupId: contactData.groupId,
+  name: contactData.name?.trim(),
+  email: contactData.email?.trim().toLowerCase(),
+  mobileNumber: contactData.mobileNumber?.trim(),
+  designation: contactData.designation?.trim() || "",
+});
+
+const resolveUploadedFileUrl = async (file, folder = "contacts") => {
+  if (!file) {
+    console.log("Contact image upload skipped: req.file is undefined");
+    return "";
+  }
+
+  console.log("Contact image file received", {
+    fieldName: file.fieldname,
+    originalName: file.originalname,
+    mimeType: file.mimetype,
+    path: file.path,
+    secureUrl: file.secure_url,
+    filename: file.filename,
+    size: file.size,
+    hasBuffer: Boolean(file.buffer),
+  });
+
+  if (typeof file.path === "string" && file.path.startsWith("http")) {
+    return file.path;
+  }
+
+  if (typeof file.secure_url === "string" && file.secure_url.startsWith("http")) {
+    return file.secure_url;
+  }
+
+  if (file.buffer) {
+    const fileBase64 = file.buffer.toString("base64");
+    const dataUri = `data:${file.mimetype};base64,${fileBase64}`;
+    const uploadResponse = await cloudinary.uploader.upload(dataUri, { folder });
+
+    console.log("Contact image uploaded to Cloudinary from buffer", {
+      publicId: uploadResponse.public_id,
+      secureUrl: uploadResponse.secure_url,
+    });
+
+    return uploadResponse.secure_url;
+  }
+
+  throw new AppError(
+    "Image upload failed: Cloudinary did not return a URL for the uploaded file",
+    500,
+  );
+};
 
 /**
  * VERIFY CONTACT CONNECTION HELPER
@@ -29,37 +80,44 @@ export const verifyContactConnection = async (requestingUserId, targetUserId) =>
 /**
  * CREATE CONTACT
  */
-export const createContact = async (contactData, userId) => {
+export const createContact = async (contactData, userId, file) => {
   try {
-    // Verify user is a member of the group where the contact is being added
-    await verifyGroupMembership(contactData.groupId, userId);
+    const normalizedContactData = buildContactPayload(contactData);
 
-    let { contactImage } = contactData;
-
-    // If image is a local path or base64, upload to cloudinary
-    if (contactImage && (contactImage.startsWith("/uploads") || contactImage.startsWith("data:image"))) {
-      const uploadResponse = await cloudinary.uploader.upload(
-        contactImage.startsWith("/") ? `.${contactImage}` : contactImage,
-        { folder: "contacts" }
-      );
-      contactImage = uploadResponse.secure_url;
-
-      // Clean up local file if it was a local path
-      if (contactData.contactImage.startsWith("/uploads")) {
-        try { fs.unlinkSync(`.${contactData.contactImage}`); } catch (e) {}
-      }
+    if (!normalizedContactData.groupId) {
+      throw new AppError("Group ID is required to create a contact", 400);
     }
 
+    await verifyGroupMembership(normalizedContactData.groupId, userId);
+
+    const imageUrl =
+      (await resolveUploadedFileUrl(file)) ||
+      contactData.contactImage?.trim() ||
+      "";
+
+    console.log("Creating contact with payload", {
+      ...normalizedContactData,
+      userId: userId?.toString(),
+      contactImage: imageUrl,
+    });
+
     const contact = new Contact({
-      ...contactData,
-      contactImage,
+      ...normalizedContactData,
+      contactImage: imageUrl,
     });
 
     await contact.save();
+
+    console.log("Contact created successfully", {
+      contactId: contact._id.toString(),
+      contactImage: contact.contactImage,
+    });
+
     return contact;
   } catch (error) {
+    console.error("Error creating contact:", error);
     if (error instanceof AppError) throw error;
-    throw new Error(error.message);
+    throw new AppError("Failed to create contact", 500);
   }
 };
 
@@ -106,7 +164,7 @@ export const getContactById = async (id, userId) => {
 /**
  * UPDATE CONTACT
  */
-export const updateContact = async (id, userId, updateData) => {
+export const updateContact = async (id, userId, updateData, file) => {
   try {
     const contact = await Contact.findById(id);
     if (!contact || contact.isDeleted) {
@@ -116,19 +174,18 @@ export const updateContact = async (id, userId, updateData) => {
     // Verify membership of contact's group
     await verifyGroupMembership(contact.groupId, userId);
 
-    let { contactImage } = updateData;
-
-    if (contactImage && (contactImage.startsWith("/uploads") || contactImage.startsWith("data:image"))) {
-      const uploadResponse = await cloudinary.uploader.upload(
-        contactImage.startsWith("/") ? `.${contactImage}` : contactImage,
-        { folder: "contacts" }
-      );
-      contactImage = uploadResponse.secure_url;
-
-      if (updateData.contactImage.startsWith("/uploads")) {
-        try { fs.unlinkSync(`.${updateData.contactImage}`); } catch (e) {}
-      }
+    let contactImage = contact.contactImage;
+    if (file) {
+      contactImage = await resolveUploadedFileUrl(file);
+    } else if (updateData.contactImage) {
+      contactImage = updateData.contactImage;
     }
+
+    console.log("Updating contact", {
+      contactId: id,
+      userId: userId?.toString(),
+      contactImage,
+    });
 
     const updatedContact = await Contact.findByIdAndUpdate(
       id,
@@ -170,8 +227,14 @@ export const deleteContact = async (id, userId) => {
 /**
  * INVITE EXISTING USER TO CONTACT / AUTOMATIC GROUP ACCESS
  */
-export const inviteExistingUserToContact = async (ownerId, contactData, io) => {
-  const { name, email, designation, groupId } = contactData;
+export const inviteExistingUserToContact = async (
+  ownerId,
+  contactData,
+  io,
+  file,
+) => {
+  const normalizedContactData = buildContactPayload(contactData);
+  const { name, email, designation, groupId, mobileNumber } = normalizedContactData;
 
   if (!groupId) {
     throw new AppError("Group ID is required", 400);
@@ -181,7 +244,20 @@ export const inviteExistingUserToContact = async (ownerId, contactData, io) => {
   await verifyGroupMembership(groupId, ownerId);
 
   // Normalize email
-  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedEmail = email;
+  const contactImage =
+    (await resolveUploadedFileUrl(file)) ||
+    contactData.contactImage?.trim() ||
+    "";
+
+  console.log("Processing contact invitation", {
+    ownerId: ownerId?.toString(),
+    groupId,
+    email: normalizedEmail,
+    mobileNumber,
+    designation,
+    contactImage,
+  });
 
   // STEP 2: Find existing platform user by email
   const existingUser = await User.findOne({ email: normalizedEmail });
@@ -223,8 +299,8 @@ export const inviteExistingUserToContact = async (ownerId, contactData, io) => {
         name,
         email: normalizedEmail,
         designation,
-        mobileNumber: contactData.mobileNumber || "N/A",
-        contactImage: contactData.contactImage || "",
+        mobileNumber: mobileNumber || "N/A",
+        contactImage,
       });
       await contact.save();
     }
@@ -292,8 +368,8 @@ export const inviteExistingUserToContact = async (ownerId, contactData, io) => {
         name,
         email: normalizedEmail,
         designation,
-        mobileNumber: contactData.mobileNumber || "N/A",
-        contactImage: contactData.contactImage || "",
+        mobileNumber: mobileNumber || "N/A",
+        contactImage,
       });
       await contact.save();
     }

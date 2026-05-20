@@ -275,6 +275,15 @@ export async function deleteContact(
 }
 
 export async function inviteContact(data) {
-  const response = await axiosInstance.post("/contacts/invite", data);
+  const response = await axiosInstance.post(
+    "/contacts/invite",
+    data,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
   return response.data;
 }

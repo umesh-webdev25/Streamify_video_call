@@ -1,7 +1,6 @@
-// routes/contact.routes.js
-
 import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
+
 import {
   createContact,
   getAllContacts,
@@ -11,9 +10,10 @@ import {
   inviteContact,
 } from "../controllers/contact.controller.js";
 
-// multer upload middleware
-import upload from "../middleware/upload.middleware.js";
+import { uploadContact } from "../middleware/upload.middleware.js";
+
 import validate from "../middleware/validate.middleware.js";
+
 import { inviteContactSchema } from "../validators/contact.validator.js";
 
 const router = express.Router();
@@ -25,6 +25,7 @@ router.use(protectRoute);
  */
 router.post(
   "/invite",
+  uploadContact.single("contactImage"),
   validate(inviteContactSchema),
   inviteContact
 );
@@ -34,7 +35,7 @@ router.post(
  */
 router.post(
   "/",
-  upload.single("contactImage"),
+  uploadContact.single("contactImage"),
   createContact
 );
 
@@ -53,7 +54,7 @@ router.get("/:id", getContactById);
  */
 router.put(
   "/:id",
-  upload.single("contactImage"),
+  uploadContact.single("contactImage"),
   updateContact
 );
 

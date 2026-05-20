@@ -7,29 +7,37 @@ import AppError from "../utils/AppError.js";
  * CREATE CONTACT
  */
 export const createContact = asyncHandler(async (req, res) => {
-  const { groupId, name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
-
-  if (!groupId) {
-    throw new AppError("Group ID is required to create a contact", 400);
-  }
-
-  let contactImage = contactImageBody || "";
-  if (req.file) {
-    contactImage = `/uploads/${req.file.filename}`;
-  }
-
-  const contact = await contactService.createContact({
+  const {
     groupId,
     name,
     email,
     mobileNumber,
     designation,
     contactImage,
-  }, req.user._id);
+  } = req.body;
+
+  console.log("CreateContact - req.body:", req.body);
+  console.log("CreateContact - req.file:", req.file);
+
+  if (!groupId) {
+    throw new AppError("Group ID is required to create a contact", 400);
+  }
+
+  const contact = await contactService.createContact(
+    {
+      groupId,
+      name,
+      email,
+      mobileNumber,
+      designation,
+      contactImage,
+    },
+    req.user._id,
+    req.file,
+  );
 
   return ApiResponse.success(res, contact, "Contact created successfully", 201);
 });
-
 /**
  * GET ALL CONTACTS
  */
@@ -42,7 +50,10 @@ export const getAllContacts = asyncHandler(async (req, res) => {
  * GET CONTACT BY ID
  */
 export const getContactById = asyncHandler(async (req, res) => {
-  const contact = await contactService.getContactById(req.params.id, req.user._id);
+  const contact = await contactService.getContactById(
+    req.params.id,
+    req.user._id,
+  );
   if (!contact) {
     throw new AppError("Contact not found", 404);
   }
@@ -53,7 +64,15 @@ export const getContactById = asyncHandler(async (req, res) => {
  * UPDATE CONTACT
  */
 export const updateContact = asyncHandler(async (req, res) => {
-  const { name, email, mobileNumber, designation, contactImage: contactImageBody } = req.body;
+  console.log("UpdateContact - req.body:", req.body);
+  console.log("UpdateContact - req.file:", req.file);
+  const {
+    name,
+    email,
+    mobileNumber,
+    designation,
+    contactImage: contactImageBody,
+  } = req.body;
 
   const updateData = {
     name,
@@ -67,10 +86,15 @@ export const updateContact = asyncHandler(async (req, res) => {
   }
 
   if (req.file) {
-    updateData.contactImage = `/uploads/${req.file.filename}`;
+    updateData.contactImage = req.file.path || req.file.secure_url || "";
   }
 
-  const contact = await contactService.updateContact(req.params.id, req.user._id, updateData);
+  const contact = await contactService.updateContact(
+    req.params.id,
+    req.user._id,
+    updateData,
+    req.file,
+  );
   if (!contact) {
     throw new AppError("Contact not found", 404);
   }
@@ -82,7 +106,10 @@ export const updateContact = asyncHandler(async (req, res) => {
  * DELETE CONTACT
  */
 export const deleteContact = asyncHandler(async (req, res) => {
-  const contact = await contactService.deleteContact(req.params.id, req.user._id);
+  const contact = await contactService.deleteContact(
+    req.params.id,
+    req.user._id,
+  );
   if (!contact) {
     throw new AppError("Contact not found", 404);
   }
@@ -93,13 +120,24 @@ export const deleteContact = asyncHandler(async (req, res) => {
  * INVITE CONTACT / AUTOMATIC GROUP ACCESS
  */
 export const inviteContact = asyncHandler(async (req, res) => {
-  const { name, email, designation, groupId } = req.body;
+  const {
+    name,
+    email,
+    mobileNumber,
+    designation,
+    groupId,
+    contactImage,
+  } = req.body;
   const io = req.app.get("io");
+
+  console.log("InviteContact - req.body:", req.body);
+  console.log("InviteContact - req.file:", req.file);
 
   const result = await contactService.inviteExistingUserToContact(
     req.user._id,
-    { name, email, designation, groupId },
-    io
+    { name, email, mobileNumber, designation, groupId, contactImage },
+    io,
+    req.file,
   );
 
   return ApiResponse.success(res, result, "Invitation processed successfully");
