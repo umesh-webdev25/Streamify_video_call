@@ -68,7 +68,7 @@ const Group = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [activeMeetingCode, setActiveMeetingCode] = useState(null);
-  
+
   const { handleCreateGroupMeeting } = useMeeting();
 
   // ── Fetch Groups from API ──────────────────────────────────────────────────
@@ -167,10 +167,10 @@ const Group = () => {
 
   useEffect(() => {
     if (!selectedGroup) return;
-    
+
     // Connect to backend
     const socket = io(import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000");
-    
+
     socket.emit("join_group_room", selectedGroup._id);
 
     socket.on("meeting_started", (data) => {
@@ -315,6 +315,9 @@ const Group = () => {
     });
   }, [groups, search, statusFilter]);
 
+  // Compute total members across all groups
+  const totalMembers = useMemo(() => groups.reduce((sum, g) => sum + (g.members?.length ?? 0), 0), [groups]);
+
   const totalPages = Math.max(1, Math.ceil(filteredGroups.length / rowsPerPage));
   const safePage = Math.min(page, totalPages);
   const pagedGroups = filteredGroups.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
@@ -420,7 +423,7 @@ const Group = () => {
             </p>
 
             <h2 className="text-4xl font-bold text-base-content mt-2">
-              {contacts.length}
+              {totalMembers}
             </h2>
           </div>
 
@@ -625,7 +628,7 @@ const Group = () => {
       border border-primary/20 -ml-[9rem]
     "
                       >
-                        {contacts.length}
+                        {group.members?.length ?? 0}
                       </span>
                     </td>
 
@@ -995,7 +998,7 @@ const Group = () => {
                       <p className="text-xs font-medium text-primary/70">Join the ongoing discussion</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => navigate(`/meeting/lobby?code=${activeMeetingCode}`)}
                     className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-primary/90 transition-colors shadow-sm"
                   >
@@ -1078,13 +1081,12 @@ const Group = () => {
                                 <p className="text-xs opacity-90 leading-tight">
                                   Join the group video meeting now!
                                 </p>
-                                <button 
+                                <button
                                   onClick={() => navigate(msg.meta.lobbyUrl)}
-                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${
-                                    msg.sender === "me" 
-                                      ? "bg-white text-primary hover:bg-white/90" 
+                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${msg.sender === "me"
+                                      ? "bg-white text-primary hover:bg-white/90"
                                       : "bg-primary text-white hover:bg-primary/90"
-                                  }`}
+                                    }`}
                                 >
                                   Join Meeting
                                 </button>

@@ -6,6 +6,7 @@ import {
   getUserFriends,
   sendFriendRequest,
 } from "../lib/api";
+import useSessions from "../hooks/session.js";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +16,6 @@ import {
   MonitorUpIcon,
   CalendarIcon,
   ArrowRightIcon,
-  MessageSquareIcon,
   MapPinIcon,
   UserPlusIcon,
   CheckCircleIcon,
@@ -27,6 +27,8 @@ import {
   MessageCircleIcon,
   LogInIcon,
   ContactIcon,
+  Trash2Icon,
+  UserXIcon,
 } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
@@ -166,6 +168,15 @@ const upcomingMeetings = [
 ];
 
 const HomePage = () => {
+
+  const { sessions, isLoading } = useSessions();
+
+  console.log("Sessions:", sessions);
+
+  /* ── Stats derived from sessions ── */
+  const totalSessions = sessions?.length ?? 0;
+
+
   const { authUser } = useAuthUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -407,34 +418,116 @@ const HomePage = () => {
                     <FolderIcon className="w-7 h-7 text-warning" />
                   </div>
                 </div>
+
+                {/* Total Sessions */}
+                <div
+                  className="
+      bg-base-100
+      border border-base-300
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+                >
+                  <div>
+                    <p className="text-sm font-medium text-base-content/60">
+                      Total Sessions
+                    </p>
+
+                    <h2 className="text-4xl font-bold text-base-content mt-2">
+                      {totalSessions}
+                    </h2>
+                  </div>
+
+                  <div
+                    className="
+        w-14 h-14
+        rounded-2xl
+        bg-info/10
+        flex items-center justify-center
+        flex-shrink-0
+      "
+                  >
+                    <VideoIcon className="w-7 h-7 text-info" />
+                  </div>
+                </div>
+
+                {/* Deleted Groups */}
+                <div
+                  className="
+      bg-base-100
+      border border-base-300
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+                >
+                  <div>
+                    <p className="text-sm font-medium text-base-content/60">
+                      Deleted Groups
+                    </p>
+
+                    <h2 className="text-4xl font-bold text-base-content mt-2">
+                      3
+                    </h2>
+                  </div>
+
+                  <div
+                    className="
+        w-14 h-14
+        rounded-2xl
+        bg-error/10
+        flex items-center justify-center
+        flex-shrink-0
+      "
+                  >
+                    <Trash2Icon className="w-7 h-7 text-error" />
+                  </div>
+                </div>
+
+                {/* Deleted Contacts */}
+                <div
+                  className="
+      bg-base-100
+      border border-base-300
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+                >
+                  <div>
+                    <p className="text-sm font-medium text-base-content/60">
+                      Deleted Contacts
+                    </p>
+
+                    <h2 className="text-4xl font-bold text-base-content mt-2">
+                      3
+                    </h2>
+                  </div>
+
+                  <div
+                    className="
+        w-14 h-14
+        rounded-2xl
+        bg-error/10
+        flex items-center justify-center
+        flex-shrink-0
+      "
+                  >
+                    <UserXIcon className="w-7 h-7 text-error" />
+                  </div>
+                </div>
               </div>
-              {/* <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => navigate("/meeting/lobby")}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-content font-semibold rounded-xl hover:bg-primary/90 transition-all duration-200 shadow-sm"
-                >
-                  <VideoIcon className="size-4 sm:size-5" />
-                  Start Meeting
-                </button>
-                <button
-                  onClick={() => navigate("/meeting/lobby")}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                >
-                  <LogInIcon className="size-4 sm:size-5" />
-                  Join Meeting
-                </button>
-                <button
-                  onClick={copyInviteLink}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                >
-                  {copied ? (
-                    <CheckCircleIcon className="size-4 sm:size-5 text-success" />
-                  ) : (
-                    <CopyIcon className="size-4 sm:size-5" />
-                  )}
-                  {copied ? "Copied!" : "Copy Link"}
-                </button>
-              </div> */}
+
             </motion.section>
 
             {/* QUICK ACTIONS */}
