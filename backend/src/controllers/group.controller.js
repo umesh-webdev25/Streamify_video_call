@@ -21,7 +21,7 @@ const parseJSON = (value, fallback = []) => {
  */
 export const createGroup = asyncHandler(async (req, res) => {
   const { groupName, groupBio, members, admins, status } = req.body;
-  const groupImage = req.file ? `/uploads/${req.file.filename}` : "";
+  const groupImage = req.file?.path || "";
 
   const creatorId = req.user._id;
   let membersList = parseJSON(members).map(m => {

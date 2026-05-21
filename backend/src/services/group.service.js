@@ -23,33 +23,56 @@ export const verifyGroupMembership = async (groupId, userId) => {
 /**
  * CREATE GROUP
  */
+// export const createGroup = async (groupData) => {
+//   try {
+//     console.log("groupData:", groupData);
+//     console.log("groupImage:", groupData.groupImage);
+
+//     let { groupImage } = groupData;
+
+//     if (
+//       typeof groupImage === "string" &&
+//       (groupImage.startsWith("/uploads") ||
+//         groupImage.startsWith("data:image"))
+//     ) {
+//       const uploadResponse = await cloudinary.uploader.upload(
+//         groupImage.startsWith("/")
+//           ? `.${groupImage}`
+//           : groupImage,
+//         {
+//           folder: "groups",
+//         }
+//       );
+
+//       groupImage = uploadResponse.secure_url;
+//     }
+
+//     const group = new Group({
+//       ...groupData,
+//       groupImage,
+//     });
+
+//     await group.save();
+
+//     return group;
+//   } catch (error) {
+//     console.log("CREATE GROUP ERROR:", error);
+//     throw new Error(error.message);
+//   }
+// };
+
 export const createGroup = async (groupData) => {
   try {
-    let { groupImage } = groupData;
+    console.log("groupData:", groupData);
 
-    // If image is a local path or base64, upload to cloudinary
-    if (groupImage && (groupImage.startsWith("/uploads") || groupImage.startsWith("data:image"))) {
-      const uploadResponse = await cloudinary.uploader.upload(
-        groupImage.startsWith("/") ? `.${groupImage}` : groupImage,
-        { folder: "groups" }
-      );
-      groupImage = uploadResponse.secure_url;
-
-      // Clean up local file if it was a local path
-      if (groupData.groupImage.startsWith("/uploads")) {
-        try { fs.unlinkSync(`.${groupData.groupImage}`); } catch (e) {}
-      }
-    }
-
-    const group = new Group({
-      ...groupData,
-      groupImage,
-    });
+    const group = new Group(groupData);
 
     await group.save();
+
     return group;
   } catch (error) {
-    if (error instanceof AppError) throw error;
+    console.log("CREATE GROUP ERROR:", error);
+
     throw new Error(error.message);
   }
 };
