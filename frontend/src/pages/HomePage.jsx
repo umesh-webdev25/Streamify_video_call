@@ -5,6 +5,8 @@ import {
   getRecommendedUsers,
   getUserFriends,
   sendFriendRequest,
+  deleteContact,
+  deleteGroup,
 } from "../lib/api";
 import useSessions from "../hooks/session.js";
 import { Link, useNavigate } from "react-router-dom";
@@ -29,6 +31,7 @@ import {
   ContactIcon,
   Trash2Icon,
   UserXIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
@@ -175,6 +178,10 @@ const HomePage = () => {
 
   /* ── Stats derived from sessions ── */
   const totalSessions = sessions?.length ?? 0;
+
+const deletedContactCount = deleteContact?.length || 0;
+
+const deletedGroupCount = deleteGroup?.length || 0;
 
 
   const { authUser } = useAuthUser();
@@ -474,7 +481,7 @@ const HomePage = () => {
                     </p>
 
                     <h2 className="text-4xl font-bold text-base-content mt-2">
-                      3
+                     {deletedGroupCount}
                     </h2>
                   </div>
 
@@ -510,7 +517,7 @@ const HomePage = () => {
                     </p>
 
                     <h2 className="text-4xl font-bold text-base-content mt-2">
-                      3
+                     {deletedContactCount}
                     </h2>
                   </div>
 
@@ -524,6 +531,41 @@ const HomePage = () => {
       "
                   >
                     <UserXIcon className="w-7 h-7 text-error" />
+                  </div>
+                </div>
+                  {/* Total message */}
+                <div
+                  className="
+      bg-base-100
+      border border-base-300
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+                >
+                  <div>
+                    <p className="text-sm font-medium text-base-content/60">
+                      Total Messages
+                    </p>
+
+                    <h2 className="text-4xl font-bold text-base-content mt-2">
+                      3
+                    </h2>
+                  </div>
+
+                  <div
+                    className="
+        w-14 h-14
+        rounded-2xl
+        bg-error/10
+        flex items-center justify-center
+        flex-shrink-0
+      "
+                  >
+                    <MessageSquareIcon  className="w-7 h-7 text-error" />
                   </div>
                 </div>
               </div>

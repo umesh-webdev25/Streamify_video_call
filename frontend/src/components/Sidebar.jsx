@@ -60,21 +60,21 @@ const Sidebar = () => {
       label: "Meetings",
       path: "/meeting/lobby",
     },
-    {
-      icon: BellIcon,
-      label: "Notifications",
-      path: "/notifications",
-    },
+    // {
+    //   icon: BellIcon,
+    //   label: "Notifications",
+    //   path: "/notifications",w
+    // },
     {
       icon: GlobeIcon,
       label: "Preferences",
       path: "/settings?tab=preferences",
     },
-    {
-      icon: BellIcon,
-      label: "Notification Settings",
-      path: "/settings?tab=notifications",
-    },
+    // {
+    //   icon: BellIcon,
+    //   label: "Notification Settings",
+    //   path: "/settings?tab=notifications",
+    // },
     {
       icon: HistoryIcon,
       label: "History",

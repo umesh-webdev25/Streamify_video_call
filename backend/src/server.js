@@ -17,6 +17,7 @@ import meetingRoutes from "./routes/meeting.routes.js";
 import sessionRoutes from "./routes/session.route.js";
 import groupRouter from "./routes/group.routes.js";
 import contectRouter from "./routes/contact.routes.js";
+import scheduleMeetingRoutes from "./routes/scheduleMeeting.route.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
@@ -76,6 +77,7 @@ app.use("/api/meetings", meetingRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/groups", groupRouter);
 app.use("/api/contacts", contectRouter);
+app.use("/api/schedule-meetings", scheduleMeetingRoutes);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   app.get("*", (req, res) => {

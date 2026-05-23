@@ -287,3 +287,52 @@ export async function inviteContact(data) {
 
   return response.data;
 }
+
+// ==========================
+// Schedule Meeting API
+// ==========================
+
+export async function createScheduleMeeting(data) {
+  const response = await axiosInstance.post(
+    "/schedule-meetings",
+    data
+  );
+
+  return response.data.data;
+}
+
+export async function getScheduleMeetings() {
+  const response = await axiosInstance.get(
+    "/schedule-meetings"
+  );
+
+  return response.data.data;
+}
+
+export async function getScheduleMeetingById(id) {
+  const response = await axiosInstance.get(
+    `/schedule-meetings/${id}`
+  );
+
+  return response.data.data;
+}
+
+export async function updateScheduleMeeting(
+  id,
+  updateData
+) {
+  const response = await axiosInstance.put(
+    `/schedule-meetings/${id}`,
+    updateData
+  );
+
+  return response.data.data;
+}
+
+export async function deleteScheduleMeeting(id) {
+  const response = await axiosInstance.delete(
+    `/schedule-meetings/${id}`
+  );
+
+  return response.data;
+}
