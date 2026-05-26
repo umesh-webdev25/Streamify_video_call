@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes for performance
-userSchema.index({ email: 1 });
+// Removed duplicate email index; unique constraint defined in schema
 userSchema.index({ isOnboarded: 1 });
 userSchema.index({ nativeLanguage: 1, learningLanguage: 1 });
 userSchema.index({ friends: 1 });

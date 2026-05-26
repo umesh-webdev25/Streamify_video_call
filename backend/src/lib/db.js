@@ -32,14 +32,21 @@ export const connectDB = async () => {
         try {
           await dns.resolveSrv(`_mongodb._tcp.${host}`);
         } catch (dnsErr) {
-          console.log(
-            `DNS SRV lookup failed for host \"${host}\". This prevents 'mongodb+srv' connections.`,
-          );
-          console.log(
-            "If you're behind a captive portal, offline, or your DNS resolver doesn't support SRV records, replace MONGO_URI with a standard 'mongodb://' connection string that lists hosts with ports, or fix your DNS."
-          );
-          // rethrow to be handled by outer catch and exit after retries
-          throw dnsErr;
+          // Attempt fallback to standard mongodb URI (non-SRV)
+          const fallbackUri = uri.replace("+srv", "").replace(host, `${host}:27017`);
+          console.log(`Attempting fallback connection with URI: ${fallbackUri}`);
+          try {
+            const fallbackConn = await mongoose.connect(fallbackUri, {
+              useNewUrlParser: true,
+              useUnifiedTopology: true,
+            });
+            console.log(`MongoDB Connected (fallback): ${fallbackConn.connection.host}`);
+            return; // success, exit function
+          } catch (fallbackErr) {
+            console.log("Fallback connection also failed:", fallbackErr.message || fallbackErr);
+            // rethrow original DNS error to be handled by outer retry logic
+            throw dnsErr;
+          }
         }
       }
 
