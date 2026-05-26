@@ -26,7 +26,7 @@ import Layout from "./components/Layout.jsx";
 import { useThemeStore } from "./store/useThemeStore.js";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
-
+import ScheduleMeetingPage from "./pages/scheduleMeeting.jsx";
 const App = () => {
   const { isLoading, authUser } = useAuthUser();
   const { theme } = useThemeStore();
@@ -112,6 +112,15 @@ const App = () => {
             element={
               <Layout showSidebar={true}>
                 <Group />
+              </Layout>
+            }
+          />
+
+             <Route
+            path="/schedule-meeting"
+            element={
+              <Layout showSidebar={true}>
+                <ScheduleMeetingPage />
               </Layout>
             }
           />

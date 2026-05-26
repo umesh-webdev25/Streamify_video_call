@@ -195,8 +195,8 @@ const History = () => {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[20%]">Device</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[15%]">IP Address</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[10%]">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[18%]">Created</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[17%]">Expires</th>
+                <th className="text-left px-10 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[18%]">Created</th>
+                <th className="text-left px-10 py-3 text-xs font-semibold text-base-content/60 uppercase tracking-wider border-b border-base-300 w-[17%]">Expires</th>
               </tr>
             </thead>
             <tbody>
@@ -265,7 +265,7 @@ const History = () => {
                     </td>
 
                     {/* Status */}
-                    <td className="px-4 py-3.5">
+                    <td className="px-2 py-3.5">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${session.isValid
                             ? "bg-success/10 text-success border-success/20"

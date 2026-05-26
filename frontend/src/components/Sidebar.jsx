@@ -56,9 +56,14 @@ const Sidebar = () => {
       path: "/group",
     },
     {
-      icon: VideoIcon,
-      label: "Meetings",
-      path: "/meeting/lobby",
+        icon: VideoIcon,
+        label: "Meetings",
+        path: "/meeting/lobby",
+    },
+    {
+        icon: ShipWheelIcon,
+        label: "Schedule Meeting",
+        path: "/schedule-meeting",
     },
     // {
     //   icon: BellIcon,

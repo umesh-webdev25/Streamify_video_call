@@ -15,8 +15,8 @@ const scheduleMeetingSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "completed", "cancelled"],
-        default: "pending"
+        enum: ["pending", "completed", "cancelled", "upcoming", "expired"],
+        default: "upcoming"
     }
 })
 
