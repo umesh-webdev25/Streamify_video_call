@@ -53,12 +53,51 @@ export const login = asyncHandler(async (req, res) => {
     device: req.headers["user-agent"],
   };
 
-  const { user, accessToken, refreshToken } = await authService.login(email, password, reqInfo);
+  const result = await authService.login(email, password, reqInfo);
+
+  if (result.requiresTwoFactor) {
+    return ApiResponse.success(res, { requiresTwoFactor: true, email: result.email }, "2FA OTP sent to email");
+  }
+
+  const { user, accessToken, refreshToken } = result;
 
   res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
   res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
 
   return ApiResponse.success(res, user, "Login successful");
+});
+
+/**
+ * @desc    Verify 2FA OTP for login
+ * @route   POST /api/auth/verify-2fa
+ */
+export const verify2FA = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    throw new AppError("Email and OTP are required", 400);
+  }
+
+  const reqInfo = {
+    ip: req.ip,
+    device: req.headers["user-agent"],
+  };
+
+  const { user, accessToken, refreshToken } = await authService.verify2FA(email, otp, reqInfo);
+
+  res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
+  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
+
+  return ApiResponse.success(res, user, "Login successful");
+});
+
+/**
+ * @desc    Toggle 2FA
+ * @route   POST /api/auth/toggle-2fa
+ */
+export const toggle2FA = asyncHandler(async (req, res) => {
+  const user = await authService.toggle2FA(req.user._id);
+  return ApiResponse.success(res, user, `Two-factor authentication ${user.twoFactorEnabled ? "enabled" : "disabled"}`);
 });
 
 /**

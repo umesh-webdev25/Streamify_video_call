@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toggle2FA } from "../lib/api";
 import {
   ShieldIcon,
   KeyIcon,
@@ -12,6 +14,7 @@ import {
   Trash2Icon,
   LogOutIcon,
   AlertTriangleIcon,
+  MailIcon,
 } from "lucide-react";
 
 import useAuthUser from "../hooks/useAuthUser";
@@ -24,7 +27,23 @@ const SecurityPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const twoFactorEnabled = authUser?.twoFactorEnabled || false;
+  const queryClient = useQueryClient();
+
+  const { mutate: toggle2FAMutation, isPending: is2FAPending } = useMutation({
+    mutationFn: toggle2FA,
+    onSuccess: (data) => {
+      queryClient.setQueryData(["authUser"], data);
+      toast.success(
+        data.twoFactorEnabled
+          ? "Two-factor authentication enabled"
+          : "Two-factor authentication disabled"
+      );
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to toggle 2FA");
+    }
+  });
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -89,13 +108,7 @@ const SecurityPage = () => {
   };
 
   const handleEnable2FA = () => {
-    setTwoFactorEnabled(!twoFactorEnabled);
-
-    toast.success(
-      twoFactorEnabled
-        ? "Two-factor authentication disabled"
-        : "Two-factor authentication enabled"
-    );
+    toggle2FAMutation();
   };
 
   const handleRevokeSession = () => {
@@ -431,29 +444,34 @@ const SecurityPage = () => {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="border border-base-300 rounded-2xl p-5 bg-base-200/30">
             <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-              <SmartphoneIcon className="size-6 text-primary" />
+              <MailIcon className="size-6 text-primary" />
             </div>
 
             <h4 className="font-semibold">
-              Authenticator App
+              Email Verification
             </h4>
 
             <p className="text-sm text-base-content/50 mt-2">
-              Use Google Authenticator or Authy for secure
-              verification codes.
+              Receive secure verification codes directly
+              in your email inbox.
             </p>
 
             <button
               onClick={handleEnable2FA}
               className="btn btn-primary w-full mt-5 rounded-xl"
+              disabled={is2FAPending}
             >
-              {twoFactorEnabled
-                ? "Disable 2FA"
-                : "Enable 2FA"}
+              {is2FAPending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : twoFactorEnabled ? (
+                "Disable 2FA"
+              ) : (
+                "Enable 2FA"
+              )}
             </button>
           </div>
 
-          <div className="border border-base-300 rounded-2xl p-5 bg-base-200/30">
+          {/* <div className="border border-base-300 rounded-2xl p-5 bg-base-200/30">
             <div className="size-12 rounded-2xl bg-warning/10 flex items-center justify-center mb-4">
               <SmartphoneIcon className="size-6 text-warning" />
             </div>
@@ -470,7 +488,7 @@ const SecurityPage = () => {
             <button className="btn btn-outline w-full mt-5 rounded-xl">
               Setup SMS
             </button>
-          </div>
+          </div> */}
         </div>
       </section>
 

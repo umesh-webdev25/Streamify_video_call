@@ -68,9 +68,57 @@ class AuthService {
     if (!user.isVerified) {
       throw new AppError("Your email is not verified. Please verify your email to login.", 403);
     }
+
+    if (user.twoFactorEnabled) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const hashedOTP = await bcrypt.hash(otp, 10);
+      user.emailOTP = hashedOTP;
+      user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+
+      try {
+        await sendOTPEmail(email, otp, user.fullName);
+      } catch (error) {
+        console.error("Failed to send 2FA OTP email:", error);
+        throw new AppError("Failed to send verification email. Please check your email server config or try again later.", 500);
+      }
+
+      return { requiresTwoFactor: true, email: user.email };
+    }
     
     const tokens = await this.createSession(user._id, reqInfo);
     return { user, ...tokens };
+  }
+
+  async verify2FA(email, otp, reqInfo = {}) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) throw new AppError("User not found", 404);
+
+    if (!user.twoFactorEnabled) throw new AppError("2FA is not enabled for this account", 400);
+
+    if (!user.emailOTP || !user.otpExpires || user.otpExpires < new Date()) {
+      throw new AppError("OTP has expired. Please log in again.", 400);
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.emailOTP);
+    if (!isMatch) throw new AppError("Invalid OTP code", 400);
+
+    user.emailOTP = null;
+    user.otpExpires = null;
+    await user.save();
+
+    const tokens = await this.createSession(user._id, reqInfo);
+    return { user, ...tokens };
+  }
+
+  async toggle2FA(userId) {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    user.twoFactorEnabled = !user.twoFactorEnabled;
+    await user.save();
+
+    return user;
   }
 
   async verifyOTP(email, otp) {

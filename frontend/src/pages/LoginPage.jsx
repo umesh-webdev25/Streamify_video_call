@@ -9,12 +9,25 @@ const LoginPage = () => {
     email: "",
     password: "",
   });
+  const [requires2FA, setRequires2FA] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { isPending, error, loginMutation } = useLogin();
+  const [otp, setOtp] = useState("");
+  const { isPending, error, loginMutation, verify2FAMutation, isVerifyPending, verifyError } = useLogin();
 
   const handleLogin = (e) => {
     e.preventDefault();
-    loginMutation(loginData);
+    loginMutation(loginData, {
+      onSuccess: (data) => {
+        if (data?.requiresTwoFactor) {
+          setRequires2FA(true);
+        }
+      }
+    });
+  };
+
+  const handleVerify2FA = (e) => {
+    e.preventDefault();
+    verify2FAMutation({ email: loginData.email, otp });
   };
 
   return (
@@ -57,6 +70,7 @@ const LoginPage = () => {
               <p className="text-sm text-base-content/50 mt-1">Sign in to your account to continue</p>
             </div>
 
+            {!requires2FA ? (
             <form onSubmit={handleLogin} className="space-y-5">
               {/* EMAIL */}
               <div className="form-control w-full space-y-1.5">
@@ -146,6 +160,63 @@ const LoginPage = () => {
                 </Link>
               </p>
             </form>
+            ) : (
+            <form onSubmit={handleVerify2FA} className="space-y-5">
+              <div className="alert alert-info mb-6 rounded-lg py-3 text-sm border-none">
+                <span>We sent a 6-digit verification code to {loginData.email}. Please enter it below.</span>
+              </div>
+              {verifyError && (
+                <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none">
+                  <span>{verifyError?.response?.data?.message || "Invalid OTP code"}</span>
+                </div>
+              )}
+              <div className="form-control w-full space-y-1.5">
+                <label className="label py-0 px-0">
+                  <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+                    Verification Code (OTP)
+                  </span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="123456"
+                    className="input input-bordered w-full h-11 rounded-lg text-sm focus:border-primary transition-colors bg-base-100 text-center tracking-widest text-lg"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-full h-11 rounded-lg text-sm font-semibold mt-2 gap-2"
+                disabled={isVerifyPending || otp.length < 6}
+              >
+                {isVerifyPending ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    Verify & Sign In
+                    <ArrowRightIcon className="size-4" />
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-ghost w-full h-11 rounded-lg text-sm font-semibold mt-2"
+                onClick={() => setRequires2FA(false)}
+                disabled={isVerifyPending}
+              >
+                Back to Login
+              </button>
+            </form>
+            )}
           </div>
         </div>
 

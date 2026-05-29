@@ -25,6 +25,16 @@ export const resendOTP = async (email) => {
   return response.data;
 };
 
+export const verify2FA = async (verifyData) => {
+  const response = await axiosInstance.post("/auth/verify-2fa", verifyData);
+  return response.data.data;
+};
+
+export const toggle2FA = async () => {
+  const response = await axiosInstance.post("/auth/toggle-2fa");
+  return response.data.data;
+};
+
 export const getAuthUser = async () => {
   try {
     const res = await axiosInstance.get("/auth/me");
