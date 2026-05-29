@@ -10,3 +10,10 @@ export const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
+export const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http") || url.startsWith("data:")) return url;
+  
+  const baseUrl = import.meta.env.MODE === "development" ? "http://localhost:5001" : "";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};

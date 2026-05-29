@@ -32,7 +32,9 @@ import {
   Trash2Icon,
   UserXIcon,
   MessageSquareIcon,
+  LogOutIcon,
 } from "lucide-react";
+import ProfileImage from "../components/ProfileImage.jsx";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
 import FriendCard, { getLanguageFlag } from "../components/FriendCard";
@@ -812,13 +814,10 @@ const deletedGroupCount = deleteGroup?.length || 0;
                           >
                             <div className="flex items-start gap-4">
                               <div className="size-14 sm:size-16 rounded-xl overflow-hidden ring-2 ring-base-200 shrink-0">
-                                <img
-                                  src={user.profilePic || "/avatar.png"}
+                                <ProfileImage
+                                  src={user.profilePic}
                                   alt={user.fullName}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "/avatar.png";
-                                  }}
+                                  className="w-full h-full"
                                 />
                               </div>
                               <div className="min-w-0 flex-1">

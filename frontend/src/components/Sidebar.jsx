@@ -17,12 +17,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "../lib/utils";
 import { useState, useRef, useEffect } from "react";
 import useLogout from "../hooks/useLogout";
+import ProfileImage from "./ProfileImage.jsx";
+import { getImageUrl } from "../lib/utils";
 
 const Sidebar = () => {
   const { authUser } = useAuthUser();
   const location = useLocation();
   const navigate = useNavigate();
 
+  console.log(authUser.profilePic);
   const currentPath = location.pathname;
 
   const { logoutMutation } = useLogout();
@@ -168,11 +171,10 @@ const Sidebar = () => {
           {/* Avatar */}
           <div className="relative shrink-0">
             <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-lg bg-base-300">
-              <img
-                src={authUser?.profilePic || "/avatar.png"}
-                alt={authUser?.fullName || "User Avatar"}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+              <ProfileImage
+                src={authUser?.profilePic}
+                alt={authUser?.fullName}
+                className="w-full h-full hover:scale-105 transition-transform duration-300"
               />
             </div>
           </div>

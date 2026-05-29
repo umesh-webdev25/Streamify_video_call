@@ -9,9 +9,10 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { capitalize } from "../lib/utils";
+import { capitalize, getImageUrl } from "../lib/utils";
 import PreferencesPage from "./PreferencesPage.jsx";
 import NotificationSettingsPage from "./NotificationSettingsPage.jsx";
+import ProfileImage from "../components/ProfileImage.jsx";
 import SecurityPage from "./SecurityPage.jsx";
 
 const SettingsPage = () => {
@@ -133,11 +134,10 @@ const SettingsPage = () => {
                   {/* Avatar */}
                   <div className="relative shrink-0 group">
                     <div className="size-24 rounded-2xl overflow-hidden ring-2 ring-primary/20 shadow-lg bg-base-200">
-                      <img
-                        src={formState.profilePic || "/avatar.png"}
+                      <ProfileImage
+                        src={formState.profilePic}
                         alt="Profile"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                        className="w-full h-full group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
 

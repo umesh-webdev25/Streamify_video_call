@@ -5,6 +5,7 @@ import NoNotificationsFound from "../components/NoNotificationsFound";
 import { capitalize } from "../lib/utils";
 import { getLanguageFlag } from "../components/FriendCard";
 import { Helmet } from "react-helmet-async";
+import ProfileImage from "../components/ProfileImage.jsx";
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();
@@ -87,11 +88,10 @@ const NotificationsPage = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
-                          <img
-                            src={request.sender?.profilePic || "/avatar.png"}
+                          <ProfileImage
+                            src={request.sender?.profilePic}
                             alt={request.sender?.fullName}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                            className="w-full h-full"
                           />
                         </div>
                         <div className="min-w-0">
@@ -141,11 +141,10 @@ const NotificationsPage = () => {
                   >
                     <div className="flex items-center gap-3">
                       <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
-                        <img
-                          src={notification.recipient?.profilePic || "/avatar.png"}
+                        <ProfileImage
+                          src={notification.recipient?.profilePic}
                           alt={notification.recipient?.fullName}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                          className="w-full h-full"
                         />
                       </div>
                       <div className="flex-1 min-w-0">

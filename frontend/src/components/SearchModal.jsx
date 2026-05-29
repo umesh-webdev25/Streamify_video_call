@@ -3,6 +3,7 @@ import { SearchIcon, XIcon, UserIcon, MessageSquareIcon, VideoIcon, CommandIcon 
 import { useQuery } from "@tanstack/react-query";
 import { getUserFriends } from "../lib/api";
 import { useNavigate } from "react-router-dom";
+import ProfileImage from "./ProfileImage.jsx";
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState("");
@@ -119,11 +120,10 @@ const SearchModal = ({ isOpen, onClose }) => {
                       >
                         <div className="flex items-center gap-3">
                           <div className="size-8 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
-                            <img
-                              src={friend.profilePic || "/avatar.png"}
+                            <ProfileImage
+                              src={friend.profilePic}
                               alt={friend.fullName}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                              className="w-full h-full"
                             />
                           </div>
                           <div>

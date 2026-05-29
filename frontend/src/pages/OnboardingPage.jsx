@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import { completeOnboarding } from "../lib/api";
 import { LoaderIcon, MapPinIcon, ShipWheelIcon, ShuffleIcon, UploadIcon, XIcon, CameraIcon } from "lucide-react";
 import { LANGUAGES } from "../constants";
+import { getImageUrl } from "../lib/utils";
+import ProfileImage from "../components/ProfileImage.jsx";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
@@ -57,14 +59,7 @@ const OnboardingPage = () => {
     onboardingMutation(formData);
   };
 
-  const handleRandomAvatar = () => {
-    const idx = Math.floor(Math.random() * 100) + 1;
-    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
-    setFormState({ ...formState, profilePic: randomAvatar });
-    setProfilePicFile(null);
-    setImageSource("random");
-    toast.success("Random avatar generated!");
-  };
+
 
   const handleFileChange = (file) => {
     if (!file) return;
@@ -184,24 +179,12 @@ const OnboardingPage = () => {
     `}
                   >
                     {/* IMAGE */}
-                    {formState.profilePic ? (
-                      <img
-                        src={formState.profilePic}
-                        alt="Profile Preview"
-                        className="w-full h-full object-cover"
-                        draggable={false}
-                        onError={(e) => {
-                          e.currentTarget.src = "/avatar.png";
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src="/avatar.png"
-                        alt="Avatar"
-                        className="w-full h-full object-cover opacity-30"
-                        draggable={false}
-                      />
-                    )}
+                    <ProfileImage
+                      src={formState.profilePic}
+                      alt="Profile"
+                      className={`w-full h-full object-cover ${!formState.profilePic && 'opacity-30'}`}
+                      iconClassName="opacity-30"
+                    />
 
                     {/* STATIC OVERLAY */}
                     <div
@@ -305,22 +288,6 @@ const OnboardingPage = () => {
                   </p>
                 </div>
 
-                {/* RANDOM BUTTON */}
-                <button
-                  type="button"
-                  onClick={handleRandomAvatar}
-                  className="
-        mt-4 btn btn-sm
-        rounded-2xl px-5 h-9
-        bg-base-100 border border-base-300
-        hover:border-primary/40 hover:bg-primary/5
-        shadow-sm transition-colors duration-200
-        normal-case gap-2
-      "
-                >
-                  <ShuffleIcon className="size-4" />
-                  Generate Avatar
-                </button>
               </div>
             </div>
 

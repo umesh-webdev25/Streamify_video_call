@@ -28,6 +28,7 @@ import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
 import { Helmet } from "react-helmet-async";
+import ProfileImage from "../components/ProfileImage.jsx";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -154,11 +155,10 @@ const ChatPage = () => {
                       <div className="relative group shrink-0">
                         <div className="absolute inset-0 rounded-2xl bg-primary/15 blur-xl opacity-70 group-hover:opacity-100 transition duration-500" />
                         <div className="relative size-11 sm:size-14 rounded-2xl overflow-hidden ring-2 ring-base-300/60 shadow-lg">
-                          <img
-                            src={targetUser?.image || "/avatar.png"}
+                          <ProfileImage
+                            src={targetUser?.image}
                             alt={targetUser?.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                            className="w-full h-full group-hover:scale-110 transition-transform duration-500"
                           />
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 size-3.5 sm:size-4 rounded-full bg-success border-[3px] border-base-100 shadow-sm" />
@@ -247,7 +247,7 @@ const ChatPage = () => {
                     {/* AVATAR */}
                     <div className="relative">
                       <div className="size-28 sm:size-32 rounded-3xl overflow-hidden ring-4 ring-primary/10 ring-offset-4 ring-offset-base-100 shadow-2xl">
-                        <img src={targetUser?.image || "/avatar.png"} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/avatar.png"; }} />
+                        <ProfileImage src={targetUser?.image} alt="" className="w-full h-full" />
                       </div>
                       <div className="absolute -bottom-2 -right-2 bg-success px-3 py-1 rounded-full border-4 border-base-100 shadow-lg">
                         <span className="text-[10px] font-black text-white uppercase tracking-widest">Online</span>

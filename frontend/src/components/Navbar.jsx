@@ -83,11 +83,10 @@ const Navbar = () => {
             {/* <div className="w-px h-5 bg-base-300 mx-1 hidden sm:block" /> */}
 
             {/* <Link to="/settings?tab=profile" className="size-8 rounded-lg overflow-hidden ring-1 ring-base-300">
-              <img
-                src={authUser?.profilePic || "/avatar.png"}
+              <ProfileImage
+                src={authUser?.profilePic}
                 alt="User Avatar"
-                className="w-full h-full object-cover"
-                onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                className="w-full h-full"
               />
             </Link> */}
           </div>

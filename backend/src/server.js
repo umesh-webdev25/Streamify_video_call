@@ -21,7 +21,9 @@ import scheduleMeetingRoutes from "./routes/scheduleMeeting.route.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
+import dns from "dns";
 
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 // Load .env before using process.env
 dotenv.config();
 

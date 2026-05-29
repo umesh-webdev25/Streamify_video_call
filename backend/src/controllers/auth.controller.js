@@ -147,8 +147,7 @@ export const onboard = asyncHandler(async (req, res) => {
   let profilePic = "";
 
   if (req.file) {
-    // ✅ diskStorage → use filename, not buffer
-    profilePic = `/uploads/${req.file.filename}`;
+    profilePic = req.file.path;
   } else if (req.body.profilePic) {
     // ✅ random avatar URL sent as text field from frontend
     profilePic = req.body.profilePic;

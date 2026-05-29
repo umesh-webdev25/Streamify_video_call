@@ -7,6 +7,7 @@ import {
 import { capitalize } from "../lib/utils";
 import { LANGUAGE_TO_FLAG } from "../constants";
 import { memo } from "react";
+import ProfileImage from "./ProfileImage.jsx";
 
 const LanguageBadge = ({ language, type, flagUrl }) => {
   const [bg, text] = type === "native"
@@ -60,10 +61,6 @@ const FriendCard = memo(({ friend }) => {
     isOnline = false,
   } = friend;
 
-  const handleAvatarError = (e) => {
-    e.target.src = "/avatar.png";
-  };
-
   const nativeFlag = getLanguageFlag(nativeLanguage);
   const learningFlag = getLanguageFlag(learningLanguage);
 
@@ -73,12 +70,10 @@ const FriendCard = memo(({ friend }) => {
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <div className="size-16 sm:size-20 rounded-xl overflow-hidden ring-2 ring-gray-100">
-              <img
-                src={profilePic || "/avatar.png"}
+              <ProfileImage
+                src={profilePic}
                 alt={fullName}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={handleAvatarError}
+                className="w-full h-full"
               />
             </div>
             <div className={`absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white ${isOnline ? "bg-green-500" : "bg-gray-300"}`} />

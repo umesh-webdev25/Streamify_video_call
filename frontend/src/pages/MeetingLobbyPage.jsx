@@ -20,6 +20,7 @@ import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 import { cn } from "../lib/utils";
 import { useMeeting } from "../hooks/useMeeting";
+import ProfileImage from "../components/ProfileImage.jsx";
 
 const generateMeetingCode = () => {
   // Safe characters excluding O, 0, I, 1
@@ -196,11 +197,10 @@ const MeetingLobbyPage = () => {
                 {authUser && (
                   <div className="absolute bottom-3 left-3 glass px-3 py-1.5 rounded-xl flex items-center gap-2">
                     <div className="size-6 rounded-full overflow-hidden ring-1 ring-white/20">
-                      <img
-                        src={authUser.profilePic || "/avatar.png"}
+                      <ProfileImage
+                        src={authUser.profilePic}
                         alt=""
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
+                        className="w-full h-full"
                       />
                     </div>
                     <span className="text-xs font-bold text-base-content">

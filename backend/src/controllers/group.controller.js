@@ -81,7 +81,7 @@ export const updateGroup = asyncHandler(async (req, res) => {
   const updateData = { groupName, groupBio };
 
   if (req.file) {
-    updateData.groupImage = `/uploads/${req.file.filename}`;
+    updateData.groupImage = req.file.path;
   }
 
   if (typeof status !== "undefined") {

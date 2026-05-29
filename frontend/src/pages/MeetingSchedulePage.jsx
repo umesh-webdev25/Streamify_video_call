@@ -23,6 +23,7 @@ import {
 import toast from "react-hot-toast";
 import { cn } from "../lib/utils";
 import { Helmet } from "react-helmet-async";
+import ProfileImage from "../components/ProfileImage.jsx";
 
 const MeetingSchedulePage = () => {
   const navigate = useNavigate();
@@ -247,17 +248,10 @@ const MeetingSchedulePage = () => {
                         )}
                       >
                         <div className="size-8 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0">
-                          <img
-                            src={
-                              friend.profilePic ||
-                              "/avatar.png"
-                            }
-                            alt=""
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src =
-                                "/avatar.png";
-                            }}
+                          <ProfileImage
+                            src={friend.profilePic}
+                            alt={friend.fullName}
+                            className="w-full h-full"
                           />
                         </div>
 
