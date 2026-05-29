@@ -5,7 +5,7 @@ import Session from "../models/Session.js";
 import AppError from "../utils/AppError.js";
 import { upsertStreamUser } from "../lib/stream.js";
 import bcrypt from "bcryptjs";
-import { sendOTPEmail } from "./email.service.js";
+import { sendOTPEmail, send2FAEmail } from "./email.service.js";
 import queueService from "./queue.service.js";
 import cloudinary from "../lib/cloudinary.js";
 
@@ -77,7 +77,7 @@ class AuthService {
       await user.save();
 
       try {
-        await sendOTPEmail(email, otp, user.fullName);
+        await send2FAEmail(email, otp, user.fullName);
       } catch (error) {
         console.error("Failed to send 2FA OTP email:", error);
         throw new AppError("Failed to send verification email. Please check your email server config or try again later.", 500);
