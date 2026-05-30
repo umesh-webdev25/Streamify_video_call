@@ -192,7 +192,7 @@ const ScheduleMeetingPage = () => {
           const matchS =
             statusFilter === "all" ||
             meeting.status ===
-              statusFilter;
+            statusFilter;
 
           return (
             matchQ && matchS
@@ -212,7 +212,7 @@ const ScheduleMeetingPage = () => {
     1,
     Math.ceil(
       filteredMeetings.length /
-        rowsPerPage
+      rowsPerPage
     )
   );
 
@@ -224,7 +224,7 @@ const ScheduleMeetingPage = () => {
   const pagedMeetings =
     filteredMeetings.slice(
       (safePage - 1) *
-        rowsPerPage,
+      rowsPerPage,
       safePage * rowsPerPage
     );
 
@@ -647,32 +647,28 @@ const ScheduleMeetingPage = () => {
                           className={`
                             inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                             
-                            ${
-                              meeting.status ===
+                            ${meeting.status ===
                               "completed"
-                                ? "bg-success/10 text-success"
-                                : ""
+                              ? "bg-success/10 text-success"
+                              : ""
                             }
 
-                            ${
-                              meeting.status ===
+                            ${meeting.status ===
                               "cancelled"
-                                ? "bg-error/10 text-error"
-                                : ""
+                              ? "bg-error/10 text-error"
+                              : ""
                             }
 
-                            ${
-                              meeting.status ===
+                            ${meeting.status ===
                               "pending"
-                                ? "bg-warning/10 text-warning"
-                                : ""
+                              ? "bg-warning/10 text-warning"
+                              : ""
                             }
 
-                            ${
-                              meeting.status ===
+                            ${meeting.status ===
                               "upcoming"
-                                ? "bg-info/10 text-info"
-                                : ""
+                              ? "bg-info/10 text-info"
+                              : ""
                             }
                           `}
                         >
@@ -726,55 +722,55 @@ const ScheduleMeetingPage = () => {
 
                         {menuOpenId ===
                           meeting._id && (
-                          <div
-                            className="fixed z-[99999] w-44 bg-base-100 border border-base-300 rounded-xl shadow-2xl overflow-hidden"
-                            style={{
-                              top: `${menuPosition.top}px`,
-                              left: `${menuPosition.left}px`,
-                            }}
-                          >
-
-                            {/* EDIT */}
-                            <button
-                              onClick={() => {
-                                openEditModal(
-                                  meeting
-                                );
-
-                                setMenuOpenId(
-                                  null
-                                );
+                            <div
+                              className="fixed z-[99999] w-44 bg-base-100 border border-base-300 rounded-xl shadow-2xl overflow-hidden"
+                              style={{
+                                top: `${menuPosition.top}px`,
+                                left: `${menuPosition.left}px`,
                               }}
-                              className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-base-200 flex items-center gap-2"
                             >
-                              <PencilIcon className="w-4 h-4" />
-                              Edit
-                            </button>
 
-                            {/* DELETE */}
-                            <button
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Delete this meeting?"
-                                  )
-                                ) {
-                                  deleteMutation.mutate(
-                                    meeting._id
+                              {/* EDIT */}
+                              <button
+                                onClick={() => {
+                                  openEditModal(
+                                    meeting
                                   );
-                                }
 
-                                setMenuOpenId(
-                                  null
-                                );
-                              }}
-                              className="w-full px-4 py-3 text-left text-sm font-medium text-error hover:bg-error/10 flex items-center gap-2"
-                            >
-                              <Trash2Icon className="w-4 h-4" />
-                              Delete
-                            </button>
-                          </div>
-                        )}
+                                  setMenuOpenId(
+                                    null
+                                  );
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-base-200 flex items-center gap-2"
+                              >
+                                <PencilIcon className="w-4 h-4" />
+                                Edit
+                              </button>
+
+                              {/* DELETE */}
+                              <button
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      "Delete this meeting?"
+                                    )
+                                  ) {
+                                    deleteMutation.mutate(
+                                      meeting._id
+                                    );
+                                  }
+
+                                  setMenuOpenId(
+                                    null
+                                  );
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm font-medium text-error hover:bg-error/10 flex items-center gap-2"
+                              >
+                                <Trash2Icon className="w-4 h-4" />
+                                Delete
+                              </button>
+                            </div>
+                          )}
                       </td>
                     </tr>
                   )
@@ -876,7 +872,7 @@ const ScheduleMeetingPage = () => {
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={(e) =>
             e.target ===
-              e.currentTarget &&
+            e.currentTarget &&
             closeModal()
           }
         >
@@ -914,7 +910,7 @@ const ScheduleMeetingPage = () => {
 
                 <input
                   required
-                  type="text"
+                  type="text" placeholder="title of meeting"
                   value={
                     meetingData.title
                   }
@@ -928,7 +924,7 @@ const ScheduleMeetingPage = () => {
                       }
                     )
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none"
+                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
                 />
               </div>
 
@@ -954,7 +950,7 @@ const ScheduleMeetingPage = () => {
                       }
                     )
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none"
+                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
                 />
               </div>
 
@@ -980,7 +976,7 @@ const ScheduleMeetingPage = () => {
                       }
                     )
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none"
+                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
                 />
               </div>
 
@@ -1004,7 +1000,7 @@ const ScheduleMeetingPage = () => {
                       }
                     )
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none"
+                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
                 >
                   <option value="upcoming">
                     Upcoming
