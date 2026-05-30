@@ -7,6 +7,7 @@ import User from "../models/User.js";
 import { generateStreamToken } from "../lib/stream.js";
 import notificationService from "./notification.service.js";
 import queueService from "./queue.service.js";
+import authService from "./auth.service.js";
 
 class MeetingService {
   async verifyMeetingAccess(roomId, userId) {
@@ -42,7 +43,7 @@ class MeetingService {
     throw new AppError("You do not have access to this meeting", 403);
   }
 
-  async createMeeting(userId, data) {
+  async createMeeting(userId, data, reqInfo) {
     const roomId = data.roomId || this.generateRoomId();
 
     const existing = await meetingRepository.findByRoomId(roomId);
@@ -60,11 +61,13 @@ class MeetingService {
     });
 
     const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/meeting/room/${roomId}`;
+    const refreshToken = await authService.createMeetingSession(userId, meeting._id, reqInfo || {});
 
     return {
       meeting,
       inviteLink,
       streamToken: this.getVideoToken(userId),
+      refreshToken,
     };
   }
 
@@ -73,7 +76,7 @@ class MeetingService {
     return meeting;
   }
 
-  async joinMeeting(roomId, userId) {
+  async joinMeeting(roomId, userId, reqInfo) {
     const meeting = await this.verifyMeetingAccess(roomId, userId);
     if (meeting.status !== "active") {
       throw new AppError("Meeting is no longer active", 410);
@@ -87,7 +90,9 @@ class MeetingService {
       await meetingRepository.addParticipant(roomId, userId);
     }
 
-    return meeting;
+    const refreshToken = await authService.createMeetingSession(userId, meeting._id, reqInfo || {});
+
+    return { meeting, refreshToken };
   }
 
   async endMeeting(roomId, userId) {
@@ -164,7 +169,7 @@ class MeetingService {
     return crypto.randomBytes(4).toString("hex").toUpperCase();
   }
 
-  async createGroupMeeting(groupId, hostId) {
+  async createGroupMeeting(groupId, hostId, reqInfo) {
     const group = await Group.findById(groupId);
     if (!group) throw new AppError("Group not found", 404);
     
@@ -189,7 +194,9 @@ class MeetingService {
       activeParticipants: 1
     });
 
-    return { meetingCode, roomId };
+    const refreshToken = await authService.createMeetingSession(hostId, meeting._id, reqInfo || {});
+
+    return { meetingCode, roomId, refreshToken };
   }
 
   async getMeetingByCode(meetingCode, userId) {
@@ -203,7 +210,7 @@ class MeetingService {
     return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants };
   }
 
-  async joinMeetingWithCode(meetingCode, userId) {
+  async joinMeetingWithCode(meetingCode, userId, reqInfo) {
     const meeting = await meetingRepository.findMeetingByCode(meetingCode);
     if (!meeting) throw new AppError("Meeting not found", 404);
 
@@ -213,7 +220,9 @@ class MeetingService {
 
     await meetingRepository.addParticipant(meeting._id, userId);
     
-    return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants + 1 };
+    const refreshToken = await authService.createMeetingSession(userId, meeting._id, reqInfo || {});
+
+    return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants + 1, refreshToken };
   }
 
   async endMeetingWithCode(meetingCode, userId) {

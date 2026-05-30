@@ -128,6 +128,9 @@ const ScheduleMeetingPage = () => {
 
       closeModal();
     },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to create meeting");
+    }
   });
 
   // ─────────────────────────────────────────────
@@ -148,6 +151,9 @@ const ScheduleMeetingPage = () => {
 
       closeModal();
     },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update meeting");
+    }
   });
 
   // ─────────────────────────────────────────────
@@ -797,7 +803,7 @@ const ScheduleMeetingPage = () => {
 
                 setPage(1);
               }}
-              className="h-8 px-2 rounded-lg border border-base-300 text-sm"
+              className="h-8 px-2 bg-white rounded-lg border border-base-300 text-sm"
             >
               {[5, 10, 20, 50].map(
                 (n) => (
@@ -907,6 +913,7 @@ const ScheduleMeetingPage = () => {
                 </label>
 
                 <input
+                  required
                   type="text"
                   value={
                     meetingData.title
@@ -932,6 +939,7 @@ const ScheduleMeetingPage = () => {
                 </label>
 
                 <input
+                  required
                   type="date"
                   value={
                     meetingData.date
@@ -957,6 +965,7 @@ const ScheduleMeetingPage = () => {
                 </label>
 
                 <input
+                  required
                   type="time"
                   value={
                     meetingData.time

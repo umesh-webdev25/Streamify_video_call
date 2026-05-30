@@ -2,36 +2,43 @@ import mongoose from "mongoose";
 
 const sessionSchema = new mongoose.Schema(
   {
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
+    meetingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Meeting",
+      required: true,
+    },
     refreshToken: {
       type: String,
       required: true,
-      unique: true,
     },
-
-    deviceInfo: {
-      type: String,
-      default: "unknown",
-    },
-
     ipAddress: {
       type: String,
       default: "unknown",
     },
-
+    userAgent: {
+      type: String,
+      default: "unknown",
+    },
+    deviceInfo: {
+      type: String,
+      default: "unknown",
+    },
     expiresAt: {
       type: Date,
       required: true,
     },
-
-    isValid: {
+    revoked: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    lastActivity: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

@@ -18,7 +18,7 @@ const scheduleMeetingSchema = new mongoose.Schema({
         enum: ["pending", "completed", "cancelled", "upcoming", "expired"],
         default: "upcoming"
     }
-})
+}, { timestamps: true })
 
 const ScheduleMeeting = mongoose.models.ScheduleMeeting || mongoose.model("ScheduleMeeting", scheduleMeetingSchema)
 

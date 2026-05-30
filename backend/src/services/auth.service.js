@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import userRepository from "../repositories/user.repository.js";
+import meetingRepository from "../repositories/meeting.repository.js";
 import Session from "../models/Session.js";
 import AppError from "../utils/AppError.js";
 import { upsertStreamUser } from "../lib/stream.js";
@@ -86,8 +87,7 @@ class AuthService {
       return { requiresTwoFactor: true, email: user.email };
     }
     
-    const tokens = await this.createSession(user._id, reqInfo);
-    return { user, ...tokens };
+    return { user, accessToken: this.generateAccessToken(user._id) };
   }
 
   async verify2FA(email, otp, reqInfo = {}) {
@@ -107,8 +107,7 @@ class AuthService {
     user.otpExpires = null;
     await user.save();
 
-    const tokens = await this.createSession(user._id, reqInfo);
-    return { user, ...tokens };
+    return { user, accessToken: this.generateAccessToken(user._id) };
   }
 
   async toggle2FA(userId) {
@@ -175,47 +174,71 @@ class AuthService {
     return true;
   }
 
-  async createSession(userId, { ip = "unknown", device = "unknown" }) {
-    const accessToken = this.generateAccessToken(userId);
-    const refreshToken = crypto.randomBytes(40).toString("hex");
+  async createMeetingSession(userId, meetingId, { ip = "unknown", userAgent = "unknown", device = "unknown" }) {
+    const randomToken = crypto.randomBytes(40).toString("hex");
+    const hashedToken = await bcrypt.hash(randomToken, 10);
     
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-    await Session.create({
-      user: userId,
-      refreshToken,
+    const session = await Session.create({
+      userId,
+      meetingId,
+      refreshToken: hashedToken,
       ipAddress: ip,
+      userAgent,
       deviceInfo: device,
       expiresAt,
+      revoked: false,
+      lastActivity: new Date()
     });
 
-    return { accessToken, refreshToken };
+    return `${session._id}.${randomToken}`;
   }
 
-  async refreshAccessToken(refreshToken) {
-    const session = await Session.findOne({ refreshToken, isValid: true });
+  async refreshAccessToken(plainRefreshToken) {
+    if (!plainRefreshToken || !plainRefreshToken.includes('.')) {
+      throw new AppError("Invalid refresh token format", 401);
+    }
     
-    if (!session || session.expiresAt < new Date()) {
-      if (session) {
-        session.isValid = false;
-        await session.save();
-      }
-      throw new AppError("Invalid or expired refresh token", 401);
+    const [sessionId, plainToken] = plainRefreshToken.split('.');
+    
+    const session = await Session.findById(sessionId).populate("meetingId");
+    
+    if (!session || session.revoked || session.expiresAt < new Date()) {
+      throw new AppError("Invalid or expired session", 401);
     }
 
-    // Token Rotation: Generate new refresh token
-    const newAccessToken = this.generateAccessToken(session.user);
-    const newRefreshToken = crypto.randomBytes(40).toString("hex");
+    const isMatch = await bcrypt.compare(plainToken, session.refreshToken);
+    if (!isMatch) {
+      session.revoked = true;
+      await session.save();
+      throw new AppError("Invalid refresh token", 401);
+    }
 
-    session.refreshToken = newRefreshToken;
+    const meeting = session.meetingId;
+    if (!meeting || meeting.status !== "active") {
+      throw new AppError("Meeting session is no longer active", 401);
+    }
+
+    session.lastActivity = new Date();
+
+    const newRandomToken = crypto.randomBytes(40).toString("hex");
+    const newHashedToken = await bcrypt.hash(newRandomToken, 10);
+
+    session.refreshToken = newHashedToken;
     await session.save();
+
+    const newAccessToken = this.generateAccessToken(session.userId);
+    const newRefreshToken = `${session._id}.${newRandomToken}`;
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 
-  async logout(refreshToken) {
-    await Session.findOneAndUpdate({ refreshToken }, { isValid: false });
+  async logout(plainRefreshToken) {
+    if (!plainRefreshToken || !plainRefreshToken.includes('.')) return;
+    const [sessionId] = plainRefreshToken.split('.');
+    await Session.findByIdAndUpdate(sessionId, { revoked: true });
   }
 
   async updateOnboarding(userId, onboardingData) {

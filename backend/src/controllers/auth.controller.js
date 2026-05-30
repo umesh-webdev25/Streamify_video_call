@@ -59,10 +59,10 @@ export const login = asyncHandler(async (req, res) => {
     return ApiResponse.success(res, { requiresTwoFactor: true, email: result.email }, "2FA OTP sent to email");
   }
 
-  const { user, accessToken, refreshToken } = result;
+  const { user, accessToken } = result;
 
   res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
-  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
+  res.clearCookie("refreshToken");
 
   return ApiResponse.success(res, user, "Login successful");
 });
@@ -83,10 +83,10 @@ export const verify2FA = asyncHandler(async (req, res) => {
     device: req.headers["user-agent"],
   };
 
-  const { user, accessToken, refreshToken } = await authService.verify2FA(email, otp, reqInfo);
+  const { user, accessToken } = await authService.verify2FA(email, otp, reqInfo);
 
   res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
-  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
+  res.clearCookie("refreshToken");
 
   return ApiResponse.success(res, user, "Login successful");
 });
@@ -144,15 +144,10 @@ export const verifyOTP = asyncHandler(async (req, res) => {
   }
   const user = await authService.verifyOTP(email, otp);
 
-  const reqInfo = {
-    ip: req.ip,
-    device: req.headers["user-agent"],
-  };
-
-  const { accessToken, refreshToken } = await authService.createSession(user._id, reqInfo);
+  const accessToken = authService.generateAccessToken(user._id);
 
   res.cookie("jwt", accessToken, authService.getCookieOptions("access"));
-  res.cookie("refreshToken", refreshToken, authService.getCookieOptions("refresh"));
+  res.clearCookie("refreshToken");
 
   return ApiResponse.success(res, user, "Email verified successfully");
 });
