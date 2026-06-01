@@ -72,7 +72,8 @@ const SignUpPage = () => {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                    className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors text-base-content"
+                    style={{ backgroundColor: '#ffffff' }}
                     value={signupData.fullName}
                     onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
                     required
@@ -94,7 +95,8 @@ const SignUpPage = () => {
                   <input
                     type="email"
                     placeholder="name@company.com"
-                    className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                    className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors text-base-content"
+                    style={{ backgroundColor: '#ffffff' }}
                     value={signupData.email}
                     onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                     required
@@ -116,7 +118,8 @@ const SignUpPage = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Min. 8 characters"
-                    className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                    className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors text-base-content"
+                    style={{ backgroundColor: '#ffffff' }}
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                     required

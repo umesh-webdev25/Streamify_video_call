@@ -86,7 +86,8 @@ const LoginPage = () => {
                     <input
                       type="email"
                       placeholder="name@company.com"
-                      className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                      className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors text-base-content"
+                      style={{ backgroundColor: '#ffffff' }}
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
@@ -110,7 +111,8 @@ const LoginPage = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                      className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors text-base-content"
+                      style={{ backgroundColor: '#ffffff' }}
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
@@ -180,7 +182,8 @@ const LoginPage = () => {
                     <input
                       type="text"
                       placeholder="123456"
-                      className="input input-bordered w-full h-11 rounded-lg text-sm focus:border-primary transition-colors bg-base-100 text-center tracking-widest text-lg"
+                      className="input input-bordered w-full h-11 rounded-lg text-sm focus:border-primary transition-colors text-base-content text-center tracking-widest text-lg"
+                      style={{ backgroundColor: '#ffffff' }}
                       maxLength={6}
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
