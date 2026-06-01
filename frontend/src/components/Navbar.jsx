@@ -38,7 +38,7 @@ const Navbar = () => {
                 <ShipWheelIcon className="size-4 text-primary-content" />
               </div>
               <span className="text-base font-bold tracking-tight text-base-content">
-                Streamify
+                MeetFlow
               </span>
             </Link>
           </div>
@@ -73,7 +73,7 @@ const Navbar = () => {
               className="btn btn-ghost btn-sm btn-circle hover:bg-base-200 text-base-content/50 hover:text-base-content transition-colors"
               onClick={toggleTheme}
             >
-              {theme === "streamify-pro" ? (
+              {theme === "MeetFlow-pro" ? (
                 <MoonIcon className="size-4.5" />
               ) : (
                 <SunIcon className="size-4.5" />

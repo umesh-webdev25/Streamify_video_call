@@ -8,14 +8,14 @@ import toast from "react-hot-toast";
 
 const DAISY_THEMES = [
   // LIGHT THEMES
-  { name: "streamify-pro", label: "Streamify Pro", type: "light" },
+  { name: "MeetFlow-pro", label: "MeetFlow Pro", type: "light" },
   { name: "light", label: "Light", type: "light" },
   { name: "cupcake", label: "Cupcake", type: "light" },
   { name: "emerald", label: "Emerald", type: "light" },
   { name: "pastel", label: "Pastel", type: "light" },
 
   // DARK THEMES
-  { name: "streamify-dark", label: "Streamify Dark", type: "dark" },
+  { name: "MeetFlow-dark", label: "MeetFlow Dark", type: "dark" },
   { name: "dark", label: "Dark", type: "dark" },
   { name: "dracula", label: "Dracula", type: "dark" },
   { name: "night", label: "Night", type: "dark" },
@@ -71,20 +71,18 @@ const PreferencesPage = () => {
                 <button
                   key={t.name}
                   onClick={() => setTheme(t.name)}
-                  className={`relative p-3 rounded-xl border-2 transition-all text-center ${
-                    theme === t.name
+                  className={`relative p-3 rounded-xl border-2 transition-all text-center ${theme === t.name
                       ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                       : "border-base-300/50 hover:border-base-300 hover:bg-base-200/50"
-                  }`}
+                    }`}
                 >
                   <div className="flex gap-1 justify-center mb-1.5">
                     <div className="size-3 rounded-full bg-primary" />
                     <div className="size-3 rounded-full bg-secondary" />
                     <div className="size-3 rounded-full bg-accent" />
                   </div>
-                  <span className={`text-[10px] font-semibold ${
-                    theme === t.name ? "text-primary" : "text-base-content/60"
-                  }`}>
+                  <span className={`text-[10px] font-semibold ${theme === t.name ? "text-primary" : "text-base-content/60"
+                    }`}>
                     {t.label}
                   </span>
                   {theme === t.name && (
@@ -108,20 +106,18 @@ const PreferencesPage = () => {
                 <button
                   key={t.name}
                   onClick={() => setTheme(t.name)}
-                  className={`relative p-3 rounded-xl border-2 transition-all text-center ${
-                    theme === t.name
+                  className={`relative p-3 rounded-xl border-2 transition-all text-center ${theme === t.name
                       ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                       : "border-base-300/50 hover:border-base-300 hover:bg-base-200/50"
-                  }`}
+                    }`}
                 >
                   <div className="flex gap-1 justify-center mb-1.5">
                     <div className="size-3 rounded-full bg-primary" />
                     <div className="size-3 rounded-full bg-secondary" />
                     <div className="size-3 rounded-full bg-accent" />
                   </div>
-                  <span className={`text-[10px] font-semibold ${
-                    theme === t.name ? "text-primary" : "text-base-content/60"
-                  }`}>
+                  <span className={`text-[10px] font-semibold ${theme === t.name ? "text-primary" : "text-base-content/60"
+                    }`}>
                     {t.label}
                   </span>
                   {theme === t.name && (

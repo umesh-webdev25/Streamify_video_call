@@ -8,7 +8,7 @@ import crypto from "crypto";
 function createTransporter() {
   // For development: Use Ethereal (fake SMTP service)
   // For production: Use Gmail, SendGrid, AWS SES, etc.
-  
+
   if (process.env.NODE_ENV === "production") {
     // Production configuration (example with Gmail)
     return nodemailer.createTransport({
@@ -46,13 +46,13 @@ export function generateVerificationToken() {
 export async function sendVerificationEmail(user, token) {
   try {
     const transporter = createTransporter();
-    
+
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
-    
+
     const mailOptions = {
-      from: process.env.EMAIL_FROM || '"Streamify" <noreply@streamify.com>',
+      from: process.env.EMAIL_FROM || '"MeetFlow" <noreply@MeetFlow.com>',
       to: user.email,
-      subject: "✨ Verify Your Email Address - Streamify",
+      subject: "✨ Verify Your Email Address - MeetFlow",
       html: `
         <!DOCTYPE html>
         <html>
@@ -210,7 +210,7 @@ export async function sendVerificationEmail(user, token) {
           <div class="email-wrapper">
             <!-- Header -->
             <div class="header">
-              <div class="logo">🎥 Streamify</div>
+              <div class="logo">🎥 MeetFlow</div>
               <div class="tagline">Connect • Chat • Video Call</div>
             </div>
 
@@ -219,7 +219,7 @@ export async function sendVerificationEmail(user, token) {
               <div class="greeting">Welcome, ${user.fullName}! 🎉</div>
               
               <p class="message">
-                We're thrilled to have you join the <strong>Streamify</strong> community! 
+                We're thrilled to have you join the <strong>MeetFlow</strong> community! 
                 You're just one step away from connecting with friends through seamless video calls and real-time chat.
               </p>
 
@@ -264,7 +264,7 @@ export async function sendVerificationEmail(user, token) {
             <!-- Footer -->
             <div class="footer">
               <p class="footer-text">
-                If you didn't create an account with Streamify, you can safely ignore this email.
+                If you didn't create an account with MeetFlow, you can safely ignore this email.
               </p>
               <div class="divider"></div>
               <div class="social-links">
@@ -273,7 +273,7 @@ export async function sendVerificationEmail(user, token) {
                 <a href="#" class="social-link">Privacy Policy</a>
               </div>
               <p class="copyright">
-                © 2025 Streamify. All rights reserved.
+                © 2025 MeetFlow. All rights reserved.
               </p>
             </div>
           </div>
@@ -281,7 +281,7 @@ export async function sendVerificationEmail(user, token) {
         </html>
       `,
       text: `
-        Welcome to Streamify, ${user.fullName}!
+        Welcome to MeetFlow, ${user.fullName}!
         
         Thank you for signing up. Please verify your email address to complete your registration.
         
@@ -290,20 +290,20 @@ export async function sendVerificationEmail(user, token) {
         
         This link will expire in 24 hours.
         
-        If you didn't create an account with Streamify, you can safely ignore this email.
+        If you didn't create an account with MeetFlow, you can safely ignore this email.
       `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    
+
     console.log(`✅ Verification email sent to ${user.email}`);
     console.log(`📧 Message ID: ${info.messageId}`);
-    
+
     // For development with Ethereal
     if (process.env.NODE_ENV !== "production") {
       console.log(`📮 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
-    
+
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("❌ Error sending verification email:", error);
@@ -317,13 +317,13 @@ export async function sendVerificationEmail(user, token) {
 export async function sendPasswordResetEmail(user, resetToken) {
   try {
     const transporter = createTransporter();
-    
+
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    
+
     const mailOptions = {
-      from: process.env.EMAIL_FROM || '"Streamify" <noreply@streamify.com>',
+      from: process.env.EMAIL_FROM || '"MeetFlow" <noreply@MeetFlow.com>',
       to: user.email,
-      subject: "🔐 Reset Your Password - Streamify",
+      subject: "🔐 Reset Your Password - MeetFlow",
       html: `
         <!DOCTYPE html>
         <html>
@@ -489,7 +489,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
           <div class="email-wrapper">
             <!-- Header -->
             <div class="header">
-              <div class="logo">🎥 Streamify</div>
+              <div class="logo">🎥 MeetFlow</div>
               <div class="tagline">Secure Password Reset</div>
             </div>
 
@@ -506,7 +506,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
               </p>
               
               <p class="message">
-                We received a request to reset your password for your Streamify account. 
+                We received a request to reset your password for your MeetFlow account. 
                 Click the button below to create a new password:
               </p>
 
@@ -542,7 +542,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
             <!-- Footer -->
             <div class="footer">
               <p class="footer-text">
-                This is an automated security email from Streamify.
+                This is an automated security email from MeetFlow.
               </p>
               <div class="divider"></div>
               <div class="social-links">
@@ -551,7 +551,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
                 <a href="#" class="social-link">Privacy Policy</a>
               </div>
               <p class="copyright">
-                © 2025 Streamify. All rights reserved.
+                © 2025 MeetFlow. All rights reserved.
               </p>
             </div>
           </div>
@@ -562,7 +562,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
 
     const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Password reset email sent to ${user.email}`);
-    
+
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("❌ Error sending password reset email:", error);

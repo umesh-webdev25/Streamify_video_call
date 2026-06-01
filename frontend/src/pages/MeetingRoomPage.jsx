@@ -207,7 +207,7 @@ const MeetingRoomPage = () => {
       className="h-screen bg-[#050505] text-white overflow-hidden font-sans"
     >
       <Helmet>
-        <title>Meeting Room {roomId} | Streamify</title>
+        <title>Meeting Room {roomId} | MeetFlow</title>
       </Helmet>
 
       {client && call ? (
@@ -575,7 +575,7 @@ const MeetingRoomContent = ({
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-        className="absolute bottom-4 inset-x-0 z-40 flex justify-center"
+          className="absolute bottom-4 inset-x-0 z-40 flex justify-center"
         >
           <div className="flex items-center justify-center">
             <div

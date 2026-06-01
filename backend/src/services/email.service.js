@@ -24,16 +24,16 @@ console.log("PASS:", process.env.EMAIL_PASS);
  */
 export const sendOTPEmail = async (email, otp, fullName) => {
   const mailOptions = {
-    from: `"Streamify" <${process.env.EMAIL_USER}>`,
+    from: `"MeetFlow" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "Verify your Streamify account",
+    subject: "Verify your MeetFlow account",
     html: `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
 
     <div style="text-align: center; margin-bottom: 20px;">
       <img
         src="https://res.cloudinary.com/da50pkdud/image/upload/v1780058090/video_vepjli.svg"
-        alt="Streamify Logo"
+        alt="MeetFlow Logo"
         style="
           width: 90px;
           height: 90px;
@@ -43,13 +43,13 @@ export const sendOTPEmail = async (email, otp, fullName) => {
     </div>
 
     <h2 style="color: #4f46e5; text-align: center;">
-      Welcome to Streamify!
+      Welcome to MeetFlow!
     </h2>
 
     <p>Hello <strong>${fullName}</strong>,</p>
 
     <p>
-      Thank you for signing up for Streamify.
+      Thank you for signing up for MeetFlow.
       Please use the OTP below:
     </p>
 
@@ -92,16 +92,16 @@ export const sendOTPEmail = async (email, otp, fullName) => {
  */
 export const send2FAEmail = async (email, otp, fullName) => {
   const mailOptions = {
-    from: `"Streamify" <${process.env.EMAIL_USER}>`,
+    from: `"MeetFlow" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "Your Streamify 2FA Code",
+    subject: "Your MeetFlow 2FA Code",
     html: `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
 
     <div style="text-align: center; margin-bottom: 20px;">
       <img
         src="https://res.cloudinary.com/da50pkdud/image/upload/v1780058090/video_vepjli.svg"
-        alt="Streamify Logo"
+        alt="MeetFlow Logo"
         style="
           width: 90px;
           height: 90px;
@@ -156,7 +156,7 @@ export const send2FAEmail = async (email, otp, fullName) => {
  */
 export const sendAddedToGroupEmail = async ({ to, inviterName, groupName, designation }) => {
   const mailOptions = {
-    from: `"Streamify" <${process.env.EMAIL_USER}>`,
+    from: `"MeetFlow" <${process.env.EMAIL_USER}>`,
     to,
     subject: `You were added to ${groupName} Group`,
     html: `

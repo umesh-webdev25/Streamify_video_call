@@ -59,14 +59,14 @@ const Sidebar = () => {
       path: "/group",
     },
     {
-        icon: VideoIcon,
-        label: "Meetings",
-        path: "/meeting/lobby",
+      icon: VideoIcon,
+      label: "Meetings",
+      path: "/meeting/lobby",
     },
     {
-        icon: ShipWheelIcon,
-        label: "Schedule Meeting",
-        path: "/schedule-meeting",
+      icon: ShipWheelIcon,
+      label: "Schedule Meeting",
+      path: "/schedule-meeting",
     },
     // {
     //   icon: BellIcon,
@@ -111,7 +111,7 @@ const Sidebar = () => {
           </div>
 
           <span className="text-lg font-bold tracking-tight text-base-content">
-            Streamify
+            MeetFlow
           </span>
         </Link>
       </div>

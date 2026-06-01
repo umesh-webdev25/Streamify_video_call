@@ -48,7 +48,7 @@ const MeetingLobbyPage = () => {
   const [showDevices, setShowDevices] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  
+
   const [searchParams] = useSearchParams();
   const codeParam = searchParams.get("code");
   const { handleJoinMeeting } = useMeeting();
@@ -71,7 +71,7 @@ const MeetingLobbyPage = () => {
         setVideoDevices(video);
         if (audio.length) setSelectedAudio(audio[0].deviceId);
         if (video.length) setSelectedVideo(video[0].deviceId);
-      } catch {}
+      } catch { }
     };
     getDevices();
   }, []);
@@ -124,9 +124,9 @@ const MeetingLobbyPage = () => {
       toast.error("Please enter a meeting code");
       return;
     }
-    
+
     const code = roomCode.trim().toUpperCase();
-    
+
     // Check if it is a group meeting code
     if (code.startsWith("GRP-")) {
       try {
@@ -142,7 +142,7 @@ const MeetingLobbyPage = () => {
   return (
     <div className="min-h-screen bg-base-100 flex flex-col">
       <Helmet>
-        <title>Meeting Lobby | Streamify</title>
+        <title>Meeting Lobby | MeetFlow</title>
       </Helmet>
 
       {/* BACK BUTTON */}

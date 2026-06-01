@@ -33,7 +33,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-base-100">
       <Helmet>
-        <title>Login | Streamify</title>
+        <title>Login | MeetFlow</title>
       </Helmet>
 
       <div className="flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-2xl shadow-lg overflow-hidden border border-base-200">
@@ -45,7 +45,7 @@ const LoginPage = () => {
             <div className="p-1.5 bg-primary rounded-lg">
               <VideoIcon className="size-5 text-primary-content" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-base-content">Streamify</span>
+            <span className="text-lg font-bold tracking-tight text-base-content">MeetFlow</span>
           </Link>
 
           {/* ERROR */}
@@ -71,151 +71,151 @@ const LoginPage = () => {
             </div>
 
             {!requires2FA ? (
-            <form onSubmit={handleLogin} className="space-y-5">
-              {/* EMAIL */}
-              <div className="form-control w-full space-y-1.5">
-                <label className="label py-0 px-0">
-                  <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                    Email Address
-                  </span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <MailIcon className="size-4 text-base-content/30" />
-                  </div>
-                  <input
-                    type="email"
-                    placeholder="name@company.com"
-                    className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* PASSWORD */}
-              <div className="form-control w-full space-y-1.5">
-                <div className="flex items-center justify-between">
+              <form onSubmit={handleLogin} className="space-y-5">
+                {/* EMAIL */}
+                <div className="form-control w-full space-y-1.5">
                   <label className="label py-0 px-0">
                     <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                      Password
+                      Email Address
                     </span>
                   </label>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <LockIcon className="size-4 text-base-content/30" />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <MailIcon className="size-4 text-base-content/30" />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="name@company.com"
+                      className="input input-bordered w-full h-11 pl-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      required
+                    />
                   </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-base-content/30 hover:text-base-content/50 transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
+                </div>
+
+                {/* PASSWORD */}
+                <div className="form-control w-full space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="label py-0 px-0">
+                      <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+                        Password
+                      </span>
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <LockIcon className="size-4 text-base-content/30" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="input input-bordered w-full h-11 pl-10 pr-10 rounded-lg text-sm focus:border-primary transition-colors bg-base-100"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-base-content/30 hover:text-base-content/50 transition-colors"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOffIcon className="size-4" />
+                      ) : (
+                        <EyeIcon className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                  <Link
+                    to="/forget-password"
+                    className="text-xs text-primary hover:underline font-medium"
                   >
-                    {showPassword ? (
-                      <EyeOffIcon className="size-4" />
-                    ) : (
-                      <EyeIcon className="size-4" />
-                    )}
-                  </button>
+                    Forgot password?
+                  </Link>
                 </div>
-                <Link
-                  to="/forget-password"
-                  className="text-xs text-primary hover:underline font-medium"
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full h-11 rounded-lg text-sm font-semibold mt-2 gap-2"
+                  disabled={isPending}
                 >
-                  Forgot password?
-                </Link>
-              </div>
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRightIcon className="size-4" />
+                    </>
+                  )}
+                </button>
 
-              <button
-                type="submit"
-                className="btn btn-primary w-full h-11 rounded-lg text-sm font-semibold mt-2 gap-2"
-                disabled={isPending}
-              >
-                {isPending ? (
-                  <>
-                    <span className="loading loading-spinner loading-sm" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRightIcon className="size-4" />
-                  </>
-                )}
-              </button>
-
-              <p className="text-center text-sm text-base-content/40 pt-1">
-                New to the platform?{" "}
-                <Link to="/signup" className="text-primary font-semibold hover:underline">
-                  Create account
-                </Link>
-              </p>
-            </form>
+                <p className="text-center text-sm text-base-content/40 pt-1">
+                  New to the platform?{" "}
+                  <Link to="/signup" className="text-primary font-semibold hover:underline">
+                    Create account
+                  </Link>
+                </p>
+              </form>
             ) : (
-            <form onSubmit={handleVerify2FA} className="space-y-5">
-              <div className="alert alert-info mb-6 rounded-lg py-3 text-sm border-none">
-                <span>We sent a 6-digit verification code to {loginData.email}. Please enter it below.</span>
-              </div>
-              {verifyError && (
-                <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none">
-                  <span>{verifyError?.response?.data?.message || "Invalid OTP code"}</span>
+              <form onSubmit={handleVerify2FA} className="space-y-5">
+                <div className="alert alert-info mb-6 rounded-lg py-3 text-sm border-none">
+                  <span>We sent a 6-digit verification code to {loginData.email}. Please enter it below.</span>
                 </div>
-              )}
-              <div className="form-control w-full space-y-1.5">
-                <label className="label py-0 px-0">
-                  <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                    Verification Code (OTP)
-                  </span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="123456"
-                    className="input input-bordered w-full h-11 rounded-lg text-sm focus:border-primary transition-colors bg-base-100 text-center tracking-widest text-lg"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary w-full h-11 rounded-lg text-sm font-semibold mt-2 gap-2"
-                disabled={isVerifyPending || otp.length < 6}
-              >
-                {isVerifyPending ? (
-                  <>
-                    <span className="loading loading-spinner loading-sm" />
-                    Verifying...
-                  </>
-                ) : (
-                  <>
-                    Verify & Sign In
-                    <ArrowRightIcon className="size-4" />
-                  </>
+                {verifyError && (
+                  <div className="alert alert-error mb-6 rounded-lg py-3 text-sm border-none">
+                    <span>{verifyError?.response?.data?.message || "Invalid OTP code"}</span>
+                  </div>
                 )}
-              </button>
+                <div className="form-control w-full space-y-1.5">
+                  <label className="label py-0 px-0">
+                    <span className="label-text text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+                      Verification Code (OTP)
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="123456"
+                      className="input input-bordered w-full h-11 rounded-lg text-sm focus:border-primary transition-colors bg-base-100 text-center tracking-widest text-lg"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                      required
+                    />
+                  </div>
+                </div>
 
-              <button
-                type="button"
-                className="btn btn-ghost w-full h-11 rounded-lg text-sm font-semibold mt-2"
-                onClick={() => setRequires2FA(false)}
-                disabled={isVerifyPending}
-              >
-                Back to Login
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full h-11 rounded-lg text-sm font-semibold mt-2 gap-2"
+                  disabled={isVerifyPending || otp.length < 6}
+                >
+                  {isVerifyPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      Verify & Sign In
+                      <ArrowRightIcon className="size-4" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-ghost w-full h-11 rounded-lg text-sm font-semibold mt-2"
+                  onClick={() => setRequires2FA(false)}
+                  disabled={isVerifyPending}
+                >
+                  Back to Login
+                </button>
+              </form>
             )}
           </div>
         </div>

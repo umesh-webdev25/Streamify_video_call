@@ -181,9 +181,9 @@ const HomePage = () => {
   /* ── Stats derived from sessions ── */
   const totalSessions = sessions?.length ?? 0;
 
-const deletedContactCount = deleteContact?.length || 0;
+  const deletedContactCount = deleteContact?.length || 0;
 
-const deletedGroupCount = deleteGroup?.length || 0;
+  const deletedGroupCount = deleteGroup?.length || 0;
 
 
   const { authUser } = useAuthUser();
@@ -244,7 +244,7 @@ const deletedGroupCount = deleteGroup?.length || 0;
   return (
     <div className="min-h-screen bg-base-100">
       <Helmet>
-        <title>Dashboard | Streamify</title>
+        <title>Dashboard | MeetFlow</title>
       </Helmet>
 
       <div className="flex">
@@ -483,7 +483,7 @@ const deletedGroupCount = deleteGroup?.length || 0;
                     </p>
 
                     <h2 className="text-4xl font-bold text-base-content mt-2">
-                     {deletedGroupCount}
+                      {deletedGroupCount}
                     </h2>
                   </div>
 
@@ -519,7 +519,7 @@ const deletedGroupCount = deleteGroup?.length || 0;
                     </p>
 
                     <h2 className="text-4xl font-bold text-base-content mt-2">
-                     {deletedContactCount}
+                      {deletedContactCount}
                     </h2>
                   </div>
 
@@ -535,7 +535,7 @@ const deletedGroupCount = deleteGroup?.length || 0;
                     <UserXIcon className="w-7 h-7 text-error" />
                   </div>
                 </div>
-                  {/* Total message */}
+                {/* Total message */}
                 <div
                   className="
       bg-base-100
@@ -567,7 +567,7 @@ const deletedGroupCount = deleteGroup?.length || 0;
         flex-shrink-0
       "
                   >
-                    <MessageSquareIcon  className="w-7 h-7 text-error" />
+                    <MessageSquareIcon className="w-7 h-7 text-error" />
                   </div>
                 </div>
               </div>

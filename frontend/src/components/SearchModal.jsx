@@ -183,7 +183,7 @@ const SearchModal = ({ isOpen, onClose }) => {
               <span className="text-[10px] text-base-content/30 font-medium">Select</span>
             </div>
           </div>
-          <span className="text-[10px] text-base-content/30 font-medium">Streamify Search</span>
+          <span className="text-[10px] text-base-content/30 font-medium">MeetFlow Search</span>
         </div>
       </div>
     </div>

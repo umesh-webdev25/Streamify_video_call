@@ -21,7 +21,7 @@ const ForgotPasswordPage = () => {
             <div className="p-1.5 bg-primary rounded-lg">
               <ShipWheelIcon className="size-5 text-primary-content" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-base-content">Streamify</span>
+            <span className="text-lg font-bold tracking-tight text-base-content">MeetFlow</span>
           </Link>
 
           {!isSubmitted ? (

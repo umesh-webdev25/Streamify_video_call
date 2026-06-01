@@ -36,7 +36,7 @@ const App = () => {
 
   if (isLoading) return <PageLoader />;
 
-  const displayTheme = isAuthenticated ? theme : "streamify-pro";
+  const displayTheme = isAuthenticated ? theme : "MeetFlow-pro";
 
   const pageVariants = {
     initial: { opacity: 0, y: 10 },
@@ -116,7 +116,7 @@ const App = () => {
             }
           />
 
-             <Route
+          <Route
             path="/schedule-meeting"
             element={
               <Layout showSidebar={true}>

@@ -102,7 +102,7 @@ const SettingsPage = () => {
   return (
     <div className="p-6 sm:p-8 max-w-8xl mx-auto space-y-10">
       <Helmet>
-        <title>Account Settings | Streamify</title>
+        <title>Account Settings | MeetFlow</title>
       </Helmet>
 
       {/* PAGE HEADER */}

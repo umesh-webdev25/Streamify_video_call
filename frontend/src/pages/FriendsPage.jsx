@@ -23,7 +23,7 @@ const FriendsPage = () => {
   return (
     <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-10">
       <Helmet>
-        <title>My Connections | Streamify</title>
+        <title>My Connections | MeetFlow</title>
       </Helmet>
 
       {/* PAGE HEADER */}

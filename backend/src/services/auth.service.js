@@ -13,7 +13,7 @@ import cloudinary from "../lib/cloudinary.js";
 class AuthService {
   async signup(userData) {
     const { email, fullName, password, profilePic } = userData;
-    
+
     const existingUser = await userRepository.findByEmail(email);
     if (existingUser) {
       throw new AppError("Email already exists", 400);
@@ -23,7 +23,7 @@ class AuthService {
     if (profilePic) {
       try {
         const uploadResponse = await cloudinary.uploader.upload(profilePic, {
-          folder: "streamify_profiles",
+          folder: "MeetFlow_profiles",
         });
         profilePicUrl = uploadResponse.secure_url;
       } catch (error) {
@@ -86,7 +86,7 @@ class AuthService {
 
       return { requiresTwoFactor: true, email: user.email };
     }
-    
+
     return { user, accessToken: this.generateAccessToken(user._id) };
   }
 
@@ -177,7 +177,7 @@ class AuthService {
   async createMeetingSession(userId, meetingId, { ip = "unknown", userAgent = "unknown", device = "unknown" }) {
     const randomToken = crypto.randomBytes(40).toString("hex");
     const hashedToken = await bcrypt.hash(randomToken, 10);
-    
+
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
@@ -200,11 +200,11 @@ class AuthService {
     if (!plainRefreshToken || !plainRefreshToken.includes('.')) {
       throw new AppError("Invalid refresh token format", 401);
     }
-    
+
     const [sessionId, plainToken] = plainRefreshToken.split('.');
-    
+
     const session = await Session.findById(sessionId).populate("meetingId");
-    
+
     if (!session || session.revoked || session.expiresAt < new Date()) {
       throw new AppError("Invalid or expired session", 401);
     }
@@ -248,7 +248,7 @@ class AuthService {
       try {
         const uploadPath = profilePic.startsWith("data:") ? profilePic : `./${profilePic.startsWith("/") ? "" : "/"}${profilePic}`;
         const uploadResponse = await cloudinary.uploader.upload(uploadPath, {
-          folder: "streamify_profiles",
+          folder: "MeetFlow_profiles",
         });
         profilePic = uploadResponse.secure_url;
       } catch (error) {

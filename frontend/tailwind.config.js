@@ -10,7 +10,7 @@ export default {
   daisyui: {
     themes: [
       {
-        "streamify-pro": {
+        "MeetFlow-pro": {
           primary: "#2563EB",
           secondary: "#60A5FA",
           accent: "#DBEAFE",
@@ -25,7 +25,7 @@ export default {
         },
       },
       {
-        "streamify-dark": {
+        "MeetFlow-dark": {
           primary: "#3B82F6",
           secondary: "#60A5FA",
           accent: "#1E3A8A",

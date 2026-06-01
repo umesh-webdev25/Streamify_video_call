@@ -122,7 +122,7 @@ const ChatPage = () => {
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col bg-base-100 overflow-hidden relative">
       <Helmet>
-        <title>Chat with {targetUser?.name || "Member"} | Streamify</title>
+        <title>Chat with {targetUser?.name || "Member"} | MeetFlow</title>
       </Helmet>
 
       {/* BACKGROUND DECORATION */}
@@ -195,8 +195,8 @@ const ChatPage = () => {
                       <button
                         onClick={() => setShowInfo(!showInfo)}
                         className={`hidden sm:flex items-center justify-center size-9 sm:size-10 rounded-xl border transition-all hover:scale-105 ${showInfo
-                            ? "bg-primary text-primary-content border-primary shadow-md shadow-primary/20"
-                            : "bg-base-200/80 hover:bg-base-300/80 border-base-300/50 text-base-content/50 hover:text-base-content"
+                          ? "bg-primary text-primary-content border-primary shadow-md shadow-primary/20"
+                          : "bg-base-200/80 hover:bg-base-300/80 border-base-300/50 text-base-content/50 hover:text-base-content"
                           }`}
                       >
                         <InfoIcon className="size-4" />

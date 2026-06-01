@@ -34,7 +34,7 @@ Body: Click this link to verify: http://localhost:5173/verify-email?token=abc123
    EMAIL_HOST="smtp.ethereal.email"
    EMAIL_USER="your.generated@ethereal.email"
    EMAIL_PASSWORD="your-generated-password"
-   EMAIL_FROM="Streamify <noreply@streamify.com>"
+   EMAIL_FROM="MeetFlow <noreply@MeetFlow.com>"
    FRONTEND_URL="http://localhost:5173"
    NODE_ENV="development"
    ```
@@ -64,7 +64,7 @@ Body: Click this link to verify: http://localhost:5173/verify-email?token=abc123
 **2. Create App Password:**
    - Go to: https://myaccount.google.com/apppasswords
    - Select "Mail" and "Other (Custom name)"
-   - Enter: "Streamify App"
+   - Enter: "MeetFlow App"
    - Click "Generate"
    - **Copy the 16-character password** (looks like: `abcd efgh ijkl mnop`)
 
@@ -73,7 +73,7 @@ Body: Click this link to verify: http://localhost:5173/verify-email?token=abc123
    EMAIL_HOST="smtp.gmail.com"
    EMAIL_USER="your-email@gmail.com"
    EMAIL_PASSWORD="your-16-char-app-password"
-   EMAIL_FROM="Streamify <your-email@gmail.com>"
+   EMAIL_FROM="MeetFlow <your-email@gmail.com>"
    FRONTEND_URL="http://localhost:5173"
    NODE_ENV="production"
    ```
@@ -110,7 +110,7 @@ NODE_ENV="production"
 EMAIL_HOST="smtp-mail.outlook.com"
 EMAIL_USER="your-email@outlook.com"
 EMAIL_PASSWORD="your-password"
-EMAIL_FROM="Streamify <your-email@outlook.com>"
+EMAIL_FROM="MeetFlow <your-email@outlook.com>"
 NODE_ENV="production"
 ```
 

@@ -121,7 +121,7 @@ const OnboardingPage = () => {
             </div>
 
             <span className="text-lg font-bold tracking-tight text-base-content">
-              Streamify
+              MeetFlow
             </span>
           </div>
 

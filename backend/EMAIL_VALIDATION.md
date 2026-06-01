@@ -94,7 +94,7 @@ This application implements a **multi-layered email validation system** to preve
 EMAIL_HOST="smtp.ethereal.email"          # SMTP server
 EMAIL_USER="your-email@ethereal.email"    # Email account
 EMAIL_PASSWORD="your-password"             # Email password
-EMAIL_FROM="Streamify <noreply@streamify.com>"  # Sender name
+EMAIL_FROM="MeetFlow <noreply@MeetFlow.com>"  # Sender name
 FRONTEND_URL="http://localhost:5173"      # Frontend URL for links
 ```
 

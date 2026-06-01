@@ -4,13 +4,13 @@ import useAuthUser from "../hooks/useAuthUser";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  PhoneOffIcon, 
-  MicIcon, 
-  MicOffIcon, 
-  VideoIcon, 
-  VideoOffIcon, 
-  MonitorUpIcon, 
+import {
+  PhoneOffIcon,
+  MicIcon,
+  MicOffIcon,
+  VideoIcon,
+  VideoOffIcon,
+  MonitorUpIcon,
   MessageSquareIcon,
   Maximize2Icon,
   Minimize2Icon,
@@ -47,7 +47,7 @@ const CallPage = () => {
   const [copied, setCopied] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
+
   const clientRef = useRef(null);
   const callRef = useRef(null);
   const containerRef = useRef(null);
@@ -123,7 +123,7 @@ const CallPage = () => {
 
         clientRef.current = videoClient;
         callRef.current = callInstance;
-        
+
         setClient(videoClient);
         setCall(callInstance);
 
@@ -157,12 +157,12 @@ const CallPage = () => {
   return (
     <div ref={containerRef} className="h-screen bg-[#050505] text-white overflow-hidden font-sans">
       <Helmet>
-        <title>Call {callId} | Streamify</title>
+        <title>Call {callId} | MeetFlow</title>
       </Helmet>
       {client && call ? (
         <StreamVideo client={client}>
           <StreamCall call={call}>
-            <CallContent 
+            <CallContent
               copyInviteLink={copyInviteLink}
               copied={copied}
               elapsed={elapsed}
@@ -220,7 +220,7 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
     <StreamTheme>
       <div className="relative h-screen w-full flex flex-col">
         {/* TOP BAR */}
-        <motion.div 
+        <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="absolute top-0 left-0 right-0 z-40 p-3 sm:p-6 flex items-center justify-between pointer-events-none"
@@ -259,9 +259,9 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
           {remoteParticipants.length > 0 ? (
             <div className={cn(
               "grid gap-2 sm:gap-4 w-full h-full max-w-7xl mx-auto",
-              remoteParticipants.length === 1 ? "grid-cols-1" : 
-              remoteParticipants.length === 2 ? "grid-cols-2" : 
-              remoteParticipants.length <= 4 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              remoteParticipants.length === 1 ? "grid-cols-1" :
+                remoteParticipants.length === 2 ? "grid-cols-2" :
+                  remoteParticipants.length <= 4 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
             )}>
               {remoteParticipants.map(p => {
                 const isDominant = dominantSpeaker?.sessionId === p.sessionId;
@@ -293,7 +293,7 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
           )}
 
           {/* LOCAL PARTICIPANT PIP */}
-          <motion.div 
+          <motion.div
             drag
             dragMomentum={false}
             className="absolute bottom-4 right-2 sm:bottom-6 sm:right-6 w-28 sm:w-56 aspect-video glass-dark rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl z-30 cursor-move"
@@ -316,31 +316,31 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
         </div>
 
         {/* BOTTOM CONTROLS */}
-        <motion.div 
+        <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="absolute bottom-0 left-0 right-0 z-40 p-3 sm:p-6 flex items-center justify-center bg-gradient-to-t from-black/80 to-transparent"
         >
           <div className="glass-dark px-3 sm:px-6 py-3 sm:py-4 rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-2 sm:gap-4">
-            <ControlToggle 
-              active={!isMicMuted} 
-              onClick={() => microphone.toggle()} 
+            <ControlToggle
+              active={!isMicMuted}
+              onClick={() => microphone.toggle()}
               icon={isMicMuted ? MicOffIcon : MicIcon}
               error={isMicMuted}
               tooltip={isMicMuted ? "Unmute" : "Mute"}
             />
 
-            <ControlToggle 
-              active={!isCamMuted} 
-              onClick={() => camera.toggle()} 
+            <ControlToggle
+              active={!isCamMuted}
+              onClick={() => camera.toggle()}
               icon={isCamMuted ? VideoOffIcon : VideoIcon}
               error={isCamMuted}
               tooltip={isCamMuted ? "Turn on camera" : "Turn off camera"}
             />
 
-            <ControlToggle 
-              active={isScreenSharing} 
-              onClick={() => screenShare.toggle()} 
+            <ControlToggle
+              active={isScreenSharing}
+              onClick={() => screenShare.toggle()}
               icon={MonitorUpIcon}
               primary={isScreenSharing}
               tooltip={isScreenSharing ? "Stop sharing" : "Share screen"}
@@ -348,7 +348,7 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
 
             <div className="h-6 sm:h-10 w-px bg-white/10 mx-0.5 sm:mx-1" />
 
-            <button 
+            <button
               onClick={() => navigate("/")}
               className="btn btn-error btn-circle shadow-xl shadow-error/20 hover:scale-110 active:scale-95 transition-all group"
               title="End Call"
@@ -363,7 +363,7 @@ const CallContent = ({ copyInviteLink, copied, elapsed, formatTime, isFullscreen
 };
 
 const ControlToggle = ({ active, onClick, icon: Icon, error, primary, tooltip }) => (
-  <button 
+  <button
     onClick={onClick}
     className={cn(
       "btn btn-circle transition-all border-none relative overflow-hidden tooltip tooltip-top",
@@ -374,7 +374,7 @@ const ControlToggle = ({ active, onClick, icon: Icon, error, primary, tooltip })
   >
     <Icon className={cn("size-4 sm:size-5 z-10", !active && !primary && "animate-pulse")} />
     {active && (
-      <motion.div 
+      <motion.div
         layoutId="active-bg"
         className="absolute inset-0 bg-white/5 pointer-events-none"
       />

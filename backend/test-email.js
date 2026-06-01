@@ -37,25 +37,25 @@ async function testEmail() {
   console.log("🔌 Testing connection to email server...");
 
   const isProduction = process.env.NODE_ENV === "production";
-  
+
   const transporter = nodemailer.createTransport(
     isProduction
       ? {
-          service: "gmail",
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD,
-          },
-        }
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      }
       : {
-          host: process.env.EMAIL_HOST || "smtp.ethereal.email",
-          port: 587,
-          secure: false,
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD,
-          },
-        }
+        host: process.env.EMAIL_HOST || "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      }
   );
 
   try {
@@ -66,9 +66,9 @@ async function testEmail() {
     console.log("📧 Sending test email...");
 
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"Streamify Test" <noreply@streamify.com>',
+      from: process.env.EMAIL_FROM || '"MeetFlow Test" <noreply@MeetFlow.com>',
       to: process.env.EMAIL_USER, // Send to yourself
-      subject: "✅ Streamify Email Test - Success!",
+      subject: "✅ MeetFlow Email Test - Success!",
       html: `
         <!DOCTYPE html>
         <html>
@@ -137,7 +137,7 @@ Users will receive similar emails when they sign up.
     console.error(`Error: ${error.message}\n`);
 
     console.log("🔧 Troubleshooting:");
-    
+
     if (error.code === "EAUTH") {
       console.log("❌ Authentication failed");
       console.log("   - For Gmail: Make sure you're using an App Password, not your regular password");

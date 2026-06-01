@@ -34,7 +34,7 @@ const NotificationsPage = () => {
   return (
     <div className="p-6 sm:p-8 max-w-3xl mx-auto space-y-10">
       <Helmet>
-        <title>Notifications | Streamify</title>
+        <title>Notifications | MeetFlow</title>
       </Helmet>
 
       {/* PAGE HEADER */}

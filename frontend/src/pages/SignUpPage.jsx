@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon , VideoIcon} from "lucide-react";
+import { UserIcon, MailIcon, LockIcon, ArrowRightIcon, EyeIcon, EyeOffIcon, VideoIcon } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import useSignUp from "../hooks/useSignUp";
 import { Helmet } from "react-helmet-async";
@@ -25,7 +25,7 @@ const SignUpPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-base-100">
       <Helmet>
-        <title>Create Account | Streamify</title>
+        <title>Create Account | MeetFlow</title>
       </Helmet>
 
       <div className="flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-2xl shadow-lg overflow-hidden border border-base-200">
@@ -37,7 +37,7 @@ const SignUpPage = () => {
             <div className="p-1.5 bg-primary rounded-lg">
               <VideoIcon className="size-5 text-primary-content" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-base-content">Streamify</span>
+            <span className="text-lg font-bold tracking-tight text-base-content">MeetFlow</span>
           </Link>
 
           {/* ERROR */}
