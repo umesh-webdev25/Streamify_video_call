@@ -1,46 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import {
-  getOutgoingFriendReqs,
-  getRecommendedUsers,
-  getUserFriends,
-  sendFriendRequest,
-  deleteContact,
+  getAllGroups,
+  getAllContacts,
+  getAllSessions,
   deleteGroup,
+  deleteContact,
 } from "../lib/api";
-import useSessions from "../hooks/session.js";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  VideoIcon,
-  PlusIcon,
-  UsersIcon,
-  MonitorUpIcon,
-  CalendarIcon,
-  ArrowRightIcon,
-  MapPinIcon,
-  UserPlusIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  SparklesIcon,
-  FolderIcon,
-  PhoneIcon,
-  ActivityIcon,
-  MessageCircleIcon,
-  LogInIcon,
-  ContactIcon,
-  Trash2Icon,
-  UserXIcon,
-  MessageSquareIcon,
-  LogOutIcon,
-} from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import ProfileImage from "../components/ProfileImage.jsx";
 import useAuthUser from "../hooks/useAuthUser";
 import { capitalize, cn } from "../lib/utils";
-import FriendCard, { getLanguageFlag } from "../components/FriendCard";
-import NoFriendsFound from "../components/NoFriendsFound";
 import Skeleton from "../components/ui/Skeleton";
 import { Helmet } from "react-helmet-async";
+
+// Import New Dashboard Components
+import DashboardStats from "../components/dashboard/DashboardStats";
+import QuickActions from "../components/dashboard/QuickActions";
+import ActiveMeetings from "../components/dashboard/ActiveMeetings";
+import RecentGroups from "../components/dashboard/RecentGroups";
+import ContactsOverview from "../components/dashboard/ContactsOverview";
+import ActivityTimeline from "../components/dashboard/ActivityTimeline";
+import AnalyticsCharts from "../components/dashboard/AnalyticsCharts";
+import NotificationsPanel from "../components/dashboard/NotificationsPanel";
+import DashboardSummary from "../components/dashboard/DashboardSummary";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,193 +41,114 @@ const itemVariants = {
 };
 
 const groups = [
-  {
-    id: 1,
-    name: "Developers",
-    members: ["u1", "u2", "u3"],
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Design Team",
-    members: ["u1"],
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Marketing",
-    members: [],
-    status: "inactive",
-  },
-  {
-    id: 4,
-    name: "Support",
-    members: [],
-    status: "inactive",
-  },
+  { id: 1, name: "Developers", members: 3, status: "active", date: "2 days ago" },
+  { id: 2, name: "Design Team", members: 1, status: "active", date: "1 week ago" },
+  { id: 3, name: "Marketing", members: 0, status: "inactive", date: "1 month ago" },
+  { id: 4, name: "Support", members: 0, status: "inactive", date: "2 months ago" },
 ];
 
 const contacts = [
-  { id: 1, name: "Umesh" },
-  { id: 2, name: "Rahul" },
-  { id: 3, name: "Aman" },
-  { id: 4, name: "Priya" },
-  { id: 5, name: "Neha" },
-];
-
-const quickActions = [
-  {
-    icon: VideoIcon,
-    label: "Instant Meeting",
-    desc: "Start a video call right now",
-    path: "/meeting/lobby",
-  },
-  {
-    icon: PlusIcon,
-    label: "Create Room",
-    desc: "Set up a permanent meeting room",
-    path: "/meeting/lobby",
-  },
-  {
-    icon: UsersIcon,
-    label: "Invite Friends",
-    desc: "Share your invite link",
-    path: "/friends",
-  },
-  {
-    icon: MonitorUpIcon,
-    label: "Share Screen",
-    desc: "Present your screen to others",
-    path: "/meeting/lobby",
-  },
-];
-
-const activities = [
-  {
-    user: "You",
-    action: "started a call with Sarah",
-    time: "2 min ago",
-    type: "call",
-  },
-  {
-    user: "Sarah",
-    action: "joined the meeting room",
-    time: "5 min ago",
-    type: "join",
-  },
-  {
-    user: "Mike",
-    action: "sent you a message",
-    time: "12 min ago",
-    type: "message",
-  },
-  {
-    user: "Emma",
-    action: "accepted your friend request",
-    time: "1 hour ago",
-    type: "friend",
-  },
-  {
-    user: "Alex",
-    action: "scheduled a meeting",
-    time: "3 hours ago",
-    type: "schedule",
-  },
+  { id: 1, name: "Umesh", email: "umesh@example.com", status: "online", avatar: "/avatar.png" },
+  { id: 2, name: "Rahul", email: "rahul@example.com", status: "offline", avatar: "/avatar.png" },
+  { id: 3, name: "Aman", email: "aman@example.com", status: "online", avatar: "/avatar.png" },
 ];
 
 const activeMeetings = [
-  { id: 1, name: "Spanish Practice", participants: 4, host: "Sarah" },
-  { id: 2, name: "French Study Group", participants: 6, host: "Mike" },
+  { id: 1, name: "Spanish Practice", groupName: "Language Learners", participants: 4, host: "Sarah", duration: "45m" },
+  { id: 2, name: "French Study Group", groupName: "Polyglots", participants: 6, host: "Mike", duration: "1h 20m" },
 ];
 
-const upcomingMeetings = [
-  {
-    id: 1,
-    title: "Japanese Conversation",
-    time: "Today, 3:00 PM",
-    participants: ["Sarah", "Mike"],
-    total: 4,
-  },
-  {
-    id: 2,
-    title: "German Grammar Review",
-    time: "Tomorrow, 10:00 AM",
-    participants: ["Emma"],
-    total: 3,
-  },
+// Dummy data for new sections
+const DUMMY_ACTIVITIES = [
+  { type: "meeting_start", title: "Meeting Started", desc: "You joined 'Spanish Practice'", time: "10 mins ago" },
+  { type: "contact", title: "Contact Added", desc: "You added 'Aman' to contacts", time: "2 hours ago" },
+  { type: "group", title: "Group Created", desc: "You created 'Design Team'", time: "Yesterday" },
+  { type: "message", title: "Message Sent", desc: "Sent a message in 'Developers'", time: "2 days ago" },
+];
+
+const DUMMY_GROWTH_DATA = [
+  { name: 'Mon', groups: 2, contacts: 4 }, { name: 'Tue', groups: 3, contacts: 5 },
+  { name: 'Wed', groups: 5, contacts: 8 }, { name: 'Thu', groups: 6, contacts: 10 },
+  { name: 'Fri', groups: 8, contacts: 12 }, { name: 'Sat', groups: 9, contacts: 15 }, { name: 'Sun', groups: 12, contacts: 18 }
+];
+
+const DUMMY_SESSION_DATA = [
+  { name: 'Week 1', sessions: 10, messages: 45 }, { name: 'Week 2', sessions: 14, messages: 65 },
+  { name: 'Week 3', sessions: 8, messages: 30 }, { name: 'Week 4', sessions: 18, messages: 90 }
+];
+
+const DUMMY_NOTIFS = [
+  { type: "meeting", title: "Meeting Reminder", desc: "Design Sync starts in 15 mins", time: "15 mins ago", read: false },
+  { type: "group", title: "Group Update", desc: "Developers group name changed", time: "2 hours ago", read: false },
+  { type: "system", title: "System Update", desc: "New dashboard features added", time: "1 day ago", read: true },
 ];
 
 const HomePage = () => {
-
-  const { sessions, isLoading } = useSessions();
-
-  console.log("Sessions:", sessions);
-
-  /* ── Stats derived from sessions ── */
-  const totalSessions = sessions?.length ?? 0;
-
-  const deletedContactCount = deleteContact?.length || 0;
-
-  const deletedGroupCount = deleteGroup?.length || 0;
-
-
   const { authUser } = useAuthUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [showActivity, setShowActivity] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
 
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 1280);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const { data: friendsRaw = [], isLoading: loadingFriends } = useQuery({
-    queryKey: ["friends"],
-    queryFn: getUserFriends,
-  });
-  const friends = Array.isArray(friendsRaw)
-    ? friendsRaw
-    : friendsRaw?.friends || [];
-
-  const { data: recommendedUsersRaw = [], isLoading: loadingUsers } = useQuery({
-    queryKey: ["users"],
-    queryFn: getRecommendedUsers,
-  });
-  const recommendedUsers = Array.isArray(recommendedUsersRaw)
-    ? recommendedUsersRaw
-    : recommendedUsersRaw?.users || [];
-
-  const { data: outgoingFriendReqs } = useQuery({
-    queryKey: ["outgoingFriendReqs"],
-    queryFn: getOutgoingFriendReqs,
+  const deleteGroupMutation = useMutation({
+    mutationFn: deleteGroup,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["groups"]);
+    },
   });
 
-  const { mutate: sendRequestMutation, isPending } = useMutation({
-    mutationFn: sendFriendRequest,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] }),
+  const deleteContactMutation = useMutation({
+    mutationFn: deleteContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["contacts"]);
+    },
   });
 
-  const copyInviteLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/meeting/lobby`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleDeleteGroup = (groupId) => {
+    if(window.confirm("Are you sure you want to delete this group?")) {
+      deleteGroupMutation.mutate(groupId);
+    }
   };
 
-  const outgoingRequestsIds = useMemo(() => {
-    const ids = new Set();
-    const reqs = Array.isArray(outgoingFriendReqs)
-      ? outgoingFriendReqs
-      : outgoingFriendReqs?.requests || [];
-    reqs.forEach((req) => ids.add(req.recipient?._id));
-    return ids;
-  }, [outgoingFriendReqs]);
+  const handleDeleteContact = (contactId) => {
+    if(window.confirm("Are you sure you want to delete this contact?")) {
+      deleteContactMutation.mutate(contactId);
+    }
+  };
+
+  const { data: groupsData = [], isLoading: isGroupsLoading } = useQuery({
+    queryKey: ["groups"],
+    queryFn: getAllGroups
+  });
+
+  const { data: contactsData = [], isLoading: isContactsLoading } = useQuery({
+    queryKey: ["contacts"],
+    queryFn: getAllContacts
+  });
+
+  const { data: sessionsData = [], isLoading: isSessionsLoading } = useQuery({
+    queryKey: ["sessions"],
+    queryFn: getAllSessions
+  });
+
+  const stats = {
+    totalGroups: groupsData.length || 0,
+    totalContacts: contactsData.length || 0,
+    activeGroups: groupsData.filter?.(group => group.status === "ACTIVE" || group.isActive === true).length || 0,
+    inactiveGroups: groupsData.filter?.(group => group.status === "INACTIVE" || group.isActive === false).length || 0,
+    totalSessions: sessionsData.length || 0,
+    deletedGroups: groupsData.filter?.(group => group.isDeleted === true || group.deleted === true).length || 0,
+    deletedContacts: contactsData.filter?.(contact => contact.isDeleted === true || contact.deleted === true).length || 0,
+    totalMessages: 0, // TODO: Connect messages API
+  };
+
+  const summary = {
+    groups: groupsData.length || 0,
+    contacts: contactsData.length || 0,
+    sessions: sessionsData.length || 0,
+    messages: 0 // TODO: Connect messages API
+  };
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-base-100 font-sans">
       <Helmet>
         <title>Dashboard | MeetFlow</title>
       </Helmet>
@@ -255,7 +161,7 @@ const HomePage = () => {
             animate="visible"
             className="space-y-10 sm:space-y-10"
           >
-            {/* HERO */}
+            {/* EXACT PRESERVED HERO SECTION FROM USER CODE (MINUS THE STATS CARDS WHICH ARE NOW DashboardStats) */}
             <motion.section
               variants={itemVariants}
               className="rounded-2xl border border-base-300 bg-base-100 p-2 sm:p-8 lg:p-6 shadow-sm"
@@ -281,795 +187,48 @@ const HomePage = () => {
                   Schedule
                 </button>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-                {/* Total Groups */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-4
-      h-[120px]
-      w-full
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Total Groups
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {groups.length}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-primary/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <UsersIcon className="w-7 h-7 text-primary" />
-                  </div>
-                </div>
-
-                {/* Total Contacts */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Total Contacts
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {contacts.length}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-success/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <ContactIcon className="w-7 h-7 text-success" />
-                  </div>
-                </div>
-
-                {/* Active Groups */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Active Groups
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {groups.filter((g) => g.members?.length > 0).length}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-secondary/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <ActivityIcon className="w-7 h-7 text-secondary" />
-                  </div>
-                </div>
-
-                {/* Inactive Groups */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Inactive Groups
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {groups.filter((g) => g.status === "inactive").length}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-warning/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <FolderIcon className="w-7 h-7 text-warning" />
-                  </div>
-                </div>
-
-                {/* Total Sessions */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Total Sessions
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {totalSessions}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-info/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <VideoIcon className="w-7 h-7 text-info" />
-                  </div>
-                </div>
-
-                {/* Deleted Groups */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Deleted Groups
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {deletedGroupCount}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-error/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <Trash2Icon className="w-7 h-7 text-error" />
-                  </div>
-                </div>
-
-                {/* Deleted Contacts */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Deleted Contacts
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      {deletedContactCount}
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-error/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <UserXIcon className="w-7 h-7 text-error" />
-                  </div>
-                </div>
-                {/* Total message */}
-                <div
-                  className="
-      bg-base-100
-      border border-base-300
-      rounded-2xl
-      px-6
-      h-[120px]
-      flex items-center justify-between
-      shadow-sm hover:shadow-md
-      transition-all duration-300
-    "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-base-content/60">
-                      Total Messages
-                    </p>
-
-                    <h2 className="text-4xl font-bold text-base-content mt-2">
-                      3
-                    </h2>
-                  </div>
-
-                  <div
-                    className="
-        w-14 h-14
-        rounded-2xl
-        bg-error/10
-        flex items-center justify-center
-        flex-shrink-0
-      "
-                  >
-                    <MessageSquareIcon className="w-7 h-7 text-error" />
-                  </div>
-                </div>
-              </div>
-
             </motion.section>
 
-            {/* QUICK ACTIONS */}
-            <motion.section variants={itemVariants}>
-              <div className="flex items-center justify-between mb-4 sm:mb-5">
-                <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                  Quick Actions
-                </h2>
-                <span className="text-xs text-base-content/30">
-                  4 available
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                {quickActions.map((action) => (
-                  <button
-                    key={action.label}
-                    onClick={() => navigate(action.path)}
-                    className="rounded-2xl border border-base-300 bg-base-100 p-5 sm:p-6 text-left hover:border-base-400 hover:shadow-sm transition-all duration-200"
-                  >
-                    <div className="size-10 sm:size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
-                      <action.icon className="size-5 sm:size-6 text-primary" />
-                    </div>
-                    <p className="text-sm sm:text-base font-semibold text-base-content">
-                      {action.label}
-                    </p>
-                    <p className="text-xs text-base-content/50 mt-1">
-                      {action.desc}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </motion.section>
+            {/* NEW DASHBOARD SECTIONS */}
+            <motion.div variants={itemVariants}>
+              <DashboardStats stats={stats} />
+            </motion.div>
 
-            {/* TWO COLUMN */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-              <div className="xl:col-span-2 space-y-8 sm:space-y-10">
-                {/* ACTIVE MEETINGS */}
-                <motion.section variants={itemVariants}>
-                  <div className="flex items-center justify-between mb-4 sm:mb-5">
-                    <div className="flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-success" />
-                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                        Live Now
-                      </h2>
-                    </div>
-                    <Link
-                      to="/meeting/lobby"
-                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-                    >
-                      View all <ArrowRightIcon className="size-3" />
-                    </Link>
-                  </div>
+            <motion.div variants={itemVariants}>
+              <QuickActions navigate={navigate} />
+            </motion.div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    {activeMeetings.length > 0 ? (
-                      activeMeetings.map((meeting) => (
-                        <div
-                          key={meeting.id}
-                          className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="size-2 rounded-full bg-success" />
-                                <span className="text-[10px] font-semibold text-success uppercase tracking-wider">
-                                  Live
-                                </span>
-                              </div>
-                              <h3 className="text-base sm:text-lg font-semibold text-base-content mt-2 truncate">
-                                {meeting.name}
-                              </h3>
-                              <p className="text-xs text-base-content/50 mt-1">
-                                Hosted by {meeting.host}
-                              </p>
-                            </div>
-                            <Link
-                              to="/meeting/lobby"
-                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-content text-sm font-medium rounded-xl hover:bg-primary/90 transition-all duration-200 shrink-0"
-                            >
-                              <LogInIcon className="size-3.5" />
-                              Join
-                            </Link>
-                          </div>
-
-                          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-base-200">
-                            <div className="flex -space-x-2">
-                              {[1, 2, 3]
-                                .slice(0, Math.min(meeting.participants, 3))
-                                .map((i) => (
-                                  <div
-                                    key={i}
-                                    className="size-7 rounded-full bg-primary/20 ring-2 ring-base-100 flex items-center justify-center"
-                                  >
-                                    <span className="text-[9px] font-bold text-primary">
-                                      {String.fromCharCode(64 + i)}
-                                    </span>
-                                  </div>
-                                ))}
-                            </div>
-                            <span className="text-xs text-base-content/50">
-                              {meeting.participants} participant
-                              {meeting.participants !== 1 ? "s" : ""}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="col-span-full border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
-                        <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
-                          <VideoIcon className="size-6 text-base-content/20" />
-                        </div>
-                        <p className="text-sm font-medium text-base-content/50">
-                          No active meetings
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </motion.section>
-
-                {/* CONNECTIONS */}
-                <motion.section variants={itemVariants}>
-                  <div className="flex items-center justify-between mb-4 sm:mb-5">
-                    <div>
-                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                        Connections
-                      </h2>
-                      <p className="text-xs text-base-content/40 mt-0.5">
-                        Your language exchange partners
-                      </p>
-                    </div>
-                    <Link
-                      to="/friends"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                    >
-                      <UsersIcon className="size-3.5" />
-                      View All
-                    </Link>
-                  </div>
-
-                  {loadingFriends ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {[1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className="bg-base-100 rounded-2xl p-5 space-y-4 border border-base-300"
-                        >
-                          <div className="flex items-center gap-4">
-                            <Skeleton className="size-16 rounded-xl bg-base-300" />
-                            <div className="space-y-2 flex-1">
-                              <Skeleton className="h-5 w-3/4 rounded bg-base-300" />
-                              <Skeleton className="h-3 w-1/2 rounded bg-base-300" />
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-3 w-20 rounded" />
-                            <Skeleton className="h-3 w-20 rounded" />
-                          </div>
-                          <div className="flex gap-3">
-                            <Skeleton className="h-10 flex-1 rounded-xl" />
-                            <Skeleton className="h-10 flex-1 rounded-xl" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : friends.length === 0 ? (
-                    <NoFriendsFound />
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {friends.slice(0, 4).map((friend) => (
-                        <FriendCard key={friend._id} friend={friend} />
-                      ))}
-                    </div>
-                  )}
-
-                  {friends.length > 4 && (
-                    <div className="mt-4 text-center">
-                      <Link
-                        to="/friends"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-primary bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                      >
-                        <UsersIcon className="size-3.5" />
-                        View all {friends.length} connections
-                      </Link>
-                    </div>
-                  )}
-                </motion.section>
-
-                {/* SUGGESTED USERS */}
-                <motion.section variants={itemVariants}>
-                  <div className="flex items-center justify-between mb-4 sm:mb-5">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                        Suggested Partners
-                      </h2>
-                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
-                        <SparklesIcon className="size-3" />
-                        AI Matched
-                      </span>
-                    </div>
-                  </div>
-
-                  {loadingUsers ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {[1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className="bg-white rounded-2xl p-5 space-y-4 border border-gray-200"
-                        >
-                          <div className="flex items-center gap-4">
-                            <Skeleton className="size-14 rounded-xl" />
-                            <div className="space-y-2 flex-1">
-                              <Skeleton className="h-5 w-3/4 rounded" />
-                              <Skeleton className="h-3 w-1/2 rounded" />
-                            </div>
-                          </div>
-                          <Skeleton className="h-12 w-full rounded-xl" />
-                          <Skeleton className="h-10 w-full rounded-xl" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : recommendedUsers.length === 0 ? (
-                    <div className="border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
-                      <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
-                        <SparklesIcon className="size-6 text-base-content/20" />
-                      </div>
-                      <p className="text-sm font-medium text-base-content/50">
-                        No suggestions right now
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {recommendedUsers.slice(0, 4).map((user) => {
-                        const hasRequestBeenSent = outgoingRequestsIds.has(
-                          user._id,
-                        );
-                        return (
-                          <div
-                            key={user._id}
-                            className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="size-14 sm:size-16 rounded-xl overflow-hidden ring-2 ring-base-200 shrink-0">
-                                <ProfileImage
-                                  src={user.profilePic}
-                                  alt={user.fullName}
-                                  className="w-full h-full"
-                                />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
-                                  {user.fullName}
-                                </h3>
-                                {user.location && (
-                                  <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500">
-                                    <MapPinIcon className="size-3 shrink-0" />
-                                    <span className="truncate">
-                                      {user.location}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="flex flex-wrap gap-1.5 mt-3">
-                                  {user.nativeLanguage && (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg">
-                                      {getLanguageFlag(user.nativeLanguage)}
-                                      {capitalize(user.nativeLanguage)}
-                                    </span>
-                                  )}
-                                  {user.learningLanguage && (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg">
-                                      {getLanguageFlag(user.learningLanguage)}
-                                      {capitalize(user.learningLanguage)}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {user.bio && (
-                              <p className="text-xs sm:text-sm text-base-content/50 leading-relaxed line-clamp-2 mt-4">
-                                {user.bio}
-                              </p>
-                            )}
-
-                            <button
-                              className={cn(
-                                "mt-4 w-full py-2 text-sm font-medium rounded-xl transition-all duration-200",
-                                hasRequestBeenSent
-                                  ? "bg-base-200 text-base-content/30 cursor-not-allowed"
-                                  : "bg-primary text-primary-content hover:bg-primary/90",
-                              )}
-                              onClick={() => sendRequestMutation(user._id)}
-                              disabled={hasRequestBeenSent || isPending}
-                            >
-                              {hasRequestBeenSent ? (
-                                <span className="inline-flex items-center justify-center gap-1.5">
-                                  <CheckCircleIcon className="size-3.5" />
-                                  Request Sent
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center justify-center gap-1.5">
-                                  <UserPlusIcon className="size-3.5" />
-                                  Connect
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </motion.section>
-
-                {/* UPCOMING MEETINGS */}
-                <motion.section variants={itemVariants}>
-                  <div className="flex items-center justify-between mb-4 sm:mb-5">
-                    <div>
-                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                        Upcoming Meetings
-                      </h2>
-                      <p className="text-xs text-base-content/40 mt-0.5">
-                        Your scheduled calls
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate("/meeting/schedule")}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                    >
-                      <CalendarIcon className="size-3.5" />
-                      Schedule
-                    </button>
-                  </div>
-
-                  {upcomingMeetings.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      {upcomingMeetings.map((meeting) => (
-                        <div
-                          key={meeting.id}
-                          className="border border-base-300 rounded-2xl p-5 sm:p-6 hover:border-base-400 hover:shadow-sm transition-all duration-200"
-                        >
-                          <div className="flex items-center gap-2 text-xs text-base-content/50 mb-3">
-                            <ClockIcon className="size-3.5" />
-                            {meeting.time}
-                          </div>
-                          <h3 className="text-sm sm:text-base font-semibold text-base-content mb-3">
-                            {meeting.title}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="flex -space-x-1.5">
-                                {meeting.participants.map((name, i) => (
-                                  <div
-                                    key={i}
-                                    className="size-6 rounded-full bg-primary/10 ring-2 ring-base-100 flex items-center justify-center"
-                                  >
-                                    <span className="text-[8px] font-bold text-primary">
-                                      {name[0]}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                              <span className="text-xs text-base-content/50">
-                                +{meeting.total - meeting.participants.length}{" "}
-                                more
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => navigate("/meeting/lobby")}
-                              className="px-3 py-1.5 text-xs font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                            >
-                              Join
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="border border-dashed border-base-300 rounded-2xl p-10 sm:p-12 text-center">
-                      <div className="size-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-3">
-                        <CalendarIcon className="size-6 text-base-content/20" />
-                      </div>
-                      <p className="text-sm font-medium text-base-content/50">
-                        No upcoming meetings
-                      </p>
-                    </div>
-                  )}
-                </motion.section>
-              </div>
-
-              {/* ACTIVITY SIDEBAR */}
-              <div className="xl:col-span-1 space-y-6">
-                <button
-                  onClick={() => setShowActivity(!showActivity)}
-                  className="xl:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-base-content/70 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-all duration-200"
-                >
-                  <ActivityIcon className="size-4" />
-                  {showActivity ? "Hide Activity" : "Show Activity"}
-                </button>
-
-                {(showActivity || isDesktop) && (
-                  <div className="space-y-6">
-                    {/* ACTIVITY FEED */}
-                    <section className="border border-base-300 rounded-2xl p-5 sm:p-6">
-                      <div className="flex items-center gap-2 mb-5">
-                        <span className="size-2 rounded-full bg-primary" />
-                        <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
-                          Recent Activity
-                        </h2>
-                      </div>
-
-                      <div className="space-y-1">
-                        {activities.map((activity, idx) => {
-                          const typeIcons = {
-                            call: PhoneIcon,
-                            join: LogInIcon,
-                            message: MessageCircleIcon,
-                            friend: UserPlusIcon,
-                            schedule: CalendarIcon,
-                          };
-                          const Icon = typeIcons[activity.type] || ActivityIcon;
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-base-200 transition-all duration-200"
-                            >
-                              <div className="size-8 rounded-xl bg-base-300 flex items-center justify-center shrink-0">
-                                <Icon className="size-4 text-base-content/50" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs text-base-content/80 leading-relaxed">
-                                  <span className="font-semibold text-base-content">
-                                    {activity.user}
-                                  </span>{" "}
-                                  {activity.action}
-                                </p>
-                                <p className="text-[10px] text-base-content/30 mt-0.5">
-                                  {activity.time}
-                                </p>
-                              </div>
-                              {activity.type === "message" && (
-                                <span className="size-2 rounded-full bg-primary shrink-0 mt-1.5" />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <button className="w-full mt-3 text-xs font-medium text-primary hover:text-primary/80 transition-colors text-center pt-3 border-t border-base-200">
-                        View all activity
-                      </button>
-                    </section>
-
-                    {/* WEEKLY STATS */}
-                    <section className="border border-base-300 rounded-2xl p-5 sm:p-6">
-                      <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-4">
-                        This Week
-                      </h2>
-                      <div className="space-y-3">
-                        {[
-                          {
-                            label: "Meetings joined",
-                            value: "12",
-                            change: "+3",
-                          },
-                          {
-                            label: "Messages sent",
-                            value: "48",
-                            change: "+12",
-                          },
-                          {
-                            label: "New connections",
-                            value: "5",
-                            change: "+2",
-                          },
-                        ].map((stat, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between p-3 rounded-xl bg-base-200 border border-base-300"
-                          >
-                            <div>
-                              <p className="text-xs text-base-content/50">
-                                {stat.label}
-                              </p>
-                              <p className="text-lg font-bold text-base-content">
-                                {stat.value}
-                              </p>
-                            </div>
-                            <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-lg">
-                              {stat.change}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  </div>
-                )}
-              </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <motion.div variants={itemVariants} className="lg:col-span-2">
+                <ActiveMeetings meetings={activeMeetings} />
+              </motion.div>
+              <motion.div variants={itemVariants} className="lg:col-span-1">
+                <ActivityTimeline activities={DUMMY_ACTIVITIES} />
+              </motion.div>
             </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <motion.div variants={itemVariants}>
+                <RecentGroups groups={groupsData} onDelete={handleDeleteGroup} />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <ContactsOverview contacts={contactsData} onDelete={handleDeleteContact} />
+              </motion.div>
+            </div>
+
+            <motion.div variants={itemVariants}>
+              <AnalyticsCharts growthData={DUMMY_GROWTH_DATA} sessionData={DUMMY_SESSION_DATA} />
+            </motion.div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <motion.div variants={itemVariants} className="lg:col-span-1">
+                <NotificationsPanel notifications={DUMMY_NOTIFS} />
+              </motion.div>
+              <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col justify-end">
+                <DashboardSummary summary={summary} />
+              </motion.div>
+            </div>
+
           </motion.div>
         </div>
       </div>
