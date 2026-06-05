@@ -6,31 +6,15 @@ import crypto from "crypto";
  * Configure with your email service provider
  */
 function createTransporter() {
-  // For development: Use Ethereal (fake SMTP service)
-  // For production: Use Gmail, SendGrid, AWS SES, etc.
-
-  if (process.env.NODE_ENV === "production") {
-    // Production configuration (example with Gmail)
-    return nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
-      },
-    });
-  } else {
-    // Development: Use Ethereal for testing
-    // Note: You need to create account at https://ethereal.email/
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-  }
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS, // Fixed from EMAIL_PASSWORD
+    },
+  });
 }
 
 /**
@@ -566,6 +550,59 @@ export async function sendPasswordResetEmail(user, resetToken) {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("❌ Error sending password reset email:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Send password reset OTP email
+ */
+export async function sendPasswordResetOtpEmail(user, otp) {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || '"MeetFlow" <noreply@MeetFlow.com>',
+      to: user.email,
+      subject: "Password Reset OTP - MeetFlow",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+            .otp-box { text-align: center; margin: 20px 0; }
+            .otp { font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #4f46e5; background: #f3f4f6; padding: 15px 25px; border-radius: 8px; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h2>Password Reset Request</h2>
+            <p>Hi <strong>${user.fullName}</strong>,</p>
+            <p>We received a request to reset your password. Use the verification code below to proceed:</p>
+            
+            <div class="otp-box">
+              <span class="otp">${otp}</span>
+            </div>
+            
+            <p>This code will expire in <strong>10 minutes</strong>.</p>
+            <p>If you didn't request a password reset, you can safely ignore this email.</p>
+            
+            <p>Best regards,<br>The MeetFlow Team</p>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Password reset OTP email sent to ${user.email}`);
+
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("❌ Error sending password reset OTP email:", error);
     return { success: false, error: error.message };
   }
 }

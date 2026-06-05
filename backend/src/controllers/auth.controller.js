@@ -198,3 +198,46 @@ export const onboard = asyncHandler(async (req, res) => {
 
   return ApiResponse.success(res, updatedUser, "Onboarding completed");
 });
+
+/**
+ * @desc    Forgot password
+ * @route   POST /api/auth/forgot-password
+ */
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new AppError("Email is required", 400);
+  }
+
+  await authService.forgotPassword(email);
+  return ApiResponse.success(res, null, "OTP sent successfully");
+});
+
+/**
+ * @desc    Verify reset OTP
+ * @route   POST /api/auth/verify-reset-otp
+ */
+export const verifyResetOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    throw new AppError("Email and OTP are required", 400);
+  }
+
+  const resetToken = await authService.verifyResetOtp(email, otp);
+  return ApiResponse.success(res, { resetToken }, "OTP verified");
+});
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/auth/reset-password
+ */
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { resetToken, password } = req.body;
+
+  if (!resetToken || !password) {
+    throw new AppError("Token and new password are required", 400);
+  }
+
+  await authService.resetPassword(resetToken, password);
+  return ApiResponse.success(res, null, "Password has been successfully reset");
+});

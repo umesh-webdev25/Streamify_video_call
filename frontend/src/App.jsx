@@ -10,6 +10,8 @@ import CallPage from "./pages/CallPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
+import ResetPasswordPage from "./pages/ResetPassword.jsx";
+import VerifyResetOtpPage from "./pages/VerifyResetOtp.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import MeetingLobbyPage from "./pages/MeetingLobbyPage.jsx";
 import MeetingRoomPage from "./pages/MeetingRoomPage.jsx";
@@ -56,6 +58,8 @@ const App = () => {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/verify-otp" element={<VerifyOTPPage />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
+          <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
         {/* ONBOARDING ROUTE */}

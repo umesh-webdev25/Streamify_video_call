@@ -20,6 +20,13 @@ class UserRepository {
     });
   }
 
+  async findByResetToken(token) {
+    return await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+  }
+
   async create(userData) {
     return await User.create(userData);
   }

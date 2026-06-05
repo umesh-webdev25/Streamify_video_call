@@ -7,6 +7,7 @@ import AppError from "../utils/AppError.js";
 import { upsertStreamUser } from "../lib/stream.js";
 import bcrypt from "bcryptjs";
 import { sendOTPEmail, send2FAEmail } from "./email.service.js";
+import { sendPasswordResetOtpEmail } from "../lib/email.js";
 import queueService from "./queue.service.js";
 import cloudinary from "../lib/cloudinary.js";
 
@@ -275,6 +276,64 @@ class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(email) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    user.resetPasswordOtp = hashedOTP;
+    user.resetPasswordOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    await sendPasswordResetOtpEmail(user, otp);
+    return true;
+  }
+
+  async verifyResetOtp(email, otp) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) throw new AppError("User not found", 404);
+
+    if (!user.resetPasswordOtp || !user.resetPasswordOtpExpires || user.resetPasswordOtpExpires < new Date()) {
+      throw new AppError("OTP has expired. Please request a new one.", 400);
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.resetPasswordOtp);
+    if (!isMatch) throw new AppError("Invalid OTP code", 400);
+
+    // Generate secure temporary reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    user.resetPasswordOtp = null;
+    user.resetPasswordOtpExpires = null;
+    await user.save();
+
+    return resetToken;
+  }
+
+  async resetPassword(resetToken, newPassword) {
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    const user = await userRepository.findByResetToken(hashedToken);
+
+    if (!user) {
+      throw new AppError("Token is invalid or has expired", 400);
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    return true;
   }
 
   generateAccessToken(userId) {

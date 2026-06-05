@@ -36,10 +36,7 @@ export const connectDB = async () => {
           const fallbackUri = uri.replace("+srv", "").replace(host, `${host}:27017`);
           console.log(`Attempting fallback connection with URI: ${fallbackUri}`);
           try {
-            const fallbackConn = await mongoose.connect(fallbackUri, {
-              useNewUrlParser: true,
-              useUnifiedTopology: true,
-            });
+            const fallbackConn = await mongoose.connect(fallbackUri);
             console.log(`MongoDB Connected (fallback): ${fallbackConn.connection.host}`);
             return; // success, exit function
           } catch (fallbackErr) {
@@ -50,11 +47,7 @@ export const connectDB = async () => {
         }
       }
 
-      const conn = await mongoose.connect(uri, {
-        // keep options explicit for clarity; mongoose 6+ has sensible defaults
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+      const conn = await mongoose.connect(uri);
 
       console.log(`MongoDB Connected: ${conn.connection.host}`);
       return;
