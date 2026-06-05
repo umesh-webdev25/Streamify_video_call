@@ -63,16 +63,31 @@ export const verifyGroupMembership = async (groupId, userId) => {
 
 export const createGroup = async (groupData) => {
   try {
-    console.log("groupData:", groupData);
+    let { groupImage } = groupData;
 
-    const group = new Group(groupData);
+    if (groupImage) {
+      // Normalize path for Windows backslashes
+      groupImage = groupImage.replace(/\\/g, "/");
+
+      if (groupImage.startsWith("data:") || groupImage.startsWith("/uploads/") || groupImage.startsWith("uploads/")) {
+        const uploadPath = groupImage.startsWith("data:") ? groupImage : (groupImage.startsWith("/") ? `.${groupImage}` : `./${groupImage}`);
+        const uploadResponse = await cloudinary.uploader.upload(uploadPath, {
+          folder: "groups",
+        });
+        groupImage = uploadResponse.secure_url;
+      }
+    }
+
+    const group = new Group({
+      ...groupData,
+      groupImage,
+    });
 
     await group.save();
 
     return group;
   } catch (error) {
     console.log("CREATE GROUP ERROR:", error);
-
     throw new Error(error.message);
   }
 };
@@ -114,15 +129,22 @@ export const updateGroup = async (id, userId, updateData) => {
 
     let { groupImage } = updateData;
 
-    if (groupImage && (groupImage.startsWith("/uploads") || groupImage.startsWith("data:image"))) {
-      const uploadResponse = await cloudinary.uploader.upload(
-        groupImage.startsWith("/") ? `.${groupImage}` : groupImage,
-        { folder: "groups" }
-      );
-      groupImage = uploadResponse.secure_url;
+    if (groupImage) {
+      // Normalize path for Windows backslashes
+      groupImage = groupImage.replace(/\\/g, "/");
 
-      if (updateData.groupImage.startsWith("/uploads")) {
-        try { fs.unlinkSync(`.${updateData.groupImage}`); } catch (e) {}
+      if (groupImage.startsWith("data:") || groupImage.startsWith("/uploads/") || groupImage.startsWith("uploads/")) {
+        const uploadPath = groupImage.startsWith("data:") ? groupImage : (groupImage.startsWith("/") ? `.${groupImage}` : `./${groupImage}`);
+        const uploadResponse = await cloudinary.uploader.upload(uploadPath, { 
+          folder: "groups" 
+        });
+        
+        groupImage = uploadResponse.secure_url;
+
+        // Try to delete local file if it was uploaded via multer
+        if (!uploadPath.startsWith("data:")) {
+          try { fs.unlinkSync(uploadPath); } catch (e) {}
+        }
       }
     }
 

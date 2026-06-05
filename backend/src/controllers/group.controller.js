@@ -42,6 +42,7 @@ export const createGroup = asyncHandler(async (req, res) => {
     groupName,
     groupBio,
     groupImage,
+    creator: creatorId,
     status: status || "active",
     members: membersList,
     admins: adminsList,
