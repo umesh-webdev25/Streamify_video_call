@@ -45,7 +45,7 @@ const resolveImageSrc = (img, name) => {
 const Group = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
-  const { authUser } = useAuthUser();
+  const { authUser } =  useAuthUser();
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [groups, setGroups] = useState([]);
