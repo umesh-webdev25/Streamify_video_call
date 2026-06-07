@@ -21,16 +21,19 @@ import {
   deleteContact,
   getGroupById,
   inviteContact,
-  getGroupMeetings,
+  getGroupScheduledMeetings,
+  startScheduledMeeting,
   joinScheduledGroupMeeting,
 } from "../lib/api";
 import toast from "react-hot-toast";
 import { CalendarIcon, VideoIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import useAuthUser from "../hooks/useAuthUser";
 
 const GroupContacts = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const { authUser } = useAuthUser();
 
   const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -90,10 +93,24 @@ const GroupContacts = () => {
 
   const fetchMeetings = async () => {
     try {
-      const data = await getGroupMeetings(groupId);
+      const data = await getGroupScheduledMeetings(groupId);
       setUpcomingMeetings(data || []);
     } catch (error) {
       console.log("Error fetching meetings:", error);
+    }
+  };
+
+  const handleStartScheduledMeeting = async (scheduleId) => {
+    try {
+      toast.loading("Starting meeting...", { id: "start-scheduled" });
+      const response = await startScheduledMeeting(scheduleId);
+      if (response && response.roomId) {
+        toast.success("Meeting started!", { id: "start-scheduled" });
+        navigate(`/meeting/room/${response.roomId}`);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to start meeting", { id: "start-scheduled" });
     }
   };
 
@@ -400,7 +417,7 @@ const GroupContacts = () => {
       </div>
 
       {/* ── UPCOMING MEETINGS PANEL ── */}
-      {upcomingMeetings.length > 0 && (
+      {/* {upcomingMeetings.length > 0 && (
         <div className="bg-base-100 border border-base-300 rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
@@ -413,8 +430,10 @@ const GroupContacts = () => {
               <div key={meeting._id} className="border border-base-300 rounded-xl p-4 bg-base-200/50 hover:bg-base-200 transition-colors">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-base-content line-clamp-1">{meeting.title}</h3>
-                  <span className="text-xs font-medium px-2 py-1 bg-warning/10 text-warning rounded-lg">
-                    Upcoming
+                  <span className={`text-xs font-medium px-2 py-1 rounded-lg ${
+                    meeting.status === "active" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                  }`}>
+                    {meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1)}
                   </span>
                 </div>
                 {meeting.description && (
@@ -430,18 +449,37 @@ const GroupContacts = () => {
                     <span className="text-xs text-base-content/60">{meeting.createdBy?.fullName || "Unknown"}</span>
                   </div>
                   
-                  <button 
-                    onClick={() => handleJoinScheduledMeeting(meeting._id)}
-                    className="btn btn-primary btn-xs"
-                  >
-                    Join
-                  </button>
+                  {meeting.status === "active" ? (
+                    <div className="flex gap-2 items-center">
+                      <span className="text-xs font-mono font-bold bg-base-300 px-2 py-1 rounded select-all">{meeting.meetingCode}</span>
+                      <button 
+                        onClick={() => navigate(`/meeting/lobby?code=${meeting.meetingCode}`)}
+                        className="btn btn-primary btn-xs"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  ) : meeting.createdBy?._id === authUser?._id ? (
+                    <button 
+                      onClick={() => handleStartScheduledMeeting(meeting._id)}
+                      className="btn btn-primary btn-xs"
+                    >
+                      Start
+                    </button>
+                  ) : (
+                    <button 
+                      disabled
+                      className="btn btn-disabled btn-xs"
+                    >
+                      Wait for Host
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ── TABLE CARD ── */}
       <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">

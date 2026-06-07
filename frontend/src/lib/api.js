@@ -179,6 +179,11 @@ export async function getActiveGroupMeeting(groupId) {
   return response.data.data;
 }
 
+export async function getGroupMessages(groupId) {
+  const response = await axiosInstance.get(`/chat/group/${groupId}`);
+  return response.data.data;
+}
+
 // Waiting Room API
 export async function requestJoinMeeting(meetingCode) {
   const response = await axiosInstance.post("/meetings/request-join", { meetingCode });
@@ -366,6 +371,16 @@ export async function getScheduleMeetingById(id) {
     `/schedule-meetings/${id}`
   );
 
+  return response.data.data;
+}
+
+export async function getGroupScheduledMeetings(groupId) {
+  const response = await axiosInstance.get(`/schedule-meetings/group/${groupId}`);
+  return response.data.data;
+}
+
+export async function startScheduledMeeting(scheduleId) {
+  const response = await axiosInstance.post("/meetings/group/start-scheduled", { scheduleId });
   return response.data.data;
 }
 

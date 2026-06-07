@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import { cn } from "../lib/utils";
 import { useMeeting } from "../hooks/useMeeting";
 import ProfileImage from "../components/ProfileImage.jsx";
+import { axiosInstance } from "../lib/axios.js";
 
 const generateMeetingCode = () => {
   // Safe characters excluding O, 0, I, 1

@@ -18,7 +18,8 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   getActiveGroupMeeting,
-  joinScheduledMeeting
+  joinScheduledMeeting,
+  startScheduledMeeting
 } from "../controllers/meeting.controller.js";
 import {
   createMeetingSchema,
@@ -49,6 +50,7 @@ router.delete("/group/:meetingCode/end", endMeetingWithCode);
 router.get("/group/:meetingCode", getMeetingByCode);
 router.get("/group/:groupId/active", getActiveGroupMeeting);
 router.post("/group/join-scheduled", joinScheduledMeeting);
+router.post("/group/start-scheduled", startScheduledMeeting);
 
 // Waiting Room
 router.post("/request-join", requestJoin);

@@ -13,12 +13,12 @@ export const setIo = (io) => {
 const meetingReminderCron = cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
-    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60000);
+    const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60000);
     
-    // Find upcoming meetings starting in the next 5 minutes
+    // Find upcoming meetings starting in the next 15 minutes
     const upcomingMeetings = await ScheduleMeeting.find({
       status: "upcoming",
-      scheduledAt: { $gt: now, $lte: fiveMinutesFromNow }
+      scheduledAt: { $gt: now, $lte: fifteenMinutesFromNow }
     }).populate("groupId", "groupName members");
 
     for (const meeting of upcomingMeetings) {
@@ -42,11 +42,12 @@ const meetingReminderCron = cron.schedule("* * * * *", async () => {
       // Also create a notification in DB for members
       await Promise.all(group.members.map(async (member) => {
         // Option to avoid notifying creator, or just notify everyone
-        await NotificationService.createNotification(member.userId, {
+        await NotificationService.send({
+          recipientId: member.userId,
           title: "Meeting Reminder",
-          content: `The meeting "${meeting.title}" in group "${group.groupName}" is starting in less than 5 minutes!`,
-          type: "system_alert",
-          data: {
+          content: `The meeting "${meeting.title}" in group "${group.groupName}" is starting in less than 15 minutes!`,
+          type: "meeting_reminder",
+          metaData: {
             groupId: group._id,
             meetingId: meetingIdStr
           }

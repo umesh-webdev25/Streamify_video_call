@@ -209,7 +209,7 @@ class MeetingService {
     if (!meeting) throw new AppError("Meeting not found", 404);
 
     const group = await Group.findById(meeting.groupId);
-    const isMember = group?.members.some(m => m.user.toString() === userId.toString());
+    const isMember = group?.members.some(m => m.userId.toString() === userId.toString());
     if (!isMember) throw new AppError("Not a member of this group", 403);
 
     return { roomId: meeting.roomId, groupId: meeting.groupId, activeParticipants: meeting.activeParticipants };
@@ -220,7 +220,7 @@ class MeetingService {
     if (!meeting) throw new AppError("Meeting not found", 404);
 
     const group = await Group.findById(meeting.groupId);
-    const isMember = group?.members.some(m => m.user.toString() === userId.toString());
+    const isMember = group?.members.some(m => m.userId.toString() === userId.toString());
     if (!isMember) throw new AppError("Not a member of this group", 403);
 
     const alreadyJoined = meeting.participants.some(
@@ -248,6 +248,56 @@ class MeetingService {
     }
 
     await meetingRepository.endMeetingById(meeting._id);
+  }
+
+  async startScheduledMeeting(scheduleId, userId, reqInfo) {
+    const ScheduleMeeting = (await import("../models/Schedulemeeting.js")).default;
+    const schedule = await ScheduleMeeting.findById(scheduleId);
+    if (!schedule) throw new AppError("Scheduled meeting not found", 404);
+
+    if (schedule.createdBy.toString() !== userId.toString()) {
+      throw new AppError("Only the host can start this scheduled meeting", 403);
+    }
+
+    const { groupId } = schedule;
+
+    // Check if there's already an active meeting for this group
+    const existing = await meetingRepository.findActiveMeetingByGroup(groupId);
+    if (existing) {
+      throw new AppError("An active meeting is already running for this group", 409, { existingCode: existing.meetingCode });
+    }
+
+    // No active meeting exists, so we create one using createGroupMeeting
+    const createResult = await this.createGroupMeeting(groupId, userId, reqInfo);
+    
+    // Update schedule to active and save meetingCode
+    schedule.status = "active";
+    schedule.meetingCode = createResult.meetingCode;
+    await schedule.save();
+
+    // Notify all group members
+    const group = await Group.findById(groupId);
+    if (group && group.members) {
+      await Promise.all(group.members.map(async (member) => {
+        if (member.userId.toString() === userId.toString()) return; // skip host
+
+        await notificationService.send({
+          recipientId: member.userId,
+          senderId: userId,
+          title: "Meeting Started",
+          content: `Meeting Code: ${createResult.meetingCode}`,
+          type: "meeting_started",
+          metaData: {
+            groupId: group._id,
+            meetingId: schedule._id.toString(),
+            meetingCode: createResult.meetingCode
+          }
+        });
+      }));
+    }
+
+    const tokenData = await this.getVideoToken(userId);
+    return { ...createResult, ...tokenData, scheduleId: schedule._id };
   }
 
   async joinScheduledMeeting(scheduleId, userId, reqInfo) {

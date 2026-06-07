@@ -38,12 +38,12 @@ const NotificationSettingsPage = () => {
   };
 
   const notificationTypes = [
-    {
-      key: "friendRequests",
-      icon: UserPlusIcon,
-      title: "Friend Requests",
-      description: "When someone sends you a friend request",
-    },
+    // {
+    //   key: "friendRequests",
+    //   icon: UserPlusIcon,
+    //   title: "Friend Requests",
+    //   description: "When someone sends you a friend request",
+    // },
     {
       key: "messages",
       icon: MessageSquareIcon,

@@ -24,6 +24,10 @@ const scheduleMeetingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    meetingCode: {
+        type: String,
+        default: null
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -35,7 +39,7 @@ const scheduleMeetingSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ["pending", "completed", "cancelled", "upcoming", "expired"],
+        enum: ["pending", "active", "completed", "cancelled", "upcoming", "expired"],
         default: "upcoming"
     }
 }, { timestamps: true })

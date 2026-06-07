@@ -183,6 +183,58 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("send_group_message", async (data) => {
+    try {
+      const { groupId, text } = data;
+      if (!groupId || !text) return;
+      
+      const cookies = parseCookies(socket.handshake.headers.cookie);
+      const token = cookies.jwt;
+      if (!token) return;
+      
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      if (!decoded || !decoded.userId) return;
+
+      // Verify membership and admin status
+      const group = await Group.findById(groupId);
+      if (!group || group.isDeleted) return;
+
+      const isMember = group.members.some(
+        (m) => m.userId.toString() === decoded.userId.toString()
+      );
+
+      if (!isMember) return;
+
+      const isAdmin = group.admins.some(
+        (a) => a.toString() === decoded.userId.toString()
+      ) || group.members.some(
+        (m) => m.userId.toString() === decoded.userId.toString() && m.role === "admin"
+      );
+
+      if (!isAdmin) {
+        console.log(`User ${decoded.userId} attempted to send a message but is not an admin.`);
+        return;
+      }
+
+      // Ensure GroupMessage is imported if not already at top, we will import dynamically or assume it's at top
+      const { default: GroupMessage } = await import("./models/GroupMessage.js");
+      
+      const newMessage = await GroupMessage.create({
+        groupId,
+        sender: decoded.userId,
+        text
+      });
+
+      const populatedMessage = await newMessage.populate("sender", "fullName profilePic");
+
+      // Broadcast to everyone in the room
+      io.to(`group:${groupId}`).emit("receive_group_message", populatedMessage);
+
+    } catch (error) {
+      console.error("Error in send_group_message:", error.message);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });

@@ -1,12 +1,15 @@
 import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { getStreamToken } from "../controllers/chat.controller.js";
+import { getStreamToken, getGroupMessages } from "../controllers/chat.controller.js";
 import { generateStreamToken } from "../lib/stream.js";
 
 const router = express.Router();
 
 // Protected route used by the frontend
 router.get("/token", protectRoute, getStreamToken);
+
+// Group messages route
+router.get("/group/:groupId", protectRoute, getGroupMessages);
 
 // Dev helper: unauthenticated token generator for quick testing.
 // Only enabled when NODE_ENV !== 'production'. Do NOT enable in production.

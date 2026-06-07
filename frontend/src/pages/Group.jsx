@@ -15,7 +15,7 @@ import {
   MoreVerticalIcon,
   DownloadIcon,
   MessageSquareIcon,
-  VideoIcon
+  VideoIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +28,8 @@ import {
   getAllContacts,
   getGroupById,
   deleteGroup,
-  getActiveGroupMeeting
+  getActiveGroupMeeting,
+  getGroupMessages,
 } from "../lib/api";
 
 import useAuthUser from "../hooks/useAuthUser";
@@ -45,7 +46,8 @@ const resolveImageSrc = (img, name) => {
 const Group = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
-  const { authUser } =  useAuthUser();
+  const socketRef = useRef(null);
+  const { authUser } = useAuthUser();
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [groups, setGroups] = useState([]);
@@ -63,7 +65,11 @@ const Group = () => {
   const [submitting, setSubmitting] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [groupData, setGroupData] = useState({ groupName: "", groupBio: "", status: "active" });
+  const [groupData, setGroupData] = useState({
+    groupName: "",
+    groupBio: "",
+    status: "active",
+  });
   const [menuOpenId, setMenuOpenId] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [page, setPage] = useState(1);
@@ -96,7 +102,6 @@ const Group = () => {
       setLoading(false);
     }
   };
-
 
   // ── Fetch Contacts from API ────────────────────────────────────────────────
   const fetchContacts = async () => {
@@ -161,14 +166,26 @@ const Group = () => {
       } else {
         setActiveMeetingCode(null);
       }
+
+      // Fetch chat history
+      const pastMessages = await getGroupMessages(group._id || group.groupId);
+      setMessages(
+        pastMessages.map((msg) => ({
+          id: msg._id || Date.now(),
+          text: msg.text,
+          sender:
+            msg.sender?._id === (authUser?._id || authUser?.id) ? "me" : "them",
+          senderInfo: msg.sender,
+        })),
+      );
     } catch (err) {
       console.error("open chat error:", err);
       setSelectedGroup(group);
       setActiveMeetingCode(null);
+      setMessages([]);
     } finally {
       setChatLoading(false);
     }
-    setMessages([]);
     setOpenChat(true);
   };
 
@@ -176,16 +193,48 @@ const Group = () => {
     if (!selectedGroup) return;
 
     // Connect to backend
-    const socket = io(import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000");
+    const socket = io(
+      import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") ||
+        "http://localhost:5000",
+    );
+    socketRef.current = socket;
 
-    socket.emit("join_group_room", selectedGroup?._id || selectedGroup?.groupId);
+    socket.emit(
+      "join_group_room",
+      selectedGroup?._id || selectedGroup?.groupId,
+    );
 
     socket.on("meeting_started", (data) => {
       if (data.groupId === (selectedGroup?._id || selectedGroup?.groupId)) {
         setActiveMeetingCode(data.meetingCode);
         if (data.message) {
-          setMessages((prev) => [...prev, { id: Date.now(), sender: data.hostId === authUser._id ? "me" : "them", ...data.message }]);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              text: data.message.text,
+              sender: data.hostId === authUser._id ? "me" : "them",
+              ...data.message,
+            },
+          ]);
         }
+      }
+    });
+
+    socket.on("receive_group_message", (msg) => {
+      if (msg.groupId === (selectedGroup?._id || selectedGroup?.groupId)) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msg._id,
+            text: msg.text,
+            sender:
+              msg.sender?._id === (authUser?._id || authUser?.id)
+                ? "me"
+                : "them",
+            senderInfo: msg.sender,
+          },
+        ]);
       }
     });
 
@@ -197,6 +246,7 @@ const Group = () => {
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
   }, [selectedGroup]);
 
@@ -226,13 +276,18 @@ const Group = () => {
       if (imageFile) formData.append("groupImage", imageFile);
       formData.append("status", groupData.status || "active");
       const currentUserId = authUser?._id || authUser?.id;
-      formData.append("members", JSON.stringify([{ user: currentUserId, isAdmin: true }]));
+      formData.append(
+        "members",
+        JSON.stringify([{ user: currentUserId, isAdmin: true }]),
+      );
       formData.append("admins", JSON.stringify([currentUserId]));
 
       let response;
       if (editingGroup) {
         response = await updateGroup(editingGroup._id, formData);
-        setGroups((prev) => prev.map((g) => (g._id === editingGroup._id ? response : g)));
+        setGroups((prev) =>
+          prev.map((g) => (g._id === editingGroup._id ? response : g)),
+        );
       } else {
         response = await createGroup(formData);
         setGroups((prev) => [response, ...prev]);
@@ -264,7 +319,11 @@ const Group = () => {
   const handleEditGroup = (e, group) => {
     e.stopPropagation();
     setEditingGroup(group);
-    setGroupData({ groupName: group.groupName, groupBio: group.groupBio, status: group.status });
+    setGroupData({
+      groupName: group.groupName,
+      groupBio: group.groupBio,
+      status: group.status,
+    });
     setImagePreview(resolveImageSrc(group.groupImage, group.groupName));
     setImageFile(null);
     setOpenModal(true);
@@ -286,10 +345,39 @@ const Group = () => {
     setImageFile(null);
   };
 
+  const isCurrentUserAdmin = useMemo(() => {
+    if (!selectedGroup || !authUser) return false;
+    const currentUserId = authUser._id || authUser.id;
+    return (
+      selectedGroup.admins?.some(
+        (admin) => (admin._id || admin) === currentUserId,
+      ) ||
+      selectedGroup.members?.some(
+        (m) =>
+          (m.userId?._id || m.userId || m.user?._id || m.user) ===
+            currentUserId && m.role === "admin",
+      )
+    );
+  }, [selectedGroup, authUser]);
+
   // ── Send message ───────────────────────────────────────────────────────────
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    setMessages((prev) => [...prev, { id: Date.now(), text: message.trim(), sender: "me" }]);
+
+    // Emit to backend
+    if (socketRef.current && selectedGroup) {
+      socketRef.current.emit("send_group_message", {
+        groupId: selectedGroup._id || selectedGroup.groupId,
+        text: message.trim(),
+      });
+    } else {
+      // Fallback local state if socket not connected
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now(), text: message.trim(), sender: "me" },
+      ]);
+    }
+
     setMessage("");
   };
 
@@ -304,8 +392,9 @@ const Group = () => {
   const handleExport = () => {
     const csv = [
       "Name,Bio,Status,Members,Created",
-      ...groups.map((g) =>
-        `"${g.groupName}","${g.groupBio || ""}",${g.status},${g.contactCount ?? 0},${new Date(g.createdAt).toLocaleDateString()}`
+      ...groups.map(
+        (g) =>
+          `"${g.groupName}","${g.groupBio || ""}",${g.status},${g.contactCount ?? 0},${new Date(g.createdAt).toLocaleDateString()}`,
       ),
     ].join("\n");
     const a = document.createElement("a");
@@ -318,23 +407,34 @@ const Group = () => {
   const filteredGroups = useMemo(() => {
     return groups.filter((g) => {
       const q = search.toLowerCase();
-      const matchQ = !q || g.groupName?.toLowerCase().includes(q) || (g.groupBio || "").toLowerCase().includes(q);
+      const matchQ =
+        !q ||
+        g.groupName?.toLowerCase().includes(q) ||
+        (g.groupBio || "").toLowerCase().includes(q);
       const matchS = statusFilter === "all" || g.status === statusFilter;
       return matchQ && matchS;
     });
   }, [groups, search, statusFilter]);
 
   // Compute total members across all groups
-  const totalMembers = useMemo(() => groups.reduce((sum, g) => sum + (g.members?.length ?? 0), 0), [groups]);
+  const totalMembers = useMemo(
+    () => groups.reduce((sum, g) => sum + (g.members?.length ?? 0), 0),
+    [groups],
+  );
 
-  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / rowsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredGroups.length / rowsPerPage),
+  );
   const safePage = Math.min(page, totalPages);
-  const pagedGroups = filteredGroups.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
+  const pagedGroups = filteredGroups.slice(
+    (safePage - 1) * rowsPerPage,
+    safePage * rowsPerPage,
+  );
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
-
       {/* ── PAGE HEADER ── */}
       <div
         className="
@@ -349,9 +449,7 @@ const Group = () => {
       >
         {/* Left Content */}
         <div>
-          <h1 className="text-2xl font-bold text-base-content">
-            Groups
-          </h1>
+          <h1 className="text-2xl font-bold text-base-content">Groups</h1>
 
           <p className="text-sm text-base-content/50 mt-1">
             Manage your groups and contacts easily
@@ -376,7 +474,6 @@ const Group = () => {
 
       {/* ── STAT CARDS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-
         {/* Total Groups */}
         <div
           className="
@@ -524,7 +621,6 @@ const Group = () => {
 
       {/* ── TABLE CARD ── */}
       <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">
-
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-base-200">
           {/* Search */}
@@ -534,7 +630,10 @@ const Group = () => {
               type="text"
               placeholder="Search Name/Bio/Description"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full bg-transparent outline-none text-sm text-base-content placeholder:text-base-content/40"
             />
           </div>
@@ -542,7 +641,10 @@ const Group = () => {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
             className="h-10 px-3 rounded-xl border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
@@ -574,18 +676,33 @@ const Group = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-base-200 border-b border-base-300 ">
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Group</th>
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Members</th>
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Updated</th>
-                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider text-center">Actions</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">
+                  Group
+                </th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">
+                  Members
+                </th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">
+                  Updated
+                </th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {pagedGroups.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-4 py-10 text-center text-gray-500">
+                  <td
+                    colSpan="5"
+                    className="px-4 py-10 text-center text-gray-500"
+                  >
                     No groups found.
                   </td>
                 </tr>
@@ -599,7 +716,10 @@ const Group = () => {
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <img
-                          src={resolveImageSrc(group.groupImage, group.groupName)}
+                          src={resolveImageSrc(
+                            group.groupImage,
+                            group.groupName,
+                          )}
                           alt={group.groupName}
                           className="w-10 h-10 rounded-xl object-cover"
                           onError={(e) => {
@@ -607,17 +727,20 @@ const Group = () => {
                           }}
                         />
                         <div>
-                          <p className="
+                          <p
+                            className="
   text-[15px]
   font-semibold
   text-base-content
   tracking-tight
   leading-5
-">{group.groupName}</p>
+"
+                          >
+                            {group.groupName}
+                          </p>
                           {/* <p className="text-xs text-gray-500 truncate max-w-[200px]">{group.groupBio || "No description"}</p> */}
                         </div>
                       </div>
-
                     </td>
 
                     <td className="px-4 py-3.5 text-center">
@@ -641,9 +764,10 @@ const Group = () => {
                       </span>
                     </td>
 
-
                     <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === "active" ? "bg-success/10 text-success" : "bg-base-200 text-base-content/60"}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === "active" ? "bg-success/10 text-success" : "bg-base-200 text-base-content/60"}`}
+                      >
                         {group.status}
                       </span>
                     </td>
@@ -663,12 +787,15 @@ const Group = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            const rect = e.currentTarget.getBoundingClientRect();
+                            const rect =
+                              e.currentTarget.getBoundingClientRect();
                             setMenuPosition({
                               top: rect.bottom + 8,
                               left: rect.right - 180,
                             });
-                            setMenuOpenId(menuOpenId === group._id ? null : group._id);
+                            setMenuOpenId(
+                              menuOpenId === group._id ? null : group._id,
+                            );
                           }}
                           className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 text-base-content/40 flex items-center justify-center transition-colors"
                         >
@@ -732,10 +859,17 @@ const Group = () => {
           <div className="flex items-center gap-2">
             <select
               value={rowsPerPage}
-              onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setPage(1);
+              }}
               className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
             >
-              {[5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
             </select>
             <span className="text-sm text-base-content/50">Items per page</span>
           </div>
@@ -747,17 +881,24 @@ const Group = () => {
               onClick={() => setPage(1)}
               disabled={safePage === 1}
               className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
-            >«</button>
+            >
+              «
+            </button>
             {/* Prev */}
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage === 1}
               className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
-            >‹</button>
+            >
+              ‹
+            </button>
 
             {/* Page numbers */}
             {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+              .filter(
+                (p) =>
+                  p === 1 || p === totalPages || Math.abs(p - safePage) <= 1,
+              )
               .reduce((acc, p, i, arr) => {
                 if (i > 0 && p - arr[i - 1] > 1) acc.push("…");
                 acc.push(p);
@@ -765,17 +906,25 @@ const Group = () => {
               }, [])
               .map((p, i) =>
                 p === "…" ? (
-                  <span key={`e-${i}`} className="w-8 text-center text-sm text-gray-400">…</span>
+                  <span
+                    key={`e-${i}`}
+                    className="w-8 text-center text-sm text-gray-400"
+                  >
+                    …
+                  </span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage
-                      ? "bg-primary text-primary-content border-0"
-                      : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
-                      }`}
-                  >{p}</button>
-                )
+                    className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
+                      p === safePage
+                        ? "bg-primary text-primary-content border-0"
+                        : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
               )}
 
             {/* Next */}
@@ -783,13 +932,17 @@ const Group = () => {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage === totalPages}
               className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
-            >›</button>
+            >
+              ›
+            </button>
             {/* Last */}
             <button
               onClick={() => setPage(totalPages)}
               disabled={safePage === totalPages}
               className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 text-sm font-semibold text-base-content/60 disabled:opacity-30 hover:bg-base-200 transition-colors"
-            >»</button>
+            >
+              »
+            </button>
           </div>
 
           {/* Jump to page */}
@@ -801,7 +954,9 @@ const Group = () => {
               className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
             >
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
@@ -832,14 +987,26 @@ const Group = () => {
               <div className="flex flex-col items-center gap-3">
                 <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-base-300 overflow-hidden flex items-center justify-center bg-base-200">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/group.png"; }} />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/group.png";
+                      }}
+                    />
                   ) : (
                     <UploadIcon className="w-8 h-8 text-base-content/20" />
                   )}
                 </div>
                 <label className="cursor-pointer text-sm text-primary hover:underline font-medium">
                   {imagePreview ? "Change Image" : "Upload Image"}
-                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </label>
               </div>
 
@@ -861,7 +1028,9 @@ const Group = () => {
 
               {/* Group Bio */}
               <div>
-                <label className="block text-sm font-medium text-base-content/70 mb-1">Bio / Description</label>
+                <label className="block text-sm font-medium text-base-content/70 mb-1">
+                  Bio / Description
+                </label>
                 <textarea
                   name="groupBio"
                   value={groupData.groupBio}
@@ -874,22 +1043,36 @@ const Group = () => {
 
               {/* Status Toggle */}
               <div>
-                <label className="block text-sm font-medium text-base-content/70 mb-2">Group Status</label>
+                <label className="block text-sm font-medium text-base-content/70 mb-2">
+                  Group Status
+                </label>
                 <div className="flex items-center justify-between bg-base-200 border border-base-300 rounded-2xl px-4 py-3">
                   <div>
                     <p className="text-sm font-semibold text-base-content">
-                      {groupData.status === "active" ? "Active Group" : "Inactive Group"}
+                      {groupData.status === "active"
+                        ? "Active Group"
+                        : "Inactive Group"}
                     </p>
                     <p className="text-xs text-base-content/50 mt-1">
-                      {groupData.status === "active" ? "Group is enabled and visible" : "Group is temporarily disabled"}
+                      {groupData.status === "active"
+                        ? "Group is enabled and visible"
+                        : "Group is temporarily disabled"}
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setGroupData((prev) => ({ ...prev, status: prev.status === "active" ? "inactive" : "active" }))}
+                    onClick={() =>
+                      setGroupData((prev) => ({
+                        ...prev,
+                        status:
+                          prev.status === "active" ? "inactive" : "active",
+                      }))
+                    }
                     className={`relative w-14 h-8 rounded-full transition-all duration-300 ${groupData.status === "active" ? "bg-success" : "bg-base-300"}`}
                   >
-                    <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-base-100 shadow-md transition-all duration-300 ${groupData.status === "active" ? "translate-x-6" : "translate-x-0"}`} />
+                    <div
+                      className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-base-100 shadow-md transition-all duration-300 ${groupData.status === "active" ? "translate-x-6" : "translate-x-0"}`}
+                    />
                   </button>
                 </div>
               </div>
@@ -908,7 +1091,13 @@ const Group = () => {
                   disabled={submitting}
                   className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-60 transition"
                 >
-                  {submitting ? (editingGroup ? "Saving..." : "Creating...") : (editingGroup ? "Save Changes" : "Add New")}
+                  {submitting
+                    ? editingGroup
+                      ? "Saving..."
+                      : "Creating..."
+                    : editingGroup
+                      ? "Save Changes"
+                      : "Add New"}
                 </button>
               </div>
             </form>
@@ -954,7 +1143,10 @@ const Group = () => {
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-tr from-primary to-secondary rounded-2xl opacity-20 group-hover:opacity-40 transition-opacity blur" />
                   <img
-                    src={resolveImageSrc(selectedGroup.groupImage, selectedGroup.groupName)}
+                    src={resolveImageSrc(
+                      selectedGroup.groupImage,
+                      selectedGroup.groupName,
+                    )}
                     alt={selectedGroup.groupName}
                     onError={(e) => {
                       e.currentTarget.src = "/group.png";
@@ -996,7 +1188,7 @@ const Group = () => {
               </div>
 
               {/* Live Meeting Banner */}
-              {activeMeetingCode && (
+              {/* {activeMeetingCode && (
                 <div className="bg-primary/10 border-b border-primary/20 px-6 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
@@ -1014,7 +1206,7 @@ const Group = () => {
                     Join Call
                   </button>
                 </div>
-              )}
+              )} */}
 
               {/* Messages Area */}
               <div
@@ -1041,9 +1233,12 @@ const Group = () => {
                       <MessageSquareIcon className="w-10 h-10 text-base-content/20" />
                     </div>
                     <div>
-                      <h4 className="text-base font-bold text-base-content">No messages yet</h4>
+                      <h4 className="text-base font-bold text-base-content">
+                        No messages yet
+                      </h4>
                       <p className="text-sm text-base-content/40 mt-1">
-                        Be the first to break the ice in {selectedGroup.groupName}
+                        Be the first to break the ice in{" "}
+                        {selectedGroup.groupName}
                       </p>
                     </div>
                   </div>
@@ -1067,6 +1262,11 @@ const Group = () => {
                         className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
                       >
                         <div className="flex flex-col gap-1.5 max-w-[85%]">
+                          {msg.sender === "them" && msg.senderInfo && (
+                            <span className="text-xs font-semibold text-base-content/60 ml-2">
+                              {msg.senderInfo.fullName || "User"}
+                            </span>
+                          )}
                           <div
                             className={`
                               relative
@@ -1075,9 +1275,10 @@ const Group = () => {
                               leading-relaxed
                               shadow-sm
                               transition-transform duration-200 hover:scale-[1.02]
-                              ${msg.sender === "me"
-                                ? "bg-gradient-to-br from-primary to-secondary text-white rounded-[1.25rem] rounded-br-[0.3rem] shadow-primary/20 shadow-lg"
-                                : "bg-base-200 text-base-content border border-base-300/50 rounded-[1.25rem] rounded-bl-[0.3rem]"
+                              ${
+                                msg.sender === "me"
+                                  ? "bg-gradient-to-br from-primary to-secondary text-white rounded-[1.25rem] rounded-br-[0.3rem] shadow-primary/20 shadow-lg"
+                                  : "bg-base-200 text-base-content border border-base-300/50 rounded-[1.25rem] rounded-bl-[0.3rem]"
                               }
                             `}
                           >
@@ -1085,17 +1286,20 @@ const Group = () => {
                               <div className="flex flex-col gap-2 min-w-[200px]">
                                 <div className="flex items-center gap-2 mb-1">
                                   <VideoIcon className="w-5 h-5" />
-                                  <span className="font-bold text-sm">Video Call Started</span>
+                                  <span className="font-bold text-sm">
+                                    Video Call Started
+                                  </span>
                                 </div>
                                 <p className="text-xs opacity-90 leading-tight">
                                   Join the group video meeting now!
                                 </p>
                                 <button
                                   onClick={() => navigate(msg.meta.lobbyUrl)}
-                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${msg.sender === "me"
+                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${
+                                    msg.sender === "me"
                                       ? "bg-white text-primary hover:bg-white/90"
                                       : "bg-primary text-white hover:bg-primary/90"
-                                    }`}
+                                  }`}
                                 >
                                   Join Meeting
                                 </button>
@@ -1109,8 +1313,13 @@ const Group = () => {
                               <div className="absolute inset-0 bg-white/10 rounded-[1.25rem] rounded-br-[0.3rem] blur-xl -z-10 opacity-50" />
                             )}
                           </div>
-                          <span className={`text-[10px] font-medium text-base-content/30 ${msg.sender === "me" ? "text-right mr-1" : "ml-1"}`}>
-                            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <span
+                            className={`text-[10px] font-medium text-base-content/30 ${msg.sender === "me" ? "text-right mr-1" : "ml-1"}`}
+                          >
+                            {new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </span>
                         </div>
                       </motion.div>
@@ -1122,66 +1331,56 @@ const Group = () => {
 
               {/* Input Section - Glassmorphism */}
               <div className="sticky bottom-0 bg-base-100/80 backdrop-blur-xl border-t border-base-300 px-5 py-4 sm:pb-6">
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={handleMessageKeyDown}
-                    placeholder="Message..."
-                    className="
-                      w-full
-                      bg-base-200
-                      text-base-content
-                      placeholder:text-base-content/30
-                      border border-base-300
-                      rounded-[1.25rem]
-                      pl-5 pr-14 py-3.5
-                      text-sm
-                      outline-none
-                      focus:border-primary/50
-                      focus:ring-4 focus:ring-primary/5
-                      transition-all duration-300
-                    "
-                  />
-
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!message.trim()}
-                    className="
-                      absolute right-[3.5rem] top-2 bottom-2
-                      px-4
-                      bg-gradient-to-br from-primary to-secondary
-                      text-white
-                      rounded-xl
-                      flex items-center justify-center
-                      shadow-md shadow-primary/20
-                      hover:scale-105 active:scale-95
-                      disabled:opacity-40 disabled:grayscale disabled:scale-100
-                      transition-all duration-300
-                      z-10
-                    "
-                  >
-                    <SendIcon className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={() => handleCreateGroupMeeting(selectedGroup?._id || selectedGroup?.groupId)}
-                    className="
-                      absolute right-2 top-2 bottom-2
-                      w-10
-                      bg-base-200 hover:bg-base-300
-                      text-base-content/70 hover:text-primary
-                      rounded-xl
-                      flex items-center justify-center
-                      transition-all duration-300
-                      z-10 border border-base-300
-                    "
-                    title="Start Video Call"
-                  >
-                    <VideoIcon className="w-4 h-4" />
-                  </button>
-                </div>
+                {isCurrentUserAdmin ? (
+                  <div className="relative group">
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleMessageKeyDown}
+                      placeholder="Message..."
+                      className="
+                        w-full
+                        bg-base-200
+                        text-base-content
+                        placeholder:text-base-content/30
+                        border border-base-300
+                        rounded-[1.25rem]
+                        pl-5 pr-14 py-3.5
+                        text-sm
+                        outline-none
+                        focus:border-primary/50
+                        focus:ring-4 focus:ring-primary/5
+                        transition-all duration-300
+                      "
+                    />
+                    <div className="ml-10">
+                      <button
+                        onClick={handleSendMessage}
+                        disabled={!message.trim()}
+                        className="
+                        absolute right-2 top-2 bottom-2
+                        px-4
+                        bg-gradient-to-br from-primary to-secondary
+                        text-white
+                        rounded-xl
+                        flex items-center justify-center
+                        shadow-md shadow-primary/20
+                        hover:scale-105 active:scale-95
+                        disabled:opacity-40 disabled:grayscale disabled:scale-100
+                        transition-all duration-300
+                        z-10
+                      "
+                      >
+                        <SendIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-sm font-medium text-base-content/50 py-3">
+                    Only group admins can send messages.
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

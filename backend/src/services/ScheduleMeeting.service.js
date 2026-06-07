@@ -33,11 +33,13 @@ export const createMeeting = async (meetingData) => {
         // Skip creator
         if (userId.toString() === createdBy.toString()) return;
 
-        await NotificationService.createNotification(userId, {
+        await NotificationService.send({
+          recipientId: userId,
+          senderId: createdBy,
           title: "New Scheduled Meeting",
           content: `You have been invited to "${title}" in group "${group.groupName}"`,
           type: "meeting_invite",
-          data: {
+          metaData: {
             groupId,
             meetingId: meeting._id
           }
@@ -59,6 +61,21 @@ export const getMeetings = async (userId) => {
     const meetings = await ScheduleMeeting.find({
       $or: [{ invitees: userId }, { createdBy: userId }]
     }).populate("groupId", "groupName groupImage");
+
+    return meetings;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// ==========================
+// GET MEETINGS BY GROUP
+// ==========================
+export const getScheduledMeetingsByGroup = async (groupId) => {
+  try {
+    const meetings = await ScheduleMeeting.find({
+      groupId
+    }).sort({ scheduledAt: 1 }).populate("createdBy", "fullName profilePic");
 
     return meetings;
   } catch (error) {

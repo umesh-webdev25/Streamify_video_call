@@ -13,7 +13,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["friend_request", "friend_accept", "call_missed", "system_alert", "group_added"],
+      enum: ["friend_request", "friend_accept", "call_missed", "system_alert", "group_added", "meeting_invite", "meeting_reminder", "meeting_started"],
       required: true,
     },
     title: {

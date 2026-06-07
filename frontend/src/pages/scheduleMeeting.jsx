@@ -24,6 +24,7 @@ import {
   createScheduleMeeting,
   updateScheduleMeeting,
   deleteScheduleMeeting,
+  getMyGroups,
 } from "../lib/api";
 
 import {
@@ -71,6 +72,7 @@ const ScheduleMeetingPage = () => {
       title: "",
       date: "",
       time: "",
+      groupId: "",
       status: "upcoming",
     });
 
@@ -83,6 +85,13 @@ const ScheduleMeetingPage = () => {
   } = useQuery({
     queryKey: ["scheduleMeeting"],
     queryFn: getScheduleMeetings,
+  });
+
+  const {
+    data: myGroups = [],
+  } = useQuery({
+    queryKey: ["myGroups"],
+    queryFn: getMyGroups,
   });
 
   // ─────────────────────────────────────────────
@@ -238,6 +247,7 @@ const ScheduleMeetingPage = () => {
       title: "",
       date: "",
       time: "",
+      groupId: "",
       status: "upcoming",
     });
 
@@ -256,6 +266,7 @@ const ScheduleMeetingPage = () => {
       title: meeting.title,
       date: meeting.date,
       time: meeting.time,
+      groupId: meeting.groupId?._id || meeting.groupId || "",
       status: meeting.status,
     });
 
@@ -274,6 +285,7 @@ const ScheduleMeetingPage = () => {
       title: "",
       date: "",
       time: "",
+      groupId: "",
       status: "upcoming",
     });
   };
@@ -286,10 +298,14 @@ const ScheduleMeetingPage = () => {
   ) => {
     e.preventDefault();
 
-    if (
-      !meetingData.title.trim()
-    )
+    if (!meetingData.title.trim()) {
       return;
+    }
+    
+    if (!meetingData.groupId) {
+      toast.error("Please select a group");
+      return;
+    }
 
     if (editingMeeting) {
       updateMutation.mutate({
@@ -926,6 +942,38 @@ const ScheduleMeetingPage = () => {
                   }
                   className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
                 />
+              </div>
+
+              {/* GROUP */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Select Group
+                </label>
+
+                <select
+                  required
+                  value={
+                    meetingData.groupId
+                  }
+                  onChange={(e) =>
+                    setMeetingData(
+                      {
+                        ...meetingData,
+                        groupId:
+                          e.target
+                            .value,
+                      }
+                    )
+                  }
+                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                >
+                  <option value="" disabled>Select a group</option>
+                  {myGroups.map((group) => (
+                    <option key={group.groupId} value={group.groupId}>
+                      {group.groupName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* DATE */}

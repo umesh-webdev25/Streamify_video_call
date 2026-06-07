@@ -1,5 +1,6 @@
 import { generateStreamToken } from "../lib/stream.js";
 import AppError from "../utils/AppError.js";
+import GroupMessage from "../models/GroupMessage.js";
 
 class ChatService {
   async getStreamToken(userId) {
@@ -17,10 +18,16 @@ class ChatService {
       throw error;
     }
   }
-
-  // Future: Add methods for creating channels, adding members, etc.
-  // These are often done on the frontend but enterprise backends
-  // often orchestrate these for security.
+  async getGroupMessages(groupId) {
+    try {
+      const messages = await GroupMessage.find({ groupId })
+        .sort({ createdAt: 1 })
+        .populate("sender", "fullName profilePic");
+      return messages;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new ChatService();

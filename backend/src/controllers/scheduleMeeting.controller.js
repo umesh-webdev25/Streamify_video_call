@@ -44,6 +44,14 @@ export const getMeetings = asyncHandler(async (req, res) => {
 });
 
 /**
+ * GET MEETINGS BY GROUP
+ */
+export const getScheduledMeetingsByGroup = asyncHandler(async (req, res) => {
+  const meetings = await meetingService.getScheduledMeetingsByGroup(req.params.groupId);
+  return ApiResponse.success(res, meetings);
+});
+
+/**
  * GET MEETING BY ID
  */
 export const getMeetingById = asyncHandler(

@@ -162,6 +162,24 @@ export const getActiveGroupMeeting = asyncHandler(async (req, res) => {
   return ApiResponse.success(res, meeting);
 });
 
+export const startScheduledMeeting = asyncHandler(async (req, res) => {
+  const { scheduleId } = req.body;
+  const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
+  const result = await meetingService.startScheduledMeeting(scheduleId, req.user._id, reqInfo);
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`group:${result.groupId}`).emit("meeting_started", { 
+      meetingId: result.scheduleId,
+      meetingCode: result.meetingCode, 
+      groupId: result.groupId
+    });
+  }
+
+  res.cookie("refreshToken", result.refreshToken, authService.getCookieOptions("refresh"));
+  return ApiResponse.success(res, result, "Scheduled meeting started", 200);
+});
+
 export const joinScheduledMeeting = asyncHandler(async (req, res) => {
   const { scheduleId } = req.body;
   const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
