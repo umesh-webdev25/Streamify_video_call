@@ -9,6 +9,7 @@ import {
    deleteGroup,
    getMyGroups,
    getGroupMeetings,
+   updateAdminOnlyMessaging,
 } from "../controllers/group.controller.js";
 
 const router = express.Router();
@@ -37,6 +38,11 @@ router.get("/:id/meetings", getGroupMeetings);
  * PUT   /api/groups/:id
  */
 router.put("/:id", uploadGroup.single("groupImage"), updateGroup);
+
+/**
+ * PATCH /api/groups/:id/admin-only-messaging
+ */
+router.patch("/:id/admin-only-messaging", updateAdminOnlyMessaging);
 
 /**
  * DELETE /api/groups/:id

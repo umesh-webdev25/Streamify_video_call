@@ -815,7 +815,7 @@ const ScheduleMeetingPage = () => {
 
                 setPage(1);
               }}
-              className="h-8 px-2 bg-white rounded-lg border border-base-300 text-sm"
+              className="h-8 px-2 rounded-lg border border-base-300 text-sm text-base-content bg-base-100 outline-none cursor-pointer"
             >
               {[5, 10, 20, 50].map(
                 (n) => (

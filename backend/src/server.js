@@ -44,7 +44,7 @@ if (process.env.NODE_ENV === "development") {
 // Limit requests from same API
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 5000,
   message: "Too many requests, please try again later",
 });
 app.use("/api", limiter);
@@ -212,7 +212,7 @@ io.on("connection", (socket) => {
       );
 
       if (!isAdmin) {
-        console.log(`User ${decoded.userId} attempted to send a message but is not an admin.`);
+        console.log(`User ${decoded.userId} attempted to send a message but user is not an admin.`);
         return;
       }
 

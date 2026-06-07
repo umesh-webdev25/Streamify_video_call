@@ -3,7 +3,7 @@ import cloudinary from "../lib/cloudinary.js";
 import User from "../models/User.js";
 import Group from "../models/group.js";
 import AppError from "../utils/AppError.js";
-import { verifyGroupMembership } from "./group.service.js";
+import { verifyGroupMembership, verifyGroupAdmin } from "./group.service.js";
 import Notification from "../models/Notification.js";
 import notificationService from "./notification.service.js";
 import { sendAddedToGroupEmail } from "./email.service.js";
@@ -88,7 +88,7 @@ export const createContact = async (contactData, userId, file) => {
       throw new AppError("Group ID is required to create a contact", 400);
     }
 
-    await verifyGroupMembership(normalizedContactData.groupId, userId);
+    await verifyGroupAdmin(normalizedContactData.groupId, userId);
 
     const imageUrl =
       (await resolveUploadedFileUrl(file)) ||
@@ -172,7 +172,7 @@ export const updateContact = async (id, userId, updateData, file) => {
     }
 
     // Verify membership of contact's group
-    await verifyGroupMembership(contact.groupId, userId);
+    await verifyGroupAdmin(contact.groupId, userId);
 
     let contactImage = contact.contactImage;
     if (file) {
@@ -210,7 +210,7 @@ export const deleteContact = async (id, userId) => {
     }
 
     // Verify membership of contact's group
-    await verifyGroupMembership(contact.groupId, userId);
+    await verifyGroupAdmin(contact.groupId, userId);
 
     const deletedContact = await Contact.findByIdAndUpdate(
       id,
@@ -241,7 +241,7 @@ export const inviteExistingUserToContact = async (
   }
 
   // STEP 1: Verify inviter belongs to group
-  await verifyGroupMembership(groupId, ownerId);
+  await verifyGroupAdmin(groupId, ownerId);
 
   // Normalize email
   const normalizedEmail = email;

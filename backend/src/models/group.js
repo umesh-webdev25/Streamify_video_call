@@ -27,6 +27,12 @@ const groupSchema = new mongoose.Schema(
       default: "active",
     },
 
+    // Admin Only Messaging Mode
+    adminOnlyMessaging: {
+      type: Boolean,
+      default: false,
+    },
+
     // Members
     members: [
       {

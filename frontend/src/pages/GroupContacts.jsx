@@ -100,6 +100,21 @@ const GroupContacts = () => {
     }
   };
 
+  const isGroupAdmin = React.useMemo(() => {
+    if (!group || !authUser) return false;
+    const currentUserId = authUser._id || authUser.id;
+    return (
+      group.admins?.some(
+        (admin) => (admin._id || admin) === currentUserId,
+      ) ||
+      group.members?.some(
+        (m) =>
+          (m.userId?._id || m.userId || m.user?._id || m.user) ===
+            currentUserId && m.role === "admin",
+      )
+    );
+  }, [group, authUser]);
+
   const handleStartScheduledMeeting = async (scheduleId) => {
     try {
       toast.loading("Starting meeting...", { id: "start-scheduled" });
@@ -501,23 +516,25 @@ const GroupContacts = () => {
           </div>
 
           {/* Add Contact */}
-          <button
-            onClick={() => {
-              setSelectedContact(null);
-              setContactData({
-                name: "",
-                email: "",
-                mobileNumber: "",
-                designation: "",
-                contactImage: null,
-              });
-              setOpenModal(true);
-            }}
-            className="h-10 px-4 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
-          >
-            <PlusIcon className="w-4 h-4" />
-            Add Contact
-          </button>
+          {isGroupAdmin && (
+            <button
+              onClick={() => {
+                setSelectedContact(null);
+                setContactData({
+                  name: "",
+                  email: "",
+                  mobileNumber: "",
+                  designation: "",
+                  contactImage: "",
+                });
+                setOpenModal(true);
+              }}
+              className="h-10 px-4 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add Contact
+            </button>
+          )}
 
           {/* Export */}
           <button
@@ -697,49 +714,41 @@ const GroupContacts = () => {
                               left: `${menuPosition.left}px`,
                             }}
                           >
-                            {/* Edit */}
-                            <button
-                              onClick={() => {
-                                handleEditContact(contact);
-                                setMenuOpenId(null);
-                              }}
-                              className="
-          w-full
-          px-4 py-3
-          text-left
-          text-sm
-          font-medium
-          text-warning
-          hover:bg-warning/10
-          flex items-center gap-2
-          transition-colors
-        "
-                            >
-                              <PencilIcon className="w-4 h-4" />
-                              Edit
-                            </button>
+                            {isGroupAdmin && (
+                              <div className="py-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditContact(contact);
+                                  }}
+                                  className="
+            w-full px-4 py-2.5 text-left text-sm font-medium text-base-content/70
+            hover:bg-amber-50 hover:text-amber-600
+            flex items-center gap-2
+            transition-colors
+          "
+                                >
+                                  <PencilIcon className="w-4 h-4" />
+                                  Edit
+                                </button>
 
-                            {/* Delete */}
-                            <button
-                              onClick={() => {
-                                handleDeleteContact(contact._id);
-                                setMenuOpenId(null);
-                              }}
-                              className="
-          w-full
-          px-4 py-3
-          text-left
-          text-sm
-          font-medium
-          text-error
-          hover:bg-error/10
-          flex items-center gap-2
-          transition-colors
-        "
-                            >
-                              <Trash2Icon className="w-4 h-4" />
-                              Delete
-                            </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteContact(contact._id);
+                                  }}
+                                  className="
+            w-full px-4 py-2.5 text-left text-sm font-medium text-base-content/70
+            hover:bg-error/10 hover:text-error
+            flex items-center gap-2
+            transition-colors
+          "
+                                >
+                                  <Trash2Icon className="w-4 h-4" />
+                                  Delete
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>

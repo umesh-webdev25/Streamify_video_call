@@ -131,3 +131,32 @@ export const getGroupMeetings = asyncHandler(async (req, res) => {
 
   return ApiResponse.success(res, meetings);
 });
+
+/**
+ * Update Admin Only Messaging
+ * PATCH /api/groups/:id/admin-only-messaging
+ */
+export const updateAdminOnlyMessaging = asyncHandler(async (req, res) => {
+  const { adminOnlyMessaging } = req.body;
+  const group = await groupService.getGroupById(req.params.id, req.user._id);
+
+  if (!group) {
+    throw new AppError("Group not found", 404);
+  }
+
+  // Ensure only admins can update this
+  const isAdmin = group.admins.some(
+    (a) => a.toString() === req.user._id.toString()
+  ) || group.members.some(
+    (m) => m.userId.toString() === req.user._id.toString() && m.role === "admin"
+  );
+
+  if (!isAdmin) {
+    throw new AppError("Only admins can update this setting", 403);
+  }
+
+  group.adminOnlyMessaging = adminOnlyMessaging;
+  await group.save();
+
+  return ApiResponse.success(res, group, "Admin-only messaging setting updated");
+});

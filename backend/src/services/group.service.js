@@ -21,6 +21,25 @@ export const verifyGroupMembership = async (groupId, userId) => {
 };
 
 /**
+ * VERIFY GROUP ADMIN HELPER
+ */
+export const verifyGroupAdmin = async (groupId, userId) => {
+  const group = await verifyGroupMembership(groupId, userId);
+  
+  const isAdmin = group.admins.some(
+    (a) => a.toString() === userId.toString()
+  ) || group.members.some(
+    (m) => m.userId.toString() === userId.toString() && m.role === "admin"
+  );
+
+  if (!isAdmin) {
+    throw new AppError("Only group admins can perform this action", 403);
+  }
+
+  return group;
+};
+
+/**
  * CREATE GROUP
  */
 // export const createGroup = async (groupData) => {
@@ -167,7 +186,7 @@ export const getGroupById = async (id, userId) => {
  */
 export const updateGroup = async (id, userId, updateData) => {
   try {
-    await verifyGroupMembership(id, userId);
+    await verifyGroupAdmin(id, userId);
 
     let { groupImage } = updateData;
 
@@ -207,7 +226,7 @@ export const updateGroup = async (id, userId, updateData) => {
  */
 export const deleteGroup = async (id, userId) => {
   try {
-    await verifyGroupMembership(id, userId);
+    await verifyGroupAdmin(id, userId);
 
     const group = await Group.findByIdAndUpdate(
       id,

@@ -273,6 +273,13 @@ export async function updateGroup(groupId, formData) {
   return response.data.data;
 }
 
+export async function updateAdminOnlyMessaging(groupId, adminOnlyMessaging) {
+  const response = await axiosInstance.patch(`/groups/${groupId}/admin-only-messaging`, {
+    adminOnlyMessaging,
+  });
+  return response.data.data;
+}
+
 export async function deleteGroup(groupId) {
   const response = await axiosInstance.delete(`/groups/${groupId}`);
   return response.data;

@@ -30,6 +30,7 @@ import {
   deleteGroup,
   getActiveGroupMeeting,
   getGroupMessages,
+  updateAdminOnlyMessaging,
 } from "../lib/api";
 
 import useAuthUser from "../hooks/useAuthUser";
@@ -196,6 +197,7 @@ const Group = () => {
     const socket = io(
       import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") ||
         "http://localhost:5000",
+      { withCredentials: true }
     );
     socketRef.current = socket;
 
@@ -345,20 +347,22 @@ const Group = () => {
     setImageFile(null);
   };
 
-  const isCurrentUserAdmin = useMemo(() => {
-    if (!selectedGroup || !authUser) return false;
+  const isGroupAdmin = (group) => {
+    if (!group || !authUser) return false;
     const currentUserId = authUser._id || authUser.id;
     return (
-      selectedGroup.admins?.some(
+      group.admins?.some(
         (admin) => (admin._id || admin) === currentUserId,
       ) ||
-      selectedGroup.members?.some(
+      group.members?.some(
         (m) =>
           (m.userId?._id || m.userId || m.user?._id || m.user) ===
             currentUserId && m.role === "admin",
       )
     );
-  }, [selectedGroup, authUser]);
+  };
+
+  const isCurrentUserAdmin = useMemo(() => isGroupAdmin(selectedGroup), [selectedGroup, authUser]);
 
   // ── Send message ───────────────────────────────────────────────────────────
   const handleSendMessage = () => {
@@ -1077,7 +1081,7 @@ const Group = () => {
                 </div>
               </div>
 
-              {/* Buttons */}
+              {/* Form Buttons */}
               <div className="flex gap-3 pt-1">
                 <button
                   type="button"
@@ -1378,7 +1382,7 @@ const Group = () => {
                   </div>
                 ) : (
                   <div className="text-center text-sm font-medium text-base-content/50 py-3">
-                    Only group admins can send messages.
+                    Only an admin can send a message to the group.
                   </div>
                 )}
               </div>
