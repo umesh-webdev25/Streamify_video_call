@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FolderIcon, ContactIcon, ActivityIcon, FolderArchiveIcon, VideoIcon, Trash2Icon, UserXIcon, MessageSquareIcon } from 'lucide-react';
+import { FolderIcon, ContactIcon, ActivityIcon, FolderArchiveIcon, VideoIcon, Trash2Icon, UserXIcon, MessageSquareIcon, CalendarIcon } from 'lucide-react';
 const statVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 }
@@ -10,10 +10,9 @@ const DashboardStats = ({ stats }) => {
     { label: "Total Groups", value: stats.totalGroups, desc: "All Groups Created", icon: FolderIcon, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
     { label: "Total Contacts", value: stats.totalContacts, desc: "Saved Contacts", icon: ContactIcon, color: "text-success", bg: "bg-success/10", border: "border-success/20" },
     { label: "Active Groups", value: stats.activeGroups, desc: "Currently active", icon: ActivityIcon, color: "text-secondary", bg: "bg-secondary/10", border: "border-secondary/20" },
-    { label: "Inactive Groups", value: stats.inactiveGroups, desc: "Currently inactive", icon: FolderArchiveIcon, color: "text-warning", bg: "bg-warning/10", border: "border-warning/20" },
-    { label: "Total Sessions", value: stats.totalSessions, desc: "Meetings Completed", icon: VideoIcon, color: "text-info", bg: "bg-info/10", border: "border-info/20" },
-    { label: "Deleted Groups", value: stats.deletedGroups, desc: "Soft deleted", icon: Trash2Icon, color: "text-error", bg: "bg-error/10", border: "border-error/20" },
-    { label: "Deleted Contacts", value: stats.deletedContacts, desc: "Soft deleted", icon: UserXIcon, color: "text-error", bg: "bg-error/10", border: "border-error/20" },
+    { label: "Upcoming Meetings", value: stats.upcomingMeetings, desc: "Scheduled", icon: CalendarIcon, color: "text-warning", bg: "bg-warning/10", border: "border-warning/20" },
+    { label: "Today's Meetings", value: stats.todayMeetings, desc: "Scheduled for today", icon: VideoIcon, color: "text-info", bg: "bg-info/10", border: "border-info/20" },
+    { label: "Total Sessions", value: stats.totalSessions, desc: "Meetings Completed", icon: VideoIcon, color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
     { label: "Total Messages", value: stats.totalMessages, desc: "Sent across chats", icon: MessageSquareIcon, color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
   ];
 

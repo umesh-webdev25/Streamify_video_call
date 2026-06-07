@@ -104,3 +104,72 @@ export const shareMeetingToGroup = asyncHandler(async (req, res) => {
 
   return ApiResponse.success(res, result);
 });
+
+export const requestJoin = asyncHandler(async (req, res) => {
+  const { meetingCode } = req.body;
+  const meeting = await meetingService.requestJoin(meetingCode, req.user._id);
+
+  const io = req.app.get("io");
+  if (io) {
+    // Notify host that someone wants to join
+    io.to(`user:${meeting.hostId}`).emit("join_request", {
+      meetingId: meeting._id,
+      userId: req.user._id,
+      userName: req.user.fullName,
+      userPic: req.user.profilePic,
+    });
+  }
+
+  return ApiResponse.success(res, null, "Join request sent to host");
+});
+
+export const approveJoinRequest = asyncHandler(async (req, res) => {
+  const { meetingId, userId } = req.body;
+  const meeting = await meetingService.approveJoinRequest(meetingId, userId, req.user._id);
+
+  const io = req.app.get("io");
+  if (io) {
+    // Notify the user that they were approved
+    io.to(`user:${userId}`).emit("join_approved", {
+      meetingId,
+      roomId: meeting.roomId
+    });
+    // Notify host that the user was approved so UI updates
+    io.to(`user:${req.user._id}`).emit("join_request_handled", { userId, status: "approved" });
+  }
+
+  return ApiResponse.success(res, null, "Join request approved");
+});
+
+export const rejectJoinRequest = asyncHandler(async (req, res) => {
+  const { meetingId, userId } = req.body;
+  await meetingService.rejectJoinRequest(meetingId, userId, req.user._id);
+
+  const io = req.app.get("io");
+  if (io) {
+    // Notify the user that they were rejected
+    io.to(`user:${userId}`).emit("join_rejected", { meetingId });
+    // Notify host that the user was rejected so UI updates
+    io.to(`user:${req.user._id}`).emit("join_request_handled", { userId, status: "rejected" });
+  }
+
+  return ApiResponse.success(res, null, "Join request rejected");
+});
+
+export const getActiveGroupMeeting = asyncHandler(async (req, res) => {
+  const { groupId } = req.params;
+  const meeting = await meetingService.getActiveGroupMeeting(groupId);
+  return ApiResponse.success(res, meeting);
+});
+
+export const joinScheduledMeeting = asyncHandler(async (req, res) => {
+  const { scheduleId } = req.body;
+  const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
+  const result = await meetingService.joinScheduledMeeting(scheduleId, req.user._id, reqInfo);
+  
+  if (result.refreshToken) {
+    res.cookie("refreshToken", result.refreshToken, authService.getCookieOptions("refresh"));
+  }
+  
+  return ApiResponse.success(res, result, "Joined scheduled meeting");
+});

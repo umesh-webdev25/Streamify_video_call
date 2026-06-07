@@ -6,9 +6,12 @@ import { useThemeStore } from "../store/useThemeStore";
 import { cn } from "../lib/utils";
 import { useState, useEffect } from "react";
 import SearchModal from "./SearchModal";
+import ProfileImage from "./ProfileImage";
+import { useNotificationStore } from "../store/useNotificationStore";
 
 const Navbar = () => {
-  const { authUser } = useAuthUser();
+  const { authUser, logout } = useAuthUser();
+  const { unreadCount } = useNotificationStore();
   const location = useLocation();
   const isChatPage = location.pathname?.startsWith("/chat");
   const { toggleTheme, theme } = useThemeStore();
@@ -44,7 +47,7 @@ const Navbar = () => {
           </div>
 
           {/* RIGHT — ACTIONS */}
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
 
             {/* SEARCH TRIGGER */}
             <button
@@ -62,9 +65,14 @@ const Navbar = () => {
             </button>
 
             {/* NOTIFICATIONS */}
-            <Link to="/notifications">
+            <Link to="/notifications" className="relative">
               <button className="btn btn-ghost btn-sm btn-circle hover:bg-base-200 text-base-content/50 hover:text-base-content transition-colors">
                 <BellIcon className="size-4.5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white ring-2 ring-base-100">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
             </Link>
 

@@ -28,6 +28,7 @@ import {
   getAllContacts,
   getGroupById,
   deleteGroup,
+  getActiveGroupMeeting
 } from "../lib/api";
 
 import useAuthUser from "../hooks/useAuthUser";
@@ -154,14 +155,20 @@ const Group = () => {
       setChatLoading(true);
       const full = await getGroupById(group._id);
       setSelectedGroup(full || group);
+      const activeMeeting = await getActiveGroupMeeting(group._id);
+      if (activeMeeting) {
+        setActiveMeetingCode(activeMeeting.meetingCode);
+      } else {
+        setActiveMeetingCode(null);
+      }
     } catch (err) {
-      console.error("getGroupById error:", err);
+      console.error("open chat error:", err);
       setSelectedGroup(group);
+      setActiveMeetingCode(null);
     } finally {
       setChatLoading(false);
     }
     setMessages([]);
-    setActiveMeetingCode(null);
     setOpenChat(true);
   };
 
@@ -171,10 +178,10 @@ const Group = () => {
     // Connect to backend
     const socket = io(import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000");
 
-    socket.emit("join_group_room", selectedGroup._id);
+    socket.emit("join_group_room", selectedGroup?._id || selectedGroup?.groupId);
 
     socket.on("meeting_started", (data) => {
-      if (data.groupId === selectedGroup._id) {
+      if (data.groupId === (selectedGroup?._id || selectedGroup?.groupId)) {
         setActiveMeetingCode(data.meetingCode);
         if (data.message) {
           setMessages((prev) => [...prev, { id: Date.now(), sender: data.hostId === authUser._id ? "me" : "them", ...data.message }]);
@@ -183,7 +190,7 @@ const Group = () => {
     });
 
     socket.on("meeting_ended", (data) => {
-      if (data.groupId === selectedGroup._id) {
+      if (data.groupId === (selectedGroup?._id || selectedGroup?.groupId)) {
         setActiveMeetingCode(null);
       }
     });
@@ -218,8 +225,9 @@ const Group = () => {
       formData.append("groupBio", groupData.groupBio);
       if (imageFile) formData.append("groupImage", imageFile);
       formData.append("status", groupData.status || "active");
-      formData.append("members", JSON.stringify([{ user: authUser._id, isAdmin: true }]));
-      formData.append("admins", JSON.stringify([authUser._id]));
+      const currentUserId = authUser?._id || authUser?.id;
+      formData.append("members", JSON.stringify([{ user: currentUserId, isAdmin: true }]));
+      formData.append("admins", JSON.stringify([currentUserId]));
 
       let response;
       if (editingGroup) {
@@ -231,7 +239,8 @@ const Group = () => {
       }
       closeModal();
     } catch (err) {
-      console.error("Submit error:", err);
+      console.error("Submit error:", err.response?.data || err);
+      alert(err.response?.data?.message || err.message);
     } finally {
       setSubmitting(false);
     }
@@ -564,13 +573,13 @@ const Group = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-base-200 border-b border-base-300">
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Group</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Members</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Created</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Updated</th>
-                <th className="px-4 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider text-center">Actions</th>
+              <tr className="bg-base-200 border-b border-base-300 ">
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Group</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Members</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider">Updated</th>
+                <th className="px-6 py-3.5 text-xs font-bold text-base-content/60 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -1157,7 +1166,7 @@ const Group = () => {
                   </button>
 
                   <button
-                    onClick={() => handleCreateGroupMeeting(selectedGroup._id)}
+                    onClick={() => handleCreateGroupMeeting(selectedGroup?._id || selectedGroup?.groupId)}
                     className="
                       absolute right-2 top-2 bottom-2
                       w-10

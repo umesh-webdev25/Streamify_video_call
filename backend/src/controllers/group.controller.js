@@ -25,14 +25,14 @@ export const createGroup = asyncHandler(async (req, res) => {
 
   const creatorId = req.user._id;
   let membersList = parseJSON(members).map(m => {
-    if (typeof m === "string") return { user: m, isAdmin: false };
-    return { user: m.user, isAdmin: !!m.isAdmin };
+    if (typeof m === "string") return { userId: m, role: "member" };
+    return { userId: m.userId || m.user, role: m.role || (m.isAdmin ? "admin" : "member") };
   });
   let adminsList = parseJSON(admins).map(a => typeof a === "string" ? a : a.toString());
 
   // Ensure creator is in members and admins
-  if (!membersList.some(m => m.user.toString() === creatorId.toString())) {
-    membersList.push({ user: creatorId, isAdmin: true });
+  if (!membersList.some(m => m.userId.toString() === creatorId.toString())) {
+    membersList.push({ userId: creatorId, role: "admin" });
   }
   if (!adminsList.includes(creatorId.toString())) {
     adminsList.push(creatorId.toString());
@@ -107,4 +107,27 @@ export const deleteGroup = asyncHandler(async (req, res) => {
     throw new AppError("Group not found", 404);
   }
   return ApiResponse.success(res, null, "Group deleted successfully");
+});
+
+/**
+ * Get My Groups
+ * GET /api/groups/my-groups
+ */
+export const getMyGroups = asyncHandler(async (req, res) => {
+  const groups = await groupService.getMyGroups(req.user._id);
+  return ApiResponse.success(res, groups);
+});
+
+/**
+ * Get Group Meetings
+ * GET /api/groups/:id/meetings
+ */
+export const getGroupMeetings = asyncHandler(async (req, res) => {
+  const ScheduleMeeting = (await import("../models/Schedulemeeting.js")).default;
+  const meetings = await ScheduleMeeting.find({
+    groupId: req.params.id,
+    status: { $in: ["pending", "upcoming"] },
+  }).populate("createdBy", "fullName profilePic").sort({ scheduledAt: 1 });
+
+  return ApiResponse.success(res, meetings);
 });

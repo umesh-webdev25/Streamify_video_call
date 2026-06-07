@@ -55,8 +55,13 @@ const Sidebar = () => {
 
     {
       icon: GroupIcon,
-      label: "Groups",
+      label: "All Groups",
       path: "/group",
+    },
+    {
+      icon: UsersIcon,
+      label: "My Groups",
+      path: "/my-groups",
     },
     {
       icon: VideoIcon,
@@ -68,21 +73,21 @@ const Sidebar = () => {
       label: "Schedule Meeting",
       path: "/schedule-meeting",
     },
-    // {
-    //   icon: BellIcon,
-    //   label: "Notifications",
-    //   path: "/notifications",w
-    // },
+    {
+      icon: BellIcon,
+      label: "Notifications",
+      path: "/notifications",
+    },
     {
       icon: GlobeIcon,
       label: "Preferences",
       path: "/settings?tab=preferences",
     },
-    // {
-    //   icon: BellIcon,
-    //   label: "Notification Settings",
-    //   path: "/settings?tab=notifications",
-    // },
+    {
+      icon: BellIcon,
+      label: "Notification Settings",
+      path: "/settings?tab=notifications",
+    },
     {
       icon: HistoryIcon,
       label: "History",

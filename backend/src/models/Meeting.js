@@ -59,6 +59,22 @@ const meetingSchema = new mongoose.Schema(
       enum: ["active", "ended", "scheduled"],
       default: "active",
     },
+    waitingRoomEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    pendingParticipants: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        requestedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     scheduledAt: {
       type: Date,
     },

@@ -23,6 +23,10 @@ const contactStorage = createCloudinaryStorage("contacts", (req) => {
   return `${req.user._id}_${sanitizedName || "contact"}_${Date.now()}`;
 });
 
+const groupStorage = createCloudinaryStorage("groups", (req) => {
+  return `group_${req.user._id}_${Date.now()}`;
+});
+
 const fileFilter = (req, file, cb) => {
   if (file.mimetype && file.mimetype.startsWith("image/")) {
     cb(null, true);
@@ -52,5 +56,13 @@ const uploadContact = multer({
   },
 });
 
-export { upload, uploadContact };
+const uploadGroup = multer({
+  storage: groupStorage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
+
+export { upload, uploadContact, uploadGroup };
 export default upload;

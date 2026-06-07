@@ -2,6 +2,10 @@ import Notification from "../models/Notification.js";
 import Logger from "../utils/logger.js";
 
 class NotificationService {
+  setIo(io) {
+    this.io = io;
+  }
+
   async send(data) {
     const { recipientId, senderId, type, title, content, metaData } = data;
 
@@ -52,10 +56,20 @@ class NotificationService {
     );
   }
 
+  async getUnreadCount(userId) {
+    return await Notification.countDocuments({ recipient: userId, isRead: false });
+  }
+
   // Integration points for external delivery
   deliverRealtime(recipientId, notification) {
-    // Logic to emit via socket.io or Stream Chat custom events
-    Logger.info(`Realtime notification sent to ${recipientId}`);
+    try {
+      if (this.io) {
+        this.io.to(`user:${recipientId}`).emit("new_notification", notification);
+        Logger.info(`Realtime notification sent to user:${recipientId}`);
+      }
+    } catch (e) {
+      Logger.error(`Realtime notification error: ${e.message}`);
+    }
   }
 
   sendPushNotification(recipientId, notification) {

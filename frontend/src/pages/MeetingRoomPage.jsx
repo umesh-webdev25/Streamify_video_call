@@ -40,6 +40,8 @@ import InCallChatPanel from "../components/meeting/InCallChatPanel";
 import LeaveMeetingModal from "../components/meeting/LeaveMeetingModal";
 import { useMeetingStore } from "../store/useMeetingStore";
 import { useMeeting } from "../hooks/useMeeting";
+import { useSocketStore } from "../store/useSocketStore";
+import { approveJoinRequest, rejectJoinRequest } from "../lib/api";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -240,6 +242,7 @@ const MeetingRoomPage = () => {
               onEndCall={handleEndCall}
               showNewMsgToast={showNewMsgToast}
               setShowNewMsgToast={setShowNewMsgToast}
+              meetingCode={activeMeeting?.meetingCode}
             />
           </StreamCall>
         </StreamVideo>
@@ -305,6 +308,7 @@ const MeetingRoomContent = ({
   onEndCall,
   showNewMsgToast,
   setShowNewMsgToast,
+  meetingCode,
 }) => {
   const {
     useCallCallingState,
@@ -325,6 +329,50 @@ const MeetingRoomContent = ({
   const { camera, isMuted: isCamMuted } = useCameraState();
   const { screenShare, isSharing: isScreenSharing } = useScreenShareState();
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const { socket } = useSocketStore();
+  const [pendingRequests, setPendingRequests] = useState([]);
+
+  useEffect(() => {
+    if (!socket || !isHost) return;
+
+    const handleJoinRequest = (data) => {
+      setPendingRequests((prev) => {
+        if (!prev.find(req => req.userId === data.userId)) {
+          return [...prev, data];
+        }
+        return prev;
+      });
+      toast(`User ${data.userName} wants to join`, { icon: '👋' });
+    };
+
+    const handleJoinRequestHandled = (data) => {
+      setPendingRequests((prev) => prev.filter(req => req.userId !== data.userId));
+    };
+
+    socket.on("join_request", handleJoinRequest);
+    socket.on("join_request_handled", handleJoinRequestHandled);
+
+    return () => {
+      socket.off("join_request", handleJoinRequest);
+      socket.off("join_request_handled", handleJoinRequestHandled);
+    };
+  }, [socket, isHost]);
+
+  const handleApproveRequest = async (request) => {
+    try {
+      await approveJoinRequest(request.meetingId, request.userId);
+    } catch (err) {
+      toast.error("Failed to approve request");
+    }
+  };
+
+  const handleRejectRequest = async (request) => {
+    try {
+      await rejectJoinRequest(request.meetingId, request.userId);
+    } catch (err) {
+      toast.error("Failed to reject request");
+    }
+  };
 
   const remoteParticipants = participants.filter(
     (p) => p.sessionId !== localParticipant?.sessionId,
@@ -568,6 +616,40 @@ const MeetingRoomContent = ({
                 {unreadCount} new message{unreadCount > 1 ? "s" : ""}
               </span>
             </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* PENDING REQUESTS PANEL (HOST ONLY) */}
+        <AnimatePresence>
+          {isHost && pendingRequests.length > 0 && (
+            <motion.div
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 100, opacity: 0 }}
+              className="absolute top-20 right-4 sm:right-6 z-50 w-80 max-h-96 overflow-y-auto glass-dark rounded-2xl border border-white/10 shadow-2xl p-4 space-y-3"
+            >
+              <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
+                <UsersIcon className="size-4 text-warning" />
+                Waiting Room ({pendingRequests.length})
+              </h3>
+              
+              {pendingRequests.map((req) => (
+                <div key={req.userId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <img src={req.userPic || "https://ui-avatars.com/api/?name=" + req.userName} alt="" className="size-8 rounded-full" />
+                    <span className="text-sm font-medium text-white truncate max-w-[100px]">{req.userName}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleRejectRequest(req)} className="btn btn-circle btn-xs btn-error hover:bg-error/80">
+                      <XIcon className="size-3" />
+                    </button>
+                    <button onClick={() => handleApproveRequest(req)} className="btn btn-circle btn-xs btn-success hover:bg-success/80">
+                      <CheckIcon className="size-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
           )}
         </AnimatePresence>
 

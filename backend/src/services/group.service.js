@@ -12,7 +12,7 @@ export const verifyGroupMembership = async (groupId, userId) => {
     throw new AppError("Group not found", 404);
   }
   const isMember = group.members.some(
-    (m) => m.user.toString() === userId.toString()
+    (m) => m.userId.toString() === userId.toString()
   );
   if (!isMember) {
     throw new AppError("Not a member of this group", 403);
@@ -98,10 +98,52 @@ export const createGroup = async (groupData) => {
 export const getAllGroups = async (userId) => {
   try {
     const groups = await Group.find({
-      "members.user": userId,
+      "members.userId": userId,
       isDeleted: { $ne: true }
     }).sort({ createdAt: -1 });
     return groups;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+/**
+ * GET MY GROUPS WITH STATS
+ */
+export const getMyGroups = async (userId) => {
+  try {
+    const groups = await Group.find({
+      "members.userId": userId,
+      isDeleted: { $ne: true }
+    }).sort({ createdAt: -1 });
+
+    const ScheduleMeeting = (await import("../models/Schedulemeeting.js")).default;
+    const Meeting = (await import("../models/Meeting.js")).default;
+
+    const groupStats = await Promise.all(groups.map(async (group) => {
+      // Get Upcoming Meetings Count
+      const upcomingCount = await ScheduleMeeting.countDocuments({
+        groupId: group._id,
+        status: { $in: ["pending", "upcoming"] },
+      });
+
+      // Check for active meeting
+      const activeMeeting = await Meeting.findOne({
+        groupId: group._id,
+        status: "active"
+      });
+
+      return {
+        groupId: group._id,
+        groupName: group.groupName,
+        groupImage: group.groupImage,
+        memberCount: group.members.length,
+        upcomingMeetingCount: upcomingCount,
+        activeMeeting: activeMeeting ? activeMeeting.meetingCode : null
+      };
+    }));
+
+    return groupStats;
   } catch (error) {
     throw new Error(error.message);
   }

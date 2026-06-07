@@ -114,6 +114,47 @@ class MeetingRepository {
   async findMeetingByRoomId(roomId) {
     return await Meeting.findOne({ roomId });
   }
+
+  async addPendingParticipant(roomIdOrId, userId) {
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(roomIdOrId)) {
+      query = { _id: roomIdOrId };
+    } else {
+      query = { roomId: roomIdOrId };
+    }
+
+    return await Meeting.findOneAndUpdate(
+      query,
+      {
+        $addToSet: { pendingParticipants: { userId, requestedAt: new Date() } }
+      },
+      { new: true }
+    );
+  }
+
+  async removePendingParticipant(roomIdOrId, userId) {
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(roomIdOrId)) {
+      query = { _id: roomIdOrId };
+    } else {
+      query = { roomId: roomIdOrId };
+    }
+
+    return await Meeting.findOneAndUpdate(
+      query,
+      {
+        $pull: { pendingParticipants: { userId } }
+      },
+      { new: true }
+    );
+  }
+
+  async findActiveMeetingByGroup(groupId) {
+    return await Meeting.findOne({
+      groupId,
+      status: "active"
+    });
+  }
 }
 
 export default new MeetingRepository();

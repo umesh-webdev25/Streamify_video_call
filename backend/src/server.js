@@ -18,6 +18,7 @@ import sessionRoutes from "./routes/session.route.js";
 import groupRouter from "./routes/group.routes.js";
 import contectRouter from "./routes/contact.routes.js";
 import scheduleMeetingRoutes from "./routes/scheduleMeeting.route.js";
+import notificationRoutes from "./routes/notification.routes.js";
 import { connectDB } from "./lib/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import AppError from "./utils/AppError.js";
@@ -80,6 +81,7 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/groups", groupRouter);
 app.use("/api/contacts", contectRouter);
 app.use("/api/schedule-meetings", scheduleMeetingRoutes);
+app.use("/api/notifications", notificationRoutes);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   app.get("*", (req, res) => {
@@ -108,6 +110,8 @@ const io = new Server(server, {
 });
 import jwt from "jsonwebtoken";
 import Group from "./models/group.js";
+import notificationService from "./services/notification.service.js";
+import { startCronJobs, setIo } from "./services/cron.service.js";
 
 const parseCookies = (cookieString) => {
   if (!cookieString) return {};
@@ -121,9 +125,27 @@ const parseCookies = (cookieString) => {
 };
 
 app.set("io", io);
+notificationService.setIo(io);
+setIo(io);
+startCronJobs();
 
 io.on("connection", (socket) => {
   console.log("A user connected via Socket.IO:", socket.id);
+
+  // Authenticate user on connection to join their personal room
+  try {
+    const cookies = parseCookies(socket.handshake.headers.cookie);
+    const token = cookies.jwt;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      if (decoded && decoded.userId) {
+        socket.join(`user:${decoded.userId}`);
+        console.log(`Socket ${socket.id} joined personal room user:${decoded.userId}`);
+      }
+    }
+  } catch (e) {
+    console.log("Socket connection user auth failed:", e.message);
+  }
   
   socket.on("join_group_room", async (groupId) => {
     try {
@@ -147,7 +169,7 @@ io.on("connection", (socket) => {
       }
 
       const isMember = group.members.some(
-        (m) => m.user.toString() === decoded.userId.toString()
+        (m) => m.userId.toString() === decoded.userId.toString()
       );
 
       if (isMember) {

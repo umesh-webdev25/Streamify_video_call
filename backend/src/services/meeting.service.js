@@ -29,7 +29,7 @@ class MeetingService {
     if (meeting.groupId) {
       const group = await Group.findById(meeting.groupId);
       if (group && !group.isDeleted) {
-        const isMember = group.members.some(m => m.user.toString() === userId.toString());
+        const isMember = group.members.some(m => m.userId.toString() === userId.toString());
         if (isMember) {
           return meeting;
         }
@@ -58,6 +58,7 @@ class MeetingService {
       hostId: userId,
       participants: [{ userId, joinedAt: new Date() }],
       status: "active",
+      waitingRoomEnabled: data.waitingRoomEnabled || false,
     });
 
     const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/meeting/room/${roomId}`;
@@ -87,6 +88,9 @@ class MeetingService {
     );
 
     if (!alreadyJoined) {
+      if (meeting.waitingRoomEnabled && meeting.hostId.toString() !== userId.toString()) {
+        throw new AppError("WAITING_ROOM_ENABLED", 403);
+      }
       await meetingRepository.addParticipant(roomId, userId);
     }
 
@@ -173,7 +177,7 @@ class MeetingService {
     const group = await Group.findById(groupId);
     if (!group) throw new AppError("Group not found", 404);
     
-    const isMember = group.members.some(m => m.user.toString() === hostId.toString());
+    const isMember = group.members.some(m => m.userId.toString() === hostId.toString());
     if (!isMember) throw new AppError("Not a member of this group", 403);
 
     const existing = await meetingRepository.findActiveMeetingByGroup(groupId);
@@ -191,7 +195,8 @@ class MeetingService {
       groupId,
       participants: [{ userId: hostId, joinedAt: new Date() }],
       status: "active",
-      activeParticipants: 1
+      activeParticipants: 1,
+      waitingRoomEnabled: reqInfo.waitingRoomEnabled || false,
     });
 
     const refreshToken = await authService.createMeetingSession(hostId, meeting._id, reqInfo || {});
@@ -218,7 +223,16 @@ class MeetingService {
     const isMember = group?.members.some(m => m.user.toString() === userId.toString());
     if (!isMember) throw new AppError("Not a member of this group", 403);
 
-    await meetingRepository.addParticipant(meeting._id, userId);
+    const alreadyJoined = meeting.participants.some(
+      (p) => p.userId && p.userId.toString() === userId.toString() && !p.leftAt
+    );
+
+    if (!alreadyJoined) {
+      if (meeting.waitingRoomEnabled && meeting.hostId.toString() !== userId.toString()) {
+        throw new AppError("WAITING_ROOM_ENABLED", 403);
+      }
+      await meetingRepository.addParticipant(meeting._id, userId);
+    }
     
     const refreshToken = await authService.createMeetingSession(userId, meeting._id, reqInfo || {});
 
@@ -234,7 +248,47 @@ class MeetingService {
     }
 
     await meetingRepository.endMeetingById(meeting._id);
-    return { roomId: meeting.roomId, groupId: meeting.groupId };
+  }
+
+  async joinScheduledMeeting(scheduleId, userId, reqInfo) {
+    const ScheduleMeeting = (await import("../models/Schedulemeeting.js")).default;
+    const schedule = await ScheduleMeeting.findById(scheduleId);
+    if (!schedule) throw new AppError("Scheduled meeting not found", 404);
+
+    const { groupId } = schedule;
+    
+    // Check if there's already an active meeting for this group
+    const existing = await meetingRepository.findActiveMeetingByGroup(groupId);
+    
+    if (existing) {
+      // Just join the existing active meeting
+      const joinResult = await this.joinMeetingWithCode(existing.meetingCode, userId, reqInfo);
+      
+      // If this was the scheduled meeting, maybe mark it as completed?
+      // Since they are joining it, we could mark it as active or completed. We can leave it or update status.
+      if (schedule.status === "upcoming" || schedule.status === "pending") {
+        schedule.status = "completed"; // Or just keep it as is.
+        await schedule.save();
+      }
+      
+      const tokenData = await this.getVideoToken(userId);
+      return { ...joinResult, ...tokenData, meetingCode: existing.meetingCode };
+    }
+
+    // No active meeting exists, so we create one using createGroupMeeting
+    const createResult = await this.createGroupMeeting(groupId, userId, reqInfo);
+    
+    // Update schedule to completed
+    schedule.status = "completed";
+    await schedule.save();
+
+    const tokenData = await this.getVideoToken(userId);
+    return { ...createResult, ...tokenData };
+  }
+
+  async getActiveGroupMeeting(groupId) {
+    const meeting = await meetingRepository.findActiveMeetingByGroup(groupId);
+    return meeting;
   }
 
   async shareMeetingToGroup(meetingCode, groupId, senderId) {
@@ -244,6 +298,48 @@ class MeetingService {
     // Normally create a DB message here. Since there is no message model, we bypass and just return success.
     // The Socket.IO emission will happen in the controller.
     return { success: true, message: { type: "meeting_invite", meta: { meetingCode, lobbyUrl: `/meeting/lobby?code=${meetingCode}` } } };
+  }
+
+  async requestJoin(meetingCodeOrRoomId, userId) {
+    let meeting = await meetingRepository.findMeetingByCode(meetingCodeOrRoomId);
+    if (!meeting) {
+      meeting = await meetingRepository.findByRoomId(meetingCodeOrRoomId);
+    }
+    if (!meeting) throw new AppError("Meeting not found", 404);
+
+    if (meeting.status !== "active") {
+      throw new AppError("Meeting is no longer active", 410);
+    }
+
+    return await meetingRepository.addPendingParticipant(meeting._id, userId);
+  }
+
+  async approveJoinRequest(meetingId, userIdToApprove, hostId) {
+    const meeting = await meetingRepository.findById(meetingId);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+    if (meeting.hostId.toString() !== hostId.toString()) {
+      throw new AppError("Only host can approve join requests", 403);
+    }
+
+    await meetingRepository.removePendingParticipant(meetingId, userIdToApprove);
+    return await meetingRepository.addParticipant(meetingId, userIdToApprove);
+  }
+
+  async rejectJoinRequest(meetingId, userIdToReject, hostId) {
+    const meeting = await meetingRepository.findById(meetingId);
+    if (!meeting) throw new AppError("Meeting not found", 404);
+    if (meeting.hostId.toString() !== hostId.toString()) {
+      throw new AppError("Only host can reject join requests", 403);
+    }
+
+    return await meetingRepository.removePendingParticipant(meetingId, userIdToReject);
+  }
+
+  async getActiveGroupMeeting(groupId) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new AppError("Group not found", 404);
+
+    return await meetingRepository.findActiveMeetingByGroup(groupId);
   }
 }
 

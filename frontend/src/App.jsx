@@ -18,6 +18,7 @@ import MeetingRoomPage from "./pages/MeetingRoomPage.jsx";
 import MeetingSchedulePage from "./pages/MeetingSchedulePage.jsx";
 import History from "./pages/History.jsx";
 import Group from "./pages/Group.jsx";
+import MyGroupsPage from "./pages/MyGroupsPage.jsx";
 import GroupContacts from "./pages/GroupContacts.jsx";
 import VerifyOTPPage from "./pages/VerifyOTPPage.jsx";
 import { Toaster } from "react-hot-toast";
@@ -29,12 +30,40 @@ import { useThemeStore } from "./store/useThemeStore.js";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 import ScheduleMeetingPage from "./pages/scheduleMeeting.jsx";
+import { useSocketStore } from "./store/useSocketStore.js";
+import { useNotificationStore } from "./store/useNotificationStore.js";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+
 const App = () => {
   const { isLoading, authUser } = useAuthUser();
   const { theme } = useThemeStore();
+  const { connect, disconnect, socket } = useSocketStore();
+  const { fetchUnreadCount, addNotification } = useNotificationStore();
   const location = useLocation();
 
   const isAuthenticated = Boolean(authUser);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      connect();
+      fetchUnreadCount();
+    } else {
+      disconnect();
+    }
+  }, [isAuthenticated, connect, disconnect, fetchUnreadCount]);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleNewNotification = (notification) => {
+      addNotification(notification);
+      toast.success(notification.title || "New Notification");
+    };
+
+    socket.on("new_notification", handleNewNotification);
+    return () => socket.off("new_notification", handleNewNotification);
+  }, [socket, addNotification]);
 
   if (isLoading) return <PageLoader />;
 
@@ -108,6 +137,14 @@ const App = () => {
             element={
               <Layout showSidebar={true}>
                 <GroupContacts />
+              </Layout>
+            }
+          />
+          <Route
+            path="/my-groups"
+            element={
+              <Layout showSidebar={true}>
+                <MyGroupsPage />
               </Layout>
             }
           />

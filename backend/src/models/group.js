@@ -30,15 +30,15 @@ const groupSchema = new mongoose.Schema(
     // Members
     members: [
       {
-        user: {
+        userId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Contact",
+          ref: "User",
           required: true,
         },
-
-        isAdmin: {
-          type: Boolean,
-          default: false,
+        role: {
+          type: String,
+          enum: ["admin", "member"],
+          default: "member",
         },
       },
     ],

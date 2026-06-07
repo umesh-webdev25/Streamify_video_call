@@ -5,14 +5,34 @@ const scheduleMeetingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    date: {
+    description: {
         type: String,
+        default: ""
+    },
+    groupId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
         required: true
+    },
+    date: {
+        type: String, // Keeping date and time for backward compatibility
     },
     time: {
         type: String,
+    },
+    scheduledAt: {
+        type: Date,
         required: true
     },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    invitees: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }],
     status: {
         type: String,
         enum: ["pending", "completed", "cancelled", "upcoming", "expired"],

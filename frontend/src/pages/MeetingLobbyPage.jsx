@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useSocketStore } from "../store/useSocketStore.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -52,12 +53,39 @@ const MeetingLobbyPage = () => {
   const [searchParams] = useSearchParams();
   const codeParam = searchParams.get("code");
   const { handleJoinMeeting } = useMeeting();
+  const { socket } = useSocketStore();
+  
+  const [waitingForApproval, setWaitingForApproval] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   useEffect(() => {
     if (codeParam) {
       setRoomCode(codeParam);
     }
   }, [codeParam]);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleJoinApproved = (data) => {
+      setWaitingForApproval(false);
+      navigate(`/meeting/room/${data.roomId}`);
+    };
+    
+    const handleJoinRejected = () => {
+      setWaitingForApproval(false);
+      toast.error("Your join request was rejected by the host");
+    };
+
+    socket.on("join_approved", handleJoinApproved);
+    socket.on("join_rejected", handleJoinRejected);
+
+    return () => {
+      socket.off("join_approved", handleJoinApproved);
+      socket.off("join_rejected", handleJoinRejected);
+    };
+  }, [socket, navigate]);
 
   const generatedRoomId = useRef(generateMeetingCode());
 
@@ -113,10 +141,22 @@ const MeetingLobbyPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const startMeeting = () => {
-    navigate(`/meeting/room/${generatedRoomId.current}`, {
-      state: { isHost: true },
-    });
+  const startMeeting = async () => {
+    setIsStarting(true);
+    try {
+      // Call backend to create the meeting so it's tracked in MongoDB
+      const res = await axiosInstance.post("/meetings/create", { 
+        roomId: generatedRoomId.current,
+        waitingRoomEnabled: true // enable waiting room by default for ad-hoc
+      });
+      navigate(`/meeting/room/${generatedRoomId.current}`, {
+        state: { isHost: true },
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to start meeting");
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   const joinMeeting = async () => {
@@ -126,16 +166,47 @@ const MeetingLobbyPage = () => {
     }
 
     const code = roomCode.trim().toUpperCase();
+    setIsJoining(true);
 
     // Check if it is a group meeting code
     if (code.startsWith("GRP-")) {
       try {
         await handleJoinMeeting(code);
       } catch (error) {
-        console.error("Join meeting failed:", error);
+        if (error.response?.data?.message === "WAITING_ROOM_ENABLED") {
+          try {
+            await axiosInstance.post("/meetings/request-join", { meetingCode: code });
+            setWaitingForApproval(true);
+            toast.success("Request sent to host. Please wait...");
+          } catch (reqErr) {
+            toast.error(reqErr.response?.data?.message || "Failed to request join");
+          }
+        } else {
+          console.error("Join meeting failed:", error);
+        }
+      } finally {
+        setIsJoining(false);
       }
     } else {
-      navigate(`/meeting/room/${code}`);
+      // Regular ad-hoc meeting
+      try {
+        await axiosInstance.post("/meetings/join", { roomId: code });
+        navigate(`/meeting/room/${code}`);
+      } catch (error) {
+        if (error.response?.data?.message === "WAITING_ROOM_ENABLED") {
+          try {
+            await axiosInstance.post("/meetings/request-join", { meetingCode: code });
+            setWaitingForApproval(true);
+            toast.success("Request sent to host. Please wait...");
+          } catch (reqErr) {
+            toast.error(reqErr.response?.data?.message || "Failed to request join");
+          }
+        } else {
+          toast.error(error.response?.data?.message || "Meeting not found");
+        }
+      } finally {
+        setIsJoining(false);
+      }
     }
   };
 
@@ -164,10 +235,12 @@ const MeetingLobbyPage = () => {
             className="text-center mb-8"
           >
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-base-content">
-              Video Meeting
+              {waitingForApproval ? "Waiting Room" : "Video Meeting"}
             </h1>
             <p className="text-base-content/50 mt-2 font-medium">
-              Start or join a secure video meeting
+              {waitingForApproval 
+                ? "Waiting for the host to let you in..." 
+                : "Start or join a secure video meeting"}
             </p>
           </motion.div>
 
@@ -337,14 +410,16 @@ const MeetingLobbyPage = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={startMeeting}
-                    className="btn bg-gradient-to-r from-primary to-blue-500 text-white border-none flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    disabled={isStarting || waitingForApproval}
+                    className="btn bg-gradient-to-r from-primary to-blue-500 text-white border-none flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                   >
-                    <VideoIcon className="size-5" />
+                    {isStarting ? <span className="loading loading-spinner" /> : <VideoIcon className="size-5" />}
                     Start Meeting
                   </button>
                   <button
                     onClick={copyRoomCode}
-                    className="btn btn-outline border-base-300 text-base-content h-12 rounded-xl font-bold hover:bg-base-200 transition-all"
+                    disabled={waitingForApproval}
+                    className="btn btn-outline border-base-300 text-base-content h-12 rounded-xl font-bold hover:bg-base-200 transition-all disabled:opacity-50"
                   >
                     {copied ? (
                       <CheckIcon className="size-5 text-success" />
@@ -374,10 +449,10 @@ const MeetingLobbyPage = () => {
                   />
                   <button
                     onClick={joinMeeting}
-                    disabled={!roomCode.trim()}
+                    disabled={!roomCode.trim() || isJoining || waitingForApproval}
                     className="btn btn-primary h-12 rounded-xl font-bold shadow-lg shadow-primary/25 disabled:opacity-50 transition-all"
                   >
-                    <ArrowRightIcon className="size-5" />
+                    {isJoining ? <span className="loading loading-spinner" /> : <ArrowRightIcon className="size-5" />}
                   </button>
                 </div>
               </div>

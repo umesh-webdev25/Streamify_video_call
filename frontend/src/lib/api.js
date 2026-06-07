@@ -47,9 +47,7 @@ export const getAuthUser = async () => {
 // lib/api.js
 export const completeOnboarding = (formData) => {
   // ✅ must match exactly what's registered in your routes
-  return axiosInstance.post("/auth/onboarding", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return axiosInstance.post("/auth/onboarding", formData);
 };
 
 export async function getUserFriends() {
@@ -122,8 +120,43 @@ export async function createGroupMeeting(groupId) {
 }
 
 export async function joinGroupMeetingWithCode(meetingCode) {
-  const response = await axiosInstance.post("/meetings/group/join", { meetingCode });
+  const response = await axiosInstance.post(`/meetings/group/join`, {
+    meetingCode,
+  });
+  return response.data;
+}
+
+export async function joinScheduledGroupMeeting(scheduleId) {
+  const response = await axiosInstance.post(`/meetings/group/join-scheduled`, {
+    scheduleId,
+  });
+  return response.data;
+}
+
+export async function getScheduledMeetings() {
+  const response = await axiosInstance.get(`/schedule-meetings`);
   return response.data.data;
+}
+
+// Notifications API
+export async function fetchNotifications(page = 1, limit = 20) {
+  const response = await axiosInstance.get(`/notifications?page=${page}&limit=${limit}`);
+  return response.data;
+}
+
+export async function getUnreadNotificationCount() {
+  const response = await axiosInstance.get("/notifications/unread-count");
+  return response.data;
+}
+
+export async function markNotificationAsRead(id) {
+  const response = await axiosInstance.put(`/notifications/${id}/read`);
+  return response.data;
+}
+
+export async function markAllNotificationsAsRead() {
+  const response = await axiosInstance.put("/notifications/read-all");
+  return response.data;
 }
 
 export async function endGroupMeetingWithCode(meetingCode) {
@@ -139,6 +172,27 @@ export async function shareMeetingToGroup(meetingCode, groupId) {
 export async function getMeetingByCode(meetingCode) {
   const response = await axiosInstance.get(`/meetings/group/${meetingCode}`);
   return response.data.data;
+}
+
+export async function getActiveGroupMeeting(groupId) {
+  const response = await axiosInstance.get(`/meetings/group/${groupId}/active`);
+  return response.data.data;
+}
+
+// Waiting Room API
+export async function requestJoinMeeting(meetingCode) {
+  const response = await axiosInstance.post("/meetings/request-join", { meetingCode });
+  return response.data;
+}
+
+export async function approveJoinRequest(meetingId, userId) {
+  const response = await axiosInstance.post("/meetings/approve-request", { meetingId, userId });
+  return response.data;
+}
+
+export async function rejectJoinRequest(meetingId, userId) {
+  const response = await axiosInstance.post("/meetings/reject-request", { meetingId, userId });
+  return response.data;
 }
 
 // Session API
@@ -184,15 +238,17 @@ export async function invalidateSession(sessionId) {
 // Group API
 
 export async function createGroup(formData) {
-  const response = await axiosInstance.post("/groups", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const response = await axiosInstance.post("/groups", formData);
   return response.data.data; // data should include saved group with persistent groupImage URL
 }
 
 export async function getAllGroups() {
   const response = await axiosInstance.get("/groups");
+  return response.data.data;
+}
 
+export async function getMyGroups() {
+  const response = await axiosInstance.get("/groups/my-groups");
   return response.data.data;
 }
 
@@ -202,10 +258,13 @@ export async function getGroupById(groupId) {
   return response.data.data;
 }
 
+export async function getGroupMeetings(groupId) {
+  const response = await axiosInstance.get(`/groups/${groupId}/meetings`);
+  return response.data.data;
+}
+
 export async function updateGroup(groupId, formData) {
-  const response = await axiosInstance.put(`/groups/${groupId}`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const response = await axiosInstance.put(`/groups/${groupId}`, formData);
   return response.data.data;
 }
 
@@ -222,13 +281,7 @@ export async function createContact(
   const response =
     await axiosInstance.post(
       "/contacts",
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "multipart/form-data",
-        },
-      }
+      formData
     );
 
   return response.data.data;
@@ -261,13 +314,7 @@ export async function updateContact(
   const response =
     await axiosInstance.put(
       `/contacts/${contactId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "multipart/form-data",
-        },
-      }
+      formData
     );
 
   return response.data.data;
@@ -287,12 +334,7 @@ export async function deleteContact(
 export async function inviteContact(data) {
   const response = await axiosInstance.post(
     "/contacts/invite",
-    data,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    data
   );
 
   return response.data;

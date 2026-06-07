@@ -9,19 +9,27 @@ import AppError from "../utils/AppError.js";
  * CREATE MEETING
  */
 export const createMeeting = asyncHandler(async (req, res) => {
-  const { title, date, time, status } = req.body;
+  const { title, description, groupId, date, time } = req.body;
+
+  if (!groupId) throw new AppError("Group ID is required", 400);
+
+  // Parse date and time into a single Date object for scheduledAt
+  const scheduledAt = new Date(`${date}T${time}:00`);
 
   const meeting = await meetingService.createMeeting({
     title,
+    description,
+    groupId,
+    scheduledAt,
     date,
     time,
-    status,
+    createdBy: req.user._id,
   });
 
   return ApiResponse.success(
     res,
     meeting,
-    "Meeting created successfully",
+    "Scheduled meeting created successfully",
     201
   );
 });
@@ -30,7 +38,7 @@ export const createMeeting = asyncHandler(async (req, res) => {
  * GET ALL MEETINGS
  */
 export const getMeetings = asyncHandler(async (req, res) => {
-  const meetings = await meetingService.getMeetings();
+  const meetings = await meetingService.getMeetings(req.user._id);
 
   return ApiResponse.success(res, meetings);
 });

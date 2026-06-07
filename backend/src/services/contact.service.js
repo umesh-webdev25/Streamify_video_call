@@ -127,7 +127,7 @@ export const createContact = async (contactData, userId, file) => {
 export const getAllContacts = async (userId) => {
   try {
     const myGroups = await Group.find({
-      "members.user": userId,
+      "members.userId": userId,
       isDeleted: { $ne: true }
     }).select("_id");
     const myGroupIds = myGroups.map((g) => g._id);
@@ -284,7 +284,7 @@ export const inviteExistingUserToContact = async (
   if (existingUser) {
     // Prevent duplicate group membership check
     const isAlreadyMember = group.members.some(
-      (m) => m.user.toString() === existingUser._id.toString()
+      (m) => m.userId.toString() === existingUser._id.toString()
     );
 
     if (existingContact && isAlreadyMember) {
@@ -307,7 +307,7 @@ export const inviteExistingUserToContact = async (
 
     // STEP 5: Add invited user to group members array
     if (!isAlreadyMember) {
-      group.members.push({ user: existingUser._id, isAdmin: false });
+      group.members.push({ userId: existingUser._id, role: "member" });
       await group.save();
     }
 

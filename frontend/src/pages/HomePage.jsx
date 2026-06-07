@@ -6,6 +6,7 @@ import {
   getAllSessions,
   deleteGroup,
   deleteContact,
+  getScheduledMeetings
 } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -129,6 +130,14 @@ const HomePage = () => {
     queryFn: getAllSessions
   });
 
+  const { data: scheduledMeetingsData = [], isLoading: isScheduledLoading } = useQuery({
+    queryKey: ["scheduledMeetings"],
+    queryFn: getScheduledMeetings
+  });
+
+  const upcomingMeetings = scheduledMeetingsData.filter(m => new Date(m.scheduledAt) > new Date() && m.status !== "completed");
+  const todayMeetings = upcomingMeetings.filter(m => new Date(m.scheduledAt).toDateString() === new Date().toDateString());
+
   const stats = {
     totalGroups: groupsData.length || 0,
     totalContacts: contactsData.length || 0,
@@ -137,6 +146,8 @@ const HomePage = () => {
     totalSessions: sessionsData.length || 0,
     deletedGroups: groupsData.filter?.(group => group.isDeleted === true || group.deleted === true).length || 0,
     deletedContacts: contactsData.filter?.(contact => contact.isDeleted === true || contact.deleted === true).length || 0,
+    upcomingMeetings: upcomingMeetings.length,
+    todayMeetings: todayMeetings.length,
     totalMessages: 0, // TODO: Connect messages API
   };
 

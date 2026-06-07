@@ -6,9 +6,16 @@ import { capitalize } from "../lib/utils";
 import { getLanguageFlag } from "../components/FriendCard";
 import { Helmet } from "react-helmet-async";
 import ProfileImage from "../components/ProfileImage.jsx";
+import { useNotificationStore } from "../store/useNotificationStore.js";
+import { useEffect } from "react";
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();
+  const { notifications, fetchMyNotifications, markAllAsRead, markAsRead } = useNotificationStore();
+
+  useEffect(() => {
+    fetchMyNotifications();
+  }, [fetchMyNotifications]);
 
   const {
     data: friendRequests,
@@ -48,6 +55,15 @@ const NotificationsPage = () => {
           </p>
         </div>
         <BellIcon className="size-5 text-base-content/30 self-start sm:self-auto" />
+      </div>
+
+      <div className="flex justify-end">
+        <button 
+          onClick={() => markAllAsRead()}
+          className="btn btn-sm btn-ghost text-primary hover:bg-primary/10"
+        >
+          Mark all as read
+        </button>
       </div>
 
       {/* LOADING */}
@@ -170,8 +186,54 @@ const NotificationsPage = () => {
             </section>
           )}
 
+          {/* GENERAL NOTIFICATIONS */}
+          {notifications.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xs font-semibold text-base-content/50 uppercase tracking-widest">
+                All Notifications
+              </h2>
+
+              <div className="space-y-3">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification._id}
+                    onClick={() => !notification.isRead && markAsRead(notification._id)}
+                    className={`bg-base-100 border rounded-xl p-4 transition-all duration-200 cursor-pointer ${
+                      notification.isRead ? "border-base-200 opacity-70" : "border-primary/30 shadow-sm bg-base-200/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="size-11 rounded-lg overflow-hidden ring-1 ring-base-300 shrink-0 bg-base-300 flex items-center justify-center">
+                        {notification.sender?.profilePic ? (
+                           <ProfileImage
+                            src={notification.sender.profilePic}
+                            alt={notification.title}
+                            className="w-full h-full"
+                          />
+                        ) : (
+                          <BellIcon className="size-5 text-base-content/50" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base-content leading-tight truncate">
+                          {notification.title}
+                        </h3>
+                        <p className="text-sm text-base-content/70 mt-0.5">
+                          {notification.content}
+                        </p>
+                      </div>
+                      {!notification.isRead && (
+                        <div className="size-2 rounded-full bg-primary shrink-0" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* EMPTY STATE */}
-          {incomingRequests.length === 0 && acceptedRequests.length === 0 && (
+          {incomingRequests.length === 0 && acceptedRequests.length === 0 && notifications.length === 0 && (
             <NoNotificationsFound />
           )}
         </div>

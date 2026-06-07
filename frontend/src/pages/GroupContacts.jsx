@@ -21,11 +21,16 @@ import {
   deleteContact,
   getGroupById,
   inviteContact,
+  getGroupMeetings,
+  joinScheduledGroupMeeting,
 } from "../lib/api";
 import toast from "react-hot-toast";
+import { CalendarIcon, VideoIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const GroupContacts = () => {
   const { groupId } = useParams();
+  const navigate = useNavigate();
 
   const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -48,6 +53,7 @@ const GroupContacts = () => {
 
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [upcomingMeetings, setUpcomingMeetings] = useState([]);
 
   /** GET GROUP INFO */
   const fetchGroupInfo = async () => {
@@ -82,9 +88,33 @@ const GroupContacts = () => {
     }
   };
 
+  const fetchMeetings = async () => {
+    try {
+      const data = await getGroupMeetings(groupId);
+      setUpcomingMeetings(data || []);
+    } catch (error) {
+      console.log("Error fetching meetings:", error);
+    }
+  };
+
+  const handleJoinScheduledMeeting = async (scheduleId) => {
+    try {
+      toast.loading("Joining meeting...", { id: "join-scheduled" });
+      const response = await joinScheduledGroupMeeting(scheduleId);
+      if (response && response.data && response.data.meetingCode) {
+        toast.success("Redirecting to meeting...", { id: "join-scheduled" });
+        navigate(`/meeting/lobby?code=${response.data.meetingCode}`);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to join meeting", { id: "join-scheduled" });
+    }
+  };
+
   useEffect(() => {
     fetchGroupInfo();
     fetchContacts();
+    fetchMeetings();
   }, [groupId]);
 
   // Close menu on outside click
@@ -368,6 +398,50 @@ const GroupContacts = () => {
           </div>
         </div>
       </div>
+
+      {/* ── UPCOMING MEETINGS PANEL ── */}
+      {upcomingMeetings.length > 0 && (
+        <div className="bg-base-100 border border-base-300 rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+              <CalendarIcon className="w-5 h-5 text-secondary" />
+            </div>
+            <h2 className="text-lg font-bold text-base-content">Upcoming Meetings</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingMeetings.map(meeting => (
+              <div key={meeting._id} className="border border-base-300 rounded-xl p-4 bg-base-200/50 hover:bg-base-200 transition-colors">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-base-content line-clamp-1">{meeting.title}</h3>
+                  <span className="text-xs font-medium px-2 py-1 bg-warning/10 text-warning rounded-lg">
+                    Upcoming
+                  </span>
+                </div>
+                {meeting.description && (
+                  <p className="text-sm text-base-content/60 line-clamp-2 mb-3">{meeting.description}</p>
+                )}
+                <div className="flex items-center gap-2 text-sm text-base-content/70 mt-3">
+                  <CalendarIcon className="w-4 h-4" />
+                  {new Date(meeting.scheduledAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                </div>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-base-300 justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src={meeting.createdBy?.profilePic || "/avatar.png"} alt="" className="w-6 h-6 rounded-full object-cover" />
+                    <span className="text-xs text-base-content/60">{meeting.createdBy?.fullName || "Unknown"}</span>
+                  </div>
+                  
+                  <button 
+                    onClick={() => handleJoinScheduledMeeting(meeting._id)}
+                    className="btn btn-primary btn-xs"
+                  >
+                    Join
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── TABLE CARD ── */}
       <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">

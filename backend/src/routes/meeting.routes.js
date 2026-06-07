@@ -13,7 +13,12 @@ import {
   joinMeetingWithCode,
   endMeetingWithCode,
   shareMeetingToGroup,
-  getMeetingByCode
+  getMeetingByCode,
+  requestJoin,
+  approveJoinRequest,
+  rejectJoinRequest,
+  getActiveGroupMeeting,
+  joinScheduledMeeting
 } from "../controllers/meeting.controller.js";
 import {
   createMeetingSchema,
@@ -42,5 +47,12 @@ router.post("/group/join", validate(joinMeetingWithCodeSchema), joinMeetingWithC
 router.post("/group/share", validate(shareMeetingToGroupSchema), shareMeetingToGroup);
 router.delete("/group/:meetingCode/end", endMeetingWithCode);
 router.get("/group/:meetingCode", getMeetingByCode);
+router.get("/group/:groupId/active", getActiveGroupMeeting);
+router.post("/group/join-scheduled", joinScheduledMeeting);
+
+// Waiting Room
+router.post("/request-join", requestJoin);
+router.post("/approve-request", approveJoinRequest);
+router.post("/reject-request", rejectJoinRequest);
 
 export default router;
