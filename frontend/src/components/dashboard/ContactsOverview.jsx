@@ -37,7 +37,7 @@ const ContactsOverview = ({ contacts, onDelete }) => {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="relative shrink-0">
                     <img src={contact.contactImage || contact.avatar || "/avatar.png"} alt={contact.name} className="size-10 rounded-xl object-cover border border-base-300" />
-                    <span className={`absolute -bottom-0.5 -right-0.5 size-3 border-2 border-base-100 rounded-full ${contact.status === 'online' ? 'bg-success' : 'bg-base-300'}`}></span>
+                    {/* <span className={`absolute -bottom-0.5 -right-0.5 size-3 border-2 border-base-100 rounded-full ${contact.status === 'online' ? 'bg-success' : 'bg-base-300'}`}></span> */}
                   </div>
                   <div className="flex-1 min-w-0 pr-2">
                     <h4 className="text-sm font-bold text-base-content truncate">{contact.name}</h4>
