@@ -9,7 +9,10 @@ import hpp from "hpp";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import { Server } from "socket.io";
-
+import jwt from "jsonwebtoken";
+import Group from "./models/group.js";
+import notificationService from "./services/notification.service.js";
+import { startCronJobs, setIo } from "./services/cron.service.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import chatRoutes from "./routes/chat.route.js";
@@ -108,10 +111,7 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
-import jwt from "jsonwebtoken";
-import Group from "./models/group.js";
-import notificationService from "./services/notification.service.js";
-import { startCronJobs, setIo } from "./services/cron.service.js";
+
 
 const parseCookies = (cookieString) => {
   if (!cookieString) return {};
