@@ -116,13 +116,13 @@ const HomePage = () => {
   };
 
   const { data: groupsData = [], isLoading: isGroupsLoading } = useQuery({
-    queryKey: ["groups"],
-    queryFn: getAllGroups
+    queryKey: ["groups", { includeDeleted: true }],
+    queryFn: () => getAllGroups({ includeDeleted: true })
   });
 
   const { data: contactsData = [], isLoading: isContactsLoading } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: getAllContacts
+    queryKey: ["contacts", { includeDeleted: true }],
+    queryFn: () => getAllContacts({ includeDeleted: true })
   });
 
   const { data: sessionsData = [], isLoading: isSessionsLoading } = useQuery({
@@ -139,10 +139,10 @@ const HomePage = () => {
   const todayMeetings = upcomingMeetings.filter(m => new Date(m.scheduledAt).toDateString() === new Date().toDateString());
 
   const stats = {
-    totalGroups: groupsData.length || 0,
-    totalContacts: contactsData.length || 0,
-    activeGroups: groupsData.filter?.(group => group.status === "ACTIVE" || group.isActive === true).length || 0,
-    inactiveGroups: groupsData.filter?.(group => group.status === "INACTIVE" || group.isActive === false).length || 0,
+    totalGroups: groupsData.filter?.(group => !group.isDeleted).length || 0,
+    totalContacts: contactsData.filter?.(contact => !contact.isDeleted).length || 0,
+    activeGroups: groupsData.filter?.(group => !group.isDeleted && (group.status === "active" || group.isActive === true)).length || 0,
+    inactiveGroups: groupsData.filter?.(group => !group.isDeleted && (group.status === "inactive" || group.isActive === false)).length || 0,
     totalSessions: sessionsData.length || 0,
     deletedGroups: groupsData.filter?.(group => group.isDeleted === true || group.deleted === true).length || 0,
     deletedContacts: contactsData.filter?.(contact => contact.isDeleted === true || contact.deleted === true).length || 0,
@@ -152,8 +152,8 @@ const HomePage = () => {
   };
 
   const summary = {
-    groups: groupsData.length || 0,
-    contacts: contactsData.length || 0,
+    groups: groupsData.filter?.(group => !group.isDeleted).length || 0,
+    contacts: contactsData.filter?.(contact => !contact.isDeleted).length || 0,
     sessions: sessionsData.length || 0,
     messages: 0 // TODO: Connect messages API
   };
@@ -220,10 +220,10 @@ const HomePage = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <motion.div variants={itemVariants}>
-                <RecentGroups groups={groupsData} onDelete={handleDeleteGroup} />
+                <RecentGroups groups={groupsData.filter(g => !g.isDeleted)} onDelete={handleDeleteGroup} />
               </motion.div>
               <motion.div variants={itemVariants}>
-                <ContactsOverview contacts={contactsData} onDelete={handleDeleteContact} />
+                <ContactsOverview contacts={contactsData.filter(c => !c.isDeleted)} onDelete={handleDeleteContact} />
               </motion.div>
             </div>
 

@@ -39,7 +39,7 @@ const NotificationsPage = () => {
   const acceptedRequests = friendRequests?.acceptedReqs || [];
 
   return (
-    <div className="p-6 sm:p-8 max-w-3xl mx-auto space-y-10">
+    <div className="p-6 sm:p-8 max-w-6xl mx-auto space-y-10">
       <Helmet>
         <title>Notifications | MeetFlow</title>
       </Helmet>

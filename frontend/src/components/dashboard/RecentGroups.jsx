@@ -15,10 +15,10 @@ const RecentGroups = ({ groups = [], onDelete }) => {
   const filteredGroups =
     groups?.filter(
       (group) =>
-        (group.name?.toLowerCase() || '').includes(
+        (group.groupName?.toLowerCase() || '').includes(
           searchQuery.toLowerCase()
         ) ||
-        (group.description?.toLowerCase() || '').includes(
+        (group.groupBio?.toLowerCase() || '').includes(
           searchQuery.toLowerCase()
         )
     ) || [];
@@ -58,11 +58,12 @@ const RecentGroups = ({ groups = [], onDelete }) => {
             filteredGroups.slice(0, 5).map((group, idx) => (
               <div
                 key={group._id || idx}
-                className="flex items-center justify-between p-4 rounded-2xl hover:bg-base-200/50 transition-colors group cursor-pointer"
+                onClick={() => navigate(`/groups/${group._id}`)}
+                className="flex items-center justify-between p-4 rounded-2xl hover:bg-base-200/50 transition-colors group cursor-pointer h-12.5 "
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div
-                    className={`relative size-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-base-300 ${
+                    className={`relative size-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-base-300 ${
                       group.status === 'active'
                         ? 'bg-secondary/10 text-secondary'
                         : 'bg-base-300 text-base-content/50'
@@ -71,7 +72,7 @@ const RecentGroups = ({ groups = [], onDelete }) => {
                     {group.groupImage || group.image ? (
                       <img
                         src={group.groupImage || group.image}
-                        alt={group.name}
+                        alt={group.groupName}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -81,16 +82,16 @@ const RecentGroups = ({ groups = [], onDelete }) => {
 
                   <div className="flex-1 min-w-0 pr-4">
                     <h3 className="text-sm font-bold text-base-content truncate">
-                      {group.name}
+                      {group.groupName}
                     </h3>
 
-                    {group.description && (
-                      <p className="text-xs font-medium text-base-content/60 truncate mt-0.5">
-                        {group.description}
+                    {group.groupBio && (
+                      <p className="text-xs font-medium text-base-content/60 truncate">
+                        {group.groupBio}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-2 -mt-3 ml-14">
                       <span className="flex items-center gap-1 text-[10px] font-bold text-base-content/50 uppercase tracking-wider">
                         <UsersIcon className="size-3" />
                         {group.members?.length || 0} Members
@@ -100,7 +101,7 @@ const RecentGroups = ({ groups = [], onDelete }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
+                  {/* <button
                     onClick={() =>
                       navigate(`/groups/edit/${group._id}`)
                     }
@@ -115,14 +116,14 @@ const RecentGroups = ({ groups = [], onDelete }) => {
                     title="Delete Group"
                   >
                     <Trash2Icon className="size-4" />
-                  </button>
+                  </button> */}
 
-                  <button
+                  {/* <button
                     onClick={() => navigate(`/groups/${group._id}`)}
                     className="btn btn-primary btn-sm px-4 rounded-lg text-xs"
                   >
                     Open
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))

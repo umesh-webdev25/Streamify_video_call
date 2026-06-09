@@ -56,7 +56,8 @@ export const createGroup = asyncHandler(async (req, res) => {
  * GET /api/groups
  */
 export const getAllGroups = asyncHandler(async (req, res) => {
-  const groups = await groupService.getAllGroups(req.user._id);
+  const includeDeleted = req.query.includeDeleted === "true";
+  const groups = await groupService.getAllGroups(req.user._id, includeDeleted);
   return ApiResponse.success(res, groups);
 });
 

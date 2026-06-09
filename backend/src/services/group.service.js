@@ -114,12 +114,15 @@ export const createGroup = async (groupData) => {
 /**
  * GET ALL GROUPS (scoped to user)
  */
-export const getAllGroups = async (userId) => {
+export const getAllGroups = async (userId, includeDeleted = false) => {
   try {
-    const groups = await Group.find({
+    const query = {
       "members.userId": userId,
-      isDeleted: { $ne: true }
-    }).sort({ createdAt: -1 });
+    };
+    if (!includeDeleted) {
+      query.isDeleted = { $ne: true };
+    }
+    const groups = await Group.find(query).sort({ createdAt: -1 });
     return groups;
   } catch (error) {
     throw new Error(error.message);

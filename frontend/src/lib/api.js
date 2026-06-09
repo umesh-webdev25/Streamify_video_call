@@ -247,8 +247,8 @@ export async function createGroup(formData) {
   return response.data.data; // data should include saved group with persistent groupImage URL
 }
 
-export async function getAllGroups() {
-  const response = await axiosInstance.get("/groups");
+export async function getAllGroups(params = {}) {
+  const response = await axiosInstance.get("/groups", { params });
   return response.data.data;
 }
 
@@ -299,12 +299,8 @@ export async function createContact(
   return response.data.data;
 }
 
-export async function getAllContacts() {
-  const response =
-    await axiosInstance.get(
-      "/contacts"
-    );
-
+export async function getAllContacts(params = {}) {
+  const response = await axiosInstance.get("/contacts", { params });
   return response.data.data;
 }
 

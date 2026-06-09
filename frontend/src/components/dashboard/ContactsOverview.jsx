@@ -50,7 +50,7 @@ const ContactsOverview = ({ contacts, onDelete }) => {
                     )} */}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <button className="btn btn-ghost btn-xs btn-circle text-primary">
                     <MessageSquareIcon className="size-4" />
                   </button>
@@ -64,7 +64,7 @@ const ContactsOverview = ({ contacts, onDelete }) => {
                   <button className="btn btn-ghost btn-xs btn-circle text-base-content/50">
                     <MoreHorizontalIcon className="size-4" />
                   </button>
-                </div>
+                </div> */}
               </div>
             ))
           ) : (

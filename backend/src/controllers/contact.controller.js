@@ -38,11 +38,13 @@ export const createContact = asyncHandler(async (req, res) => {
 
   return ApiResponse.success(res, contact, "Contact created successfully", 201);
 });
+
 /**
  * GET ALL CONTACTS
  */
 export const getAllContacts = asyncHandler(async (req, res) => {
-  const contacts = await contactService.getAllContacts(req.user._id);
+  const includeDeleted = req.query.includeDeleted === "true";
+  const contacts = await contactService.getAllContacts(req.user._id, includeDeleted);
   return ApiResponse.success(res, contacts);
 });
 

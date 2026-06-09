@@ -83,7 +83,7 @@ const Group = () => {
   const fetchGroups = async () => {
     try {
       setLoading(true);
-      const data = await getAllGroups();
+      const data = await getAllGroups({ includeDeleted: true });
       const groupsWithMembers = await Promise.all(
         (data || []).map(async (g) => {
           if (Array.isArray(g.members)) return g;
@@ -196,7 +196,7 @@ const Group = () => {
     // Connect to backend
     const socket = io(
       import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") ||
-        "http://localhost:5000",
+      "http://localhost:5000",
       { withCredentials: true }
     );
     socketRef.current = socket;
@@ -357,7 +357,7 @@ const Group = () => {
       group.members?.some(
         (m) =>
           (m.userId?._id || m.userId || m.user?._id || m.user) ===
-            currentUserId && m.role === "admin",
+          currentUserId && m.role === "admin",
       )
     );
   };
@@ -410,6 +410,7 @@ const Group = () => {
   // ── Filter & paginate ──────────────────────────────────────────────────────
   const filteredGroups = useMemo(() => {
     return groups.filter((g) => {
+      if (g.isDeleted) return false;
       const q = search.toLowerCase();
       const matchQ =
         !q ||
@@ -422,7 +423,7 @@ const Group = () => {
 
   // Compute total members across all groups
   const totalMembers = useMemo(
-    () => groups.reduce((sum, g) => sum + (g.members?.length ?? 0), 0),
+    () => groups.filter(g => !g.isDeleted).reduce((sum, g) => sum + (g.members?.length ?? 0), 0),
     [groups],
   );
 
@@ -477,7 +478,7 @@ const Group = () => {
       </div>
 
       {/* ── STAT CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mb-6">
         {/* Total Groups */}
         <div
           className="
@@ -497,7 +498,7 @@ const Group = () => {
             </p>
 
             <h2 className="text-4xl font-bold text-base-content mt-2">
-              {groups.length}
+              {groups.filter((g) => !g.isDeleted).length}
             </h2>
           </div>
 
@@ -569,7 +570,7 @@ const Group = () => {
             </p>
 
             <h2 className="text-4xl font-bold text-base-content mt-2">
-              {groups.filter((g) => g.members?.length > 0).length}
+              {groups.filter((g) => !g.isDeleted && g.members?.length > 0).length}
             </h2>
           </div>
 
@@ -605,7 +606,7 @@ const Group = () => {
             </p>
 
             <h2 className="text-4xl font-bold text-base-content mt-2">
-              {groups.filter((g) => g.status === "inactive").length}
+              {groups.filter((g) => !g.isDeleted && g.status === "inactive").length}
             </h2>
           </div>
 
@@ -621,8 +622,43 @@ const Group = () => {
             <FolderIcon className="w-7 h-7 text-warning" />
           </div>
         </div>
-      </div>
 
+        {/* Deleted Groups */}
+        <div
+          className="
+      bg-base-100
+      border border-base-300
+      rounded-2xl
+      px-6
+      h-[120px]
+      flex items-center justify-between
+      shadow-sm hover:shadow-md
+      transition-all duration-300
+    "
+        >
+          <div>
+            <p className="text-sm font-medium text-base-content/60">
+              Deleted Groups
+            </p>
+
+            <h2 className="text-4xl font-bold text-base-content mt-2">
+              {groups.filter((g) => g.isDeleted).length}
+            </h2>
+          </div>
+
+          <div
+            className="
+        w-14 h-14
+        rounded-2xl
+        bg-error/10
+        flex items-center justify-center
+        flex-shrink-0
+      "
+          >
+            <Trash2Icon className="w-7 h-7 text-error" />
+          </div>
+        </div>
+      </div>
       {/* ── TABLE CARD ── */}
       <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden">
         {/* Toolbar */}
@@ -920,11 +956,10 @@ const Group = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
-                      p === safePage
+                    className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage
                         ? "bg-primary text-primary-content border-0"
                         : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
-                    }`}
+                      }`}
                   >
                     {p}
                   </button>
@@ -1279,10 +1314,9 @@ const Group = () => {
                               leading-relaxed
                               shadow-sm
                               transition-transform duration-200 hover:scale-[1.02]
-                              ${
-                                msg.sender === "me"
-                                  ? "bg-gradient-to-br from-primary to-secondary text-white rounded-[1.25rem] rounded-br-[0.3rem] shadow-primary/20 shadow-lg"
-                                  : "bg-base-200 text-base-content border border-base-300/50 rounded-[1.25rem] rounded-bl-[0.3rem]"
+                              ${msg.sender === "me"
+                                ? "bg-gradient-to-br from-primary to-secondary text-white rounded-[1.25rem] rounded-br-[0.3rem] shadow-primary/20 shadow-lg"
+                                : "bg-base-200 text-base-content border border-base-300/50 rounded-[1.25rem] rounded-bl-[0.3rem]"
                               }
                             `}
                           >
@@ -1299,11 +1333,10 @@ const Group = () => {
                                 </p>
                                 <button
                                   onClick={() => navigate(msg.meta.lobbyUrl)}
-                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${
-                                    msg.sender === "me"
+                                  className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${msg.sender === "me"
                                       ? "bg-white text-primary hover:bg-white/90"
                                       : "bg-primary text-white hover:bg-primary/90"
-                                  }`}
+                                    }`}
                                 >
                                   Join Meeting
                                 </button>

@@ -124,18 +124,24 @@ export const createContact = async (contactData, userId, file) => {
 /**
  * GET ALL CONTACTS (scoped to user's group memberships)
  */
-export const getAllContacts = async (userId) => {
+export const getAllContacts = async (userId, includeDeleted = false) => {
   try {
-    const myGroups = await Group.find({
+    const groupQuery = {
       "members.userId": userId,
-      isDeleted: { $ne: true }
-    }).select("_id");
+    };
+    if (!includeDeleted) {
+      groupQuery.isDeleted = { $ne: true };
+    }
+    const myGroups = await Group.find(groupQuery).select("_id");
     const myGroupIds = myGroups.map((g) => g._id);
 
-    const contacts = await Contact.find({
+    const contactQuery = {
       groupId: { $in: myGroupIds },
-      isDeleted: { $ne: true }
-    }).sort({ createdAt: -1 });
+    };
+    if (!includeDeleted) {
+      contactQuery.isDeleted = { $ne: true };
+    }
+    const contacts = await Contact.find(contactQuery).sort({ createdAt: -1 });
 
     return contacts;
   } catch (error) {
