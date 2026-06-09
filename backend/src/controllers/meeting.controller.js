@@ -80,7 +80,9 @@ export const joinMeetingWithCode = asyncHandler(async (req, res) => {
 
 export const endMeetingWithCode = asyncHandler(async (req, res) => {
   const { meetingCode } = req.params;
+  console.log("--> endMeetingWithCode called with code:", meetingCode);
   const result = await meetingService.endMeetingWithCode(meetingCode, req.user._id);
+  console.log("--> DB update result:", result);
   
   const io = req.app.get("io");
   if (io && result) {
@@ -209,7 +211,9 @@ export const getActiveGroupMeeting = asyncHandler(async (req, res) => {
 });
 
 export const getAllActiveGroupMeetings = asyncHandler(async (req, res) => {
+  console.log("--> getAllActiveGroupMeetings called");
   const meetings = await meetingService.getAllActiveGroupMeetings(req.user._id);
+  console.log("--> Returning meetings:", meetings.map(m => ({ id: m._id, code: m.meetingCode, status: m.status })));
   return ApiResponse.success(res, meetings);
 });
 
