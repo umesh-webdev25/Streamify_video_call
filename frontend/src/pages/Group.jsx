@@ -32,7 +32,7 @@ import {
   getGroupMessages,
   updateAdminOnlyMessaging,
 } from "../lib/api";
-
+import * as XLSX from "xlsx";
 import useAuthUser from "../hooks/useAuthUser";
 
 /** Resolve image URL from backend */
@@ -78,6 +78,35 @@ const Group = () => {
   const [activeMeetingCode, setActiveMeetingCode] = useState(null);
 
   const { handleCreateGroupMeeting } = useMeeting();
+
+
+
+
+  const handleExport = () => {
+    const exportData = groups.map((group) => ({
+      "Group Name": group.groupName || "",
+      Members: group.members?.length || 0,
+      Status: group.status || "",
+      Created: group.createdAt
+        ? new Date(group.createdAt).toLocaleString()
+        : "",
+      Updated: group.updatedAt
+        ? new Date(group.updatedAt).toLocaleString()
+        : "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Groups");
+
+    XLSX.writeFile(
+      workbook,
+      `Groups_Report_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+  };
+
+
 
   // ── Fetch Groups from API ──────────────────────────────────────────────────
   const fetchGroups = async () => {
@@ -393,22 +422,22 @@ const Group = () => {
   };
 
   // ── Export CSV ────────────────────────────────────────────────────────────
-  const handleExport = () => {
-    const csv = [
-      "Name,Bio,Status,Members,Created",
-      ...groups.map(
-        (g) =>
-          `"${g.groupName}","${g.groupBio || ""}",${g.status},${g.contactCount ?? 0},${new Date(g.createdAt).toLocaleDateString()}`,
-      ),
-    ].join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = "groups.csv";
-    a.click();
-  };
+  // const handleExport = () => {
+  //   const csv = [
+  //     "Name,Bio,Status,Members,Created",
+  //     ...groups.map(
+  //       (g) =>
+  //         `"${g.groupName}","${g.groupBio || ""}",${g.status},${g.contactCount ?? 0},${new Date(g.createdAt).toLocaleDateString()}`,
+  //     ),
+  //   ].join("\n");
+  //   const a = document.createElement("a");
+  //   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  //   a.download = "groups.csv";
+  //   a.click();
+  // };
 
   // ── Filter & paginate ──────────────────────────────────────────────────────
-  const filteredGroups = useMemo(() => {
+  const filteredGroups = useMemo(() => {  
     return groups.filter((g) => {
       if (g.isDeleted) return false;
       const q = search.toLowerCase();
@@ -439,7 +468,7 @@ const Group = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
+    <div className="h-full bg-base-200 p-4 md:p-6 font-sans">
       {/* ── PAGE HEADER ── */}
       <div
         className="
@@ -474,6 +503,12 @@ const Group = () => {
     "
         >
           <MoreVerticalIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleExport}
+          className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-indigo-200/50 hover:-translate-y-0.5 transition-all"
+        >
+          <DownloadIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -957,8 +992,8 @@ const Group = () => {
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${p === safePage
-                        ? "bg-primary text-primary-content border-0"
-                        : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
+                      ? "bg-primary text-primary-content border-0"
+                      : "border border-base-300 bg-base-100 text-base-content hover:bg-base-200"
                       }`}
                   >
                     {p}
@@ -1334,8 +1369,8 @@ const Group = () => {
                                 <button
                                   onClick={() => navigate(msg.meta.lobbyUrl)}
                                   className={`mt-2 py-2 px-4 rounded-xl text-xs font-bold w-full transition-colors ${msg.sender === "me"
-                                      ? "bg-white text-primary hover:bg-white/90"
-                                      : "bg-primary text-white hover:bg-primary/90"
+                                    ? "bg-white text-primary hover:bg-white/90"
+                                    : "bg-primary text-white hover:bg-primary/90"
                                     }`}
                                 >
                                   Join Meeting

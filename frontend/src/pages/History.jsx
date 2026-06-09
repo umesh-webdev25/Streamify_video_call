@@ -20,7 +20,7 @@ const History = () => {
   const expiredSessions = sessions?.filter((s) => !s.isValid).length ?? 0;
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
+    <div className="h-full bg-base-200 p-4 md:p-6 font-sans">
 
       {/* ── PAGE HEADER ── */}
       <div

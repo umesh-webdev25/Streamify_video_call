@@ -29,7 +29,7 @@ import toast from "react-hot-toast";
 import { CalendarIcon, VideoIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuthUser from "../hooks/useAuthUser";
-
+import * as XLSX from "xlsx";
 const GroupContacts = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -244,17 +244,22 @@ const GroupContacts = () => {
 
   /** Export CSV */
   const handleExport = () => {
-    const csv = [
-      "Name,Email,Mobile,Designation",
-      ...contacts.map(
-        (c) =>
-          `"${c.name}","${c.email}","${c.mobileNumber}","${c.designation || ""}"`,
-      ),
-    ].join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = "contacts.csv";
-    a.click();
+  const exportData = contacts.map((contact) => ({
+    Name: contact.name || "",
+    Email: contact.email || "",
+    Mobile: contact.mobileNumber || "",
+    Designation: contact.designation || "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Contacts");
+
+  XLSX.writeFile(
+    workbook,
+    `Contacts_Report_${new Date().toISOString().split("T")[0]}.xlsx`
+  );
   };
 
   /** FILTER & PAGINATE */
@@ -272,7 +277,7 @@ const GroupContacts = () => {
   );
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
+    <div className="h-full bg-base-200 p-4 md:p-6 font-sans">
       {/* ── PAGE HEADER ── */}
       <div
         className="

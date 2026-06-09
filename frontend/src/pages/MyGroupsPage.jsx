@@ -35,7 +35,7 @@ const MyGroupsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
+    <div className="h-full bg-base-200 p-4 md:p-6 font-sans">
       <Helmet>
         <title>My Groups | MeetFlow</title>
       </Helmet>

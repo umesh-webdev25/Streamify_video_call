@@ -135,7 +135,7 @@ const PreferencesPage = () => {
       </section>
 
       {/* LANGUAGE PREFERENCES */}
-      <section className="bg-base-100/80 backdrop-blur-sm border border-base-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">
+      {/* <section className="bg-base-100/80 backdrop-blur-sm border border-base-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10">
             <GlobeIcon className="size-5 text-primary" />
@@ -183,7 +183,7 @@ const PreferencesPage = () => {
             </select>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* DISPLAY */}
       <section className="bg-base-100/80 backdrop-blur-sm border border-base-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">

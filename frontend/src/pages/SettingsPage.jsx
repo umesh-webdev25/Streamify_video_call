@@ -301,6 +301,7 @@ const SettingsPage = () => {
                     <span className="text-2xl">🎓</span>
                   </div>
                 </div>
+                
               </section>
             </div>
           )}

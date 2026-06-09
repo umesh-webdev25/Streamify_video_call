@@ -301,7 +301,7 @@ const ScheduleMeetingPage = () => {
     if (!meetingData.title.trim()) {
       return;
     }
-    
+
     if (!meetingData.groupId) {
       toast.error("Please select a group");
       return;
@@ -350,7 +350,7 @@ const ScheduleMeetingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-6 font-sans">
+    <div className="h-fulll bg-base-200 p-4 md:p-6 font-sans">
 
       {/* ───────────────────────────────────── */}
       {/* HEADER */}
@@ -886,212 +886,158 @@ const ScheduleMeetingPage = () => {
       {openModal && (
         <div
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={(e) =>
-            e.target ===
-            e.currentTarget &&
-            closeModal()
-          }
+          onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
+          <div className="bg-base-100 text-base-content rounded-3xl shadow-2xl w-full max-w-md p-6 relative border border-base-300">
 
-          <div className="bg-base-100 rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
-
-            {/* CLOSE */}
+            {/* Close Button */}
             <button
-              onClick={
-                closeModal
-              }
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center"
+              onClick={closeModal}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center transition-colors"
             >
               <XIcon className="w-4 h-4" />
             </button>
 
             <h2 className="text-xl font-bold mb-6">
-              {editingMeeting
-                ? "Edit Meeting"
-                : "Add Meeting"}
+              {editingMeeting ? "Edit Meeting" : "Add Meeting"}
             </h2>
 
-            <form
-              onSubmit={
-                handleSubmit
-              }
-              className="space-y-5"
-            >
+            <form onSubmit={handleSubmit} className="space-y-5">
 
-              {/* TITLE */}
+              {/* Meeting Title */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-2">
                   Meeting Title
                 </label>
 
                 <input
                   required
-                  type="text" placeholder="title of meeting"
-                  value={
-                    meetingData.title
-                  }
+                  type="text"
+                  placeholder="Title of meeting"
+                  value={meetingData.title}
                   onChange={(e) =>
-                    setMeetingData(
-                      {
-                        ...meetingData,
-                        title:
-                          e.target
-                            .value,
-                      }
-                    )
+                    setMeetingData({
+                      ...meetingData,
+                      title: e.target.value,
+                    })
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                  className="w-full rounded-xl border border-base-300 bg-base-100 text-base-content px-4 py-3 text-sm focus:outline-none focus:border-primary"
                 />
               </div>
 
-              {/* GROUP */}
+              {/* Group */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-2">
                   Select Group
                 </label>
 
                 <select
                   required
-                  value={
-                    meetingData.groupId
-                  }
+                  value={meetingData.groupId}
                   onChange={(e) =>
-                    setMeetingData(
-                      {
-                        ...meetingData,
-                        groupId:
-                          e.target
-                            .value,
-                      }
-                    )
+                    setMeetingData({
+                      ...meetingData,
+                      groupId: e.target.value,
+                    })
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                  className="w-full rounded-xl border border-base-300 bg-base-100 text-base-content px-4 py-3 text-sm focus:outline-none focus:border-primary"
                 >
-                  <option value="" disabled>Select a group</option>
+                  <option value="" disabled>
+                    Select a group
+                  </option>
+
                   {myGroups.map((group) => (
-                    <option key={group.groupId} value={group.groupId}>
+                    <option
+                      key={group.groupId}
+                      value={group.groupId}
+                    >
                       {group.groupName}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* DATE */}
+              {/* Date */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-2">
                   Date
                 </label>
 
                 <input
                   required
                   type="date"
-                  value={
-                    meetingData.date
-                  }
+                  value={meetingData.date}
                   onChange={(e) =>
-                    setMeetingData(
-                      {
-                        ...meetingData,
-                        date:
-                          e.target
-                            .value,
-                      }
-                    )
+                    setMeetingData({
+                      ...meetingData,
+                      date: e.target.value,
+                    })
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                  className="w-full rounded-xl border border-base-300 bg-base-100 text-base-content px-4 py-3 text-sm focus:outline-none focus:border-primary"
+                  style={{ colorScheme: "dark" }}
                 />
               </div>
 
-              {/* TIME */}
+              {/* Time */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-2">
                   Time
                 </label>
 
                 <input
                   required
                   type="time"
-                  value={
-                    meetingData.time
-                  }
+                  value={meetingData.time}
                   onChange={(e) =>
-                    setMeetingData(
-                      {
-                        ...meetingData,
-                        time:
-                          e.target
-                            .value,
-                      }
-                    )
+                    setMeetingData({
+                      ...meetingData,
+                      time: e.target.value,
+                    })
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                  className="w-full rounded-xl border border-base-300 bg-base-100 text-base-content px-4 py-3 text-sm focus:outline-none focus:border-primary"
+                  style={{ colorScheme: "dark" }}
                 />
               </div>
 
-              {/* STATUS */}
+              {/* Status */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-2">
                   Status
                 </label>
 
                 <select
-                  value={
-                    meetingData.status
-                  }
+                  value={meetingData.status}
                   onChange={(e) =>
-                    setMeetingData(
-                      {
-                        ...meetingData,
-                        status:
-                          e.target
-                            .value,
-                      }
-                    )
+                    setMeetingData({
+                      ...meetingData,
+                      status: e.target.value,
+                    })
                   }
-                  className="w-full border border-base-300 rounded-xl px-4 py-3 text-sm outline-none bg-white"
+                  className="w-full rounded-xl border border-base-300 bg-base-100 text-base-content px-4 py-3 text-sm focus:outline-none focus:border-primary"
                 >
-                  <option value="upcoming">
-                    Upcoming
-                  </option>
-
-                  <option value="pending">
-                    Pending
-                  </option>
-
-                  <option value="completed">
-                    Completed
-                  </option>
-
-                  <option value="cancelled">
-                    Cancelled
-                  </option>
-
-                  <option value="expired">
-                    Expired
-                  </option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="expired">Expired</option>
                 </select>
               </div>
 
-              {/* BUTTONS */}
+              {/* Buttons */}
               <div className="flex gap-3 pt-2">
-
                 <button
                   type="button"
-                  onClick={
-                    closeModal
-                  }
-                  className="flex-1 py-3 rounded-xl border border-base-300 text-sm font-medium"
+                  onClick={closeModal}
+                  className="flex-1 py-3 rounded-xl border border-base-300 bg-base-200 hover:bg-base-300 text-base-content text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold"
+                  className="flex-1 py-3 rounded-xl bg-success hover:bg-success/90 text-success-content text-sm font-semibold transition-colors"
                 >
-                  {editingMeeting
-                    ? "Save Changes"
-                    : "Create Meeting"}
+                  {editingMeeting ? "Save Changes" : "Create Meeting"}
                 </button>
               </div>
             </form>
