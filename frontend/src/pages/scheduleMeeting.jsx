@@ -313,9 +313,21 @@ const ScheduleMeetingPage = () => {
         data: meetingData,
       });
     } else {
-      createMutation.mutate(
-        meetingData
-      );
+      let scheduledAt = "";
+      if (meetingData.date && meetingData.time) {
+        scheduledAt = new Date(`${meetingData.date}T${meetingData.time}:00`).toISOString();
+      } else {
+        toast.error("Please provide both date and time");
+        return;
+      }
+
+      createMutation.mutate({
+        title: meetingData.title,
+        groupId: meetingData.groupId,
+        scheduledAt: scheduledAt,
+        date: meetingData.date,
+        time: meetingData.time
+      });
     }
   };
 
@@ -572,33 +584,31 @@ const ScheduleMeetingPage = () => {
         {/* TABLE */}
         <div className="overflow-x-auto">
 
-          <table className="w-full text-left border-collapse">
-
+          <table className="w-full table-fixed border-collapse">
             <thead>
               <tr className="bg-base-200 border-b border-base-300">
-
-                <th className="px-4 py-3.5 text-xs font-bold uppercase">
-                  Titel
+                <th className="w-[20%] px-4 py-3 text-left text-xs font-bold uppercase">
+                  Title
                 </th>
 
-                <th className="px-4 py-3.5 text-xs font-bold uppercase">
+                <th className="w-[12%] px-4 py-3 text-left text-xs font-bold uppercase">
                   Date
                 </th>
 
-                <th className="px-4 py-3.5 text-xs font-bold uppercase">
+                <th className="w-[12%] px-4 py-3 text-left text-xs font-bold uppercase">
                   Time
                 </th>
 
-                <th className="px-4 py-3.5 text-xs font-bold uppercase">
+                <th className="w-[12%] px-4 py-3 text-left text-xs font-bold uppercase">
                   Status
                 </th>
 
-                <th className="px-4 py-3.5 text-xs font-bold uppercase">
-                  Updated
+                <th className="w-[15%] px-4 py-3 text-left text-xs font-bold uppercase">
+                  Created
                 </th>
 
-                <th className="px-4 py-3.5 text-xs font-bold uppercase text-center">
-                  Actions
+                <th className="w-[12%] px-4 py-3 text-left text-xs font-bold uppercase">
+                  Action
                 </th>
               </tr>
             </thead>
@@ -733,7 +743,7 @@ const ScheduleMeetingPage = () => {
                           }}
                           className="w-8 h-8 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 flex items-center justify-center"
                         >
-                          <MoreVerticalIcon className="w-4 h-4" />
+                          <MoreVerticalIcon className="w-4 h-4 ml" />
                         </button>
 
                         {menuOpenId ===

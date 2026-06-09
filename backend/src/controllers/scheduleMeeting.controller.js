@@ -9,18 +9,25 @@ import AppError from "../utils/AppError.js";
  * CREATE MEETING
  */
 export const createMeeting = asyncHandler(async (req, res) => {
-  const { title, description, groupId, date, time } = req.body;
+  const { title, groupId, scheduledAt, date, time } = req.body;
 
   if (!groupId) throw new AppError("Group ID is required", 400);
+  if (!title) throw new AppError("Title is required", 400);
+  if (!scheduledAt) throw new AppError("ScheduledAt is required", 400);
 
-  // Parse date and time into a single Date object for scheduledAt
-  const scheduledAt = new Date(`${date}T${time}:00`);
+  const scheduledDate = new Date(scheduledAt);
+  if (isNaN(scheduledDate.getTime())) {
+    throw new AppError("Invalid scheduledAt format", 400);
+  }
+
+  if (scheduledDate <= new Date()) {
+    throw new AppError("Scheduled time must be in the future", 400);
+  }
 
   const meeting = await meetingService.createMeeting({
     title,
-    description,
     groupId,
-    scheduledAt,
+    scheduledAt: scheduledDate,
     date,
     time,
     createdBy: req.user._id,

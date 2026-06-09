@@ -12,15 +12,29 @@ import {
 } from "../controllers/scheduleMeeting.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
+import { verifyGroupAdmin } from "../services/group.service.js";
 
 const router = express.Router();
 
 router.use(protectRoute);
 
+// Inline middleware for verifying group admin
+const verifyAdminMw = async (req, res, next) => {
+  try {
+    const groupId = req.body.groupId || req.params.groupId;
+    if (groupId) {
+      await verifyGroupAdmin(groupId, req.user._id);
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * CREATE MEETING
  */
-router.post("/", createMeeting);
+router.post("/", verifyAdminMw, createMeeting);
 
 /**
  * GET ALL MEETINGS

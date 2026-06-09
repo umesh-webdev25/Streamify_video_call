@@ -76,6 +76,34 @@ class NotificationService {
     // Integration with Firebase (FCM) or OneSignal
     Logger.info(`Push notification queued for ${recipientId}`);
   }
+
+  async notifyGroupMembers(meeting, group) {
+    try {
+      const User = (await import("../models/User.js")).default;
+      const admin = await User.findById(meeting.createdBy);
+      const adminName = admin ? admin.fullName : "An admin";
+
+      for (const member of group.members) {
+        // Optional: Skip notifying the creator themselves
+        if (member.userId.toString() === meeting.createdBy.toString()) continue;
+
+        await this.send({
+          recipientId: member.userId,
+          senderId: meeting.createdBy,
+          type: "meeting_invite",
+          title: "New Group Meeting Scheduled",
+          content: `${adminName} scheduled "${meeting.title}" in ${group.groupName} for ${meeting.date} at ${meeting.time}.`,
+          metaData: {
+            groupId: group._id,
+            meetingId: meeting._id,
+            scheduledAt: meeting.scheduledAt
+          }
+        });
+      }
+    } catch (error) {
+      Logger.error(`notifyGroupMembers Error: ${error.message}`);
+    }
+  }
 }
 
 export default new NotificationService();

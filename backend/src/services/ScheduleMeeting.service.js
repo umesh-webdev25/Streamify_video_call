@@ -7,7 +7,7 @@ import NotificationService from "./notification.service.js";
 // ==========================
 export const createMeeting = async (meetingData) => {
   try {
-    const { groupId, createdBy, title, description, scheduledAt, date, time } = meetingData;
+    const { groupId, createdBy, title, scheduledAt, date, time } = meetingData;
 
     // Fetch the group to get its members
     const group = await Group.findById(groupId);
@@ -17,7 +17,6 @@ export const createMeeting = async (meetingData) => {
 
     const meeting = await ScheduleMeeting.create({
       title,
-      description,
       groupId,
       scheduledAt,
       date,
@@ -27,24 +26,9 @@ export const createMeeting = async (meetingData) => {
       status: "upcoming"
     });
 
-    // Create notifications for all invitees
-    if (invitees.length > 0) {
-      await Promise.all(invitees.map(async (userId) => {
-        // Skip creator
-        if (userId.toString() === createdBy.toString()) return;
-
-        await NotificationService.send({
-          recipientId: userId,
-          senderId: createdBy,
-          title: "New Scheduled Meeting",
-          content: `You have been invited to "${title}" in group "${group.groupName}"`,
-          type: "meeting_invite",
-          metaData: {
-            groupId,
-            meetingId: meeting._id
-          }
-        });
-      }));
+    // Notify all group members (Phase 2 — see separate prompt)
+    if (typeof NotificationService.notifyGroupMembers === 'function') {
+      await NotificationService.notifyGroupMembers(meeting, group);
     }
 
     return meeting;
@@ -59,7 +43,7 @@ export const createMeeting = async (meetingData) => {
 export const getMeetings = async (userId) => {
   try {
     const meetings = await ScheduleMeeting.find({
-      $or: [{ invitees: userId }, { createdBy: userId }]
+      createdBy: userId
     }).populate("groupId", "groupName groupImage");
 
     return meetings;
