@@ -2,6 +2,8 @@ import meetingService from "../services/meeting.service.js";
 import authService from "../services/auth.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/apiResponse.js";
+import Group from "../models/Group.js";
+import notificationService from "../services/notification.service.js";
 
 export const createMeeting = asyncHandler(async (req, res) => {
   const reqInfo = { ip: req.ip, userAgent: req.headers["user-agent"] };
@@ -81,8 +83,19 @@ export const endMeetingWithCode = asyncHandler(async (req, res) => {
   const result = await meetingService.endMeetingWithCode(meetingCode, req.user._id);
   
   const io = req.app.get("io");
-  if (io) {
+  if (io && result) {
     io.to(`group:${result.groupId}`).emit("meeting_ended", { meetingCode, groupId: result.groupId });
+    
+    try {
+      const group = await Group.findById(result.groupId);
+      if (group) {
+        for (const member of group.members) {
+          io.to(`user:${member.userId._id || member.userId}`).emit("active_meetings_updated", { groupId: group._id });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to emit active_meetings_updated on end:", e.message);
+    }
   }
 
   return ApiResponse.success(res, null, "Meeting ended");
@@ -100,6 +113,39 @@ export const shareMeetingToGroup = asyncHandler(async (req, res) => {
       hostId: req.user._id, 
       message: result.message 
     });
+  }
+
+  // Send global notification to all group members
+  try {
+    const group = await Group.findById(groupId).populate("members.userId", "fullName");
+    if (group) {
+      const adminName = req.user.fullName || "A group member";
+      for (const member of group.members) {
+        if (member.userId && member.userId._id.toString() === req.user._id.toString()) continue;
+        
+        await notificationService.send({
+          recipientId: member.userId._id || member.userId,
+          senderId: req.user._id,
+          type: "meeting_invite",
+          title: "Group Meeting Started",
+          content: `${adminName} has started a video meeting in ${group.groupName}.`,
+          metaData: {
+            groupId: group._id,
+            meetingCode: meetingCode,
+            actionUrl: `/meeting/lobby?code=${meetingCode}`
+          }
+        });
+        
+        if (io) {
+          io.to(`user:${member.userId._id || member.userId}`).emit("active_meetings_updated", { groupId: group._id });
+        }
+      }
+      if (io) {
+        io.to(`user:${req.user._id}`).emit("active_meetings_updated", { groupId: group._id });
+      }
+    }
+  } catch (e) {
+    console.error("Failed to send meeting started notifications:", e.message);
   }
 
   return ApiResponse.success(res, result);
@@ -160,6 +206,11 @@ export const getActiveGroupMeeting = asyncHandler(async (req, res) => {
   const { groupId } = req.params;
   const meeting = await meetingService.getActiveGroupMeeting(groupId);
   return ApiResponse.success(res, meeting);
+});
+
+export const getAllActiveGroupMeetings = asyncHandler(async (req, res) => {
+  const meetings = await meetingService.getAllActiveGroupMeetings(req.user._id);
+  return ApiResponse.success(res, meetings);
 });
 
 export const startScheduledMeeting = asyncHandler(async (req, res) => {

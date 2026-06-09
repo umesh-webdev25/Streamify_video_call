@@ -24,7 +24,7 @@ const QuickActions = ({ navigate }) => {
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(action.path)}
-            className={`w-full flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-base-100 border border-base-300 shadow-sm transition-all duration-300 ${action.border} hover:shadow-md group cursor-pointer`}
+            className={`w-full flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-base-100 border border-base-300 shadow-sm transition-all duration-300 ${action.border} hover:shadow-md group cursor-pointer`}
           >
             <div className={`size-14 rounded-2xl ${action.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
               <action.icon className={`size-6 ${action.text}`} />

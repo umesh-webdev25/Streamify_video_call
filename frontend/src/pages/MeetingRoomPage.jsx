@@ -153,10 +153,10 @@ const MeetingRoomPage = () => {
   };
 
   const copyInviteLink = () => {
-    const link = `${window.location.origin}/meeting/room/${roomId}`;
-    navigator.clipboard.writeText(link);
+    const codeToCopy = activeMeeting?.meetingCode || roomId;
+    navigator.clipboard.writeText(codeToCopy);
     setCopied(true);
-    toast.success("Invite link copied!");
+    toast.success("Meeting code copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -434,6 +434,14 @@ const MeetingRoomContent = ({
                 {participants.length}{" "}
                 {participants.length === 1 ? "Participant" : "Participants"}
               </span>
+              {meetingCode && (
+                <>
+                  <div className="h-3 sm:h-4 w-px bg-white/10" />
+                  <span className="text-xs sm:text-sm font-mono text-primary font-bold tracking-tight">
+                    {meetingCode}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

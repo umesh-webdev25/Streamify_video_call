@@ -247,7 +247,7 @@ class MeetingService {
       throw new AppError("Only the host can end the meeting", 403);
     }
 
-    await meetingRepository.endMeetingById(meeting._id);
+    return await meetingRepository.endMeetingById(meeting._id);
   }
 
   async startScheduledMeeting(scheduleId, userId, reqInfo) {
@@ -390,6 +390,32 @@ class MeetingService {
     if (!group) throw new AppError("Group not found", 404);
 
     return await meetingRepository.findActiveMeetingByGroup(groupId);
+  }
+
+  async getAllActiveGroupMeetings(userId) {
+    const Group = (await import("../models/Group.js")).default;
+    const groups = await Group.find({ 
+      "members.userId": userId, 
+      status: "active", 
+      isDeleted: false 
+    }).select("_id groupName groupImage");
+    
+    const groupIds = groups.map(g => g._id);
+
+    const Meeting = (await import("../models/Meeting.js")).default;
+    const activeMeetings = await Meeting.find({
+      groupId: { $in: groupIds },
+      status: "active"
+    }).populate("hostId", "fullName profilePic").lean();
+
+    return activeMeetings.map(meeting => {
+      const group = groups.find(g => g._id.toString() === meeting.groupId.toString());
+      return {
+        ...meeting,
+        groupName: group?.groupName,
+        groupImage: group?.groupImage,
+      };
+    });
   }
 }
 

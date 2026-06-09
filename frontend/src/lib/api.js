@@ -179,6 +179,11 @@ export async function getActiveGroupMeeting(groupId) {
   return response.data.data;
 }
 
+export async function getAllActiveGroupMeetings() {
+  const response = await axiosInstance.get(`/meetings/group/active/all`);
+  return response.data.data;
+}
+
 export async function getGroupMessages(groupId) {
   const response = await axiosInstance.get(`/chat/group/${groupId}`);
   return response.data.data;

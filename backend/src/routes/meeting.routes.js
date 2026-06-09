@@ -18,6 +18,7 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   getActiveGroupMeeting,
+  getAllActiveGroupMeetings,
   joinScheduledMeeting,
   startScheduledMeeting
 } from "../controllers/meeting.controller.js";
@@ -43,6 +44,7 @@ router.post("/schedule", validate(scheduleMeetingSchema), scheduleMeeting);
 router.get("/scheduled", getScheduledMeetings);
 
 // Group Meetings
+router.get("/group/active/all", getAllActiveGroupMeetings);
 router.post("/group/create", validate(createGroupMeetingSchema), createGroupMeeting);
 router.post("/group/join", validate(joinMeetingWithCodeSchema), joinMeetingWithCode);
 router.post("/group/share", validate(shareMeetingToGroupSchema), shareMeetingToGroup);

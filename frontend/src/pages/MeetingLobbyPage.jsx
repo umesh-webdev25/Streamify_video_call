@@ -23,6 +23,7 @@ import { cn } from "../lib/utils";
 import { useMeeting } from "../hooks/useMeeting";
 import ProfileImage from "../components/ProfileImage.jsx";
 import { axiosInstance } from "../lib/axios.js";
+import { useQuery } from "@tanstack/react-query";
 
 const generateMeetingCode = () => {
   // Safe characters excluding O, 0, I, 1
@@ -53,12 +54,31 @@ const MeetingLobbyPage = () => {
 
   const [searchParams] = useSearchParams();
   const codeParam = searchParams.get("code");
-  const { handleJoinMeeting } = useMeeting();
+  const { handleJoinMeeting, handleCreateGroupMeeting } = useMeeting();
   const { socket } = useSocketStore();
   
   const [waitingForApproval, setWaitingForApproval] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState("");
+
+  const { data: groupsData = [] } = useQuery({
+    queryKey: ["groups"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/groups?includeDeleted=false");
+      return res.data.data || [];
+    },
+  });
+  const activeGroups = Array.isArray(groupsData) 
+    ? groupsData.filter((g) => {
+        if (g.status !== "active") return false;
+        const currentUserId = authUser?._id;
+        if (!currentUserId) return false;
+        const isAdmin = g.admins?.some((admin) => (admin._id || admin) === currentUserId);
+        const isCreator = (g.creator?._id || g.creator) === currentUserId || (g.createdBy?._id || g.createdBy) === currentUserId;
+        return isAdmin || isCreator;
+      })
+    : [];
 
   useEffect(() => {
     if (codeParam) {
@@ -135,6 +155,10 @@ const MeetingLobbyPage = () => {
   const toggleMic = () => setIsMicOn((p) => !p);
 
   const copyRoomCode = () => {
+    if (selectedGroup) {
+      toast.error("Meeting code is generated when you start the meeting!");
+      return;
+    }
     const link = `${window.location.origin}/meeting/room/${generatedRoomId.current}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
@@ -145,14 +169,18 @@ const MeetingLobbyPage = () => {
   const startMeeting = async () => {
     setIsStarting(true);
     try {
-      // Call backend to create the meeting so it's tracked in MongoDB
-      const res = await axiosInstance.post("/meetings/create", { 
-        roomId: generatedRoomId.current,
-        waitingRoomEnabled: true // enable waiting room by default for ad-hoc
-      });
-      navigate(`/meeting/room/${generatedRoomId.current}`, {
-        state: { isHost: true },
-      });
+      if (selectedGroup) {
+        await handleCreateGroupMeeting(selectedGroup);
+      } else {
+        // Call backend to create the meeting so it's tracked in MongoDB
+        const res = await axiosInstance.post("/meetings/create", { 
+          roomId: generatedRoomId.current,
+          waitingRoomEnabled: true // enable waiting room by default for ad-hoc
+        });
+        navigate(`/meeting/room/${generatedRoomId.current}`, {
+          state: { isHost: true },
+        });
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to start meeting");
     } finally {
@@ -401,10 +429,26 @@ const MeetingLobbyPage = () => {
                   <VideoIcon className="size-5 text-primary" />
                   Start a Meeting
                 </h2>
+
+                {/* GROUP SELECTION */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-base-content/70">Select Group (Optional)</label>
+                  <select 
+                    value={selectedGroup} 
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    className="select select-bordered w-full bg-base-200/50"
+                  >
+                    <option value="">No Group (Ad-hoc Meeting)</option>
+                    {activeGroups.map(g => (
+                      <option key={g._id} value={g._id}>{g.groupName}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <p className="text-sm text-base-content/50">
                   Your room code:{" "}
                   <span className="font-mono font-bold text-primary text-base">
-                    {generatedRoomId.current}
+                    {selectedGroup ? "(Generated on Start)" : generatedRoomId.current}
                   </span>
                 </p>
 
@@ -446,7 +490,7 @@ const MeetingLobbyPage = () => {
                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === "Enter" && joinMeeting()}
                     className="input input-bordered bg-base-200/50 border-base-300 flex-1 h-12 rounded-xl text-base font-mono uppercase tracking-widest placeholder:tracking-normal placeholder:font-normal"
-                    maxLength={8}
+                    maxLength={20}
                   />
                   <button
                     onClick={joinMeeting}

@@ -6,13 +6,15 @@ import {
   getAllSessions,
   deleteGroup,
   deleteContact,
-  getScheduledMeetings
+  getScheduledMeetings,
+  getAllActiveGroupMeetings
 } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarIcon } from "lucide-react";
 import ProfileImage from "../components/ProfileImage.jsx";
 import useAuthUser from "../hooks/useAuthUser";
+import { useSocketStore } from "../store/useSocketStore";
 import { capitalize, cn } from "../lib/utils";
 import Skeleton from "../components/ui/Skeleton";
 import { Helmet } from "react-helmet-async";
@@ -54,10 +56,7 @@ const contacts = [
   { id: 3, name: "Aman", email: "aman@example.com", status: "online", avatar: "/avatar.png" },
 ];
 
-const activeMeetings = [
-  { id: 1, name: "Spanish Practice", groupName: "Language Learners", participants: 4, host: "Sarah", duration: "45m" },
-  { id: 2, name: "French Study Group", groupName: "Polyglots", participants: 6, host: "Mike", duration: "1h 20m" },
-];
+
 
 // Dummy data for new sections
 const DUMMY_ACTIVITIES = [
@@ -88,6 +87,18 @@ const HomePage = () => {
   const { authUser } = useAuthUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { socket } = useSocketStore();
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleActiveMeetingsUpdate = () => {
+      queryClient.invalidateQueries(["activeMeetings"]);
+    };
+
+    socket.on("active_meetings_updated", handleActiveMeetingsUpdate);
+    return () => socket.off("active_meetings_updated", handleActiveMeetingsUpdate);
+  }, [socket, queryClient]);
 
   const deleteGroupMutation = useMutation({
     mutationFn: deleteGroup,
@@ -133,6 +144,12 @@ const HomePage = () => {
   const { data: scheduledMeetingsData = [], isLoading: isScheduledLoading } = useQuery({
     queryKey: ["scheduledMeetings"],
     queryFn: getScheduledMeetings
+  });
+
+  const { data: activeMeetingsData = [], isLoading: isActiveMeetingsLoading } = useQuery({
+    queryKey: ["activeMeetings"],
+    queryFn: getAllActiveGroupMeetings,
+    refetchInterval: 10000, // Poll every 10 seconds to keep UI synced with meeting status
   });
 
   const upcomingMeetings = scheduledMeetingsData.filter(m => new Date(m.scheduledAt) > new Date() && m.status !== "completed");
@@ -211,7 +228,7 @@ const HomePage = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <motion.div variants={itemVariants} className="lg:col-span-2">
-                <ActiveMeetings meetings={activeMeetings} />
+                <ActiveMeetings meetings={activeMeetingsData} />
               </motion.div>
               <motion.div variants={itemVariants} className="lg:col-span-1">
                 <ActivityTimeline activities={DUMMY_ACTIVITIES} />
@@ -227,17 +244,17 @@ const HomePage = () => {
               </motion.div>
             </div>
 
-            <motion.div variants={itemVariants}>
+            {/* <motion.div variants={itemVariants}>
               <AnalyticsCharts growthData={DUMMY_GROWTH_DATA} sessionData={DUMMY_SESSION_DATA} />
-            </motion.div>
+            </motion.div> */}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <motion.div variants={itemVariants} className="lg:col-span-1">
                 <NotificationsPanel notifications={DUMMY_NOTIFS} />
               </motion.div>
-              <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col justify-end">
+              {/* <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col justify-end">
                 <DashboardSummary summary={summary} />
-              </motion.div>
+              </motion.div> */}
             </div>
 
           </motion.div>

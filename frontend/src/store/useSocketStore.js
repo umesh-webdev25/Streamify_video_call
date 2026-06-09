@@ -7,7 +7,7 @@ export const useSocketStore = create((set, get) => ({
 
   connect: () => {
     if (get().socket) return;
-    const socketURL = import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
+    const socketURL = import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:500";
     
     const socket = io(socketURL, {
       withCredentials: true, // Important for sending cookies/jwt
