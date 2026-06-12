@@ -27,6 +27,7 @@
     "stream-chat": "^9.43.2",
     "stream-chat-react": "^14.2.0",
     "tailwind-merge": "^3.6.0",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

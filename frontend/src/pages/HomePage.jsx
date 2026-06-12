@@ -152,7 +152,8 @@ const HomePage = () => {
     refetchInterval: 10000, // Poll every 10 seconds to keep UI synced with meeting status
   });
 
-  console.log("Active Meetings API Response:", activeMeetingsData);
+  console.log("activeMeetingsData",activeMeetingsData);
+
 
   const upcomingMeetings = scheduledMeetingsData.filter(m => new Date(m.scheduledAt) > new Date() && m.status !== "completed");
   const todayMeetings = upcomingMeetings.filter(m => new Date(m.scheduledAt).toDateString() === new Date().toDateString());
@@ -229,9 +230,9 @@ const HomePage = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <motion.div variants={itemVariants} className="lg:col-span-2">
-                <ActiveMeetings meetings={activeMeetingsData} />
-              </motion.div>
+                <motion.div variants={itemVariants} className="lg:col-span-2">
+                  <ActiveMeetings meetings={activeMeetingsData} />
+                </motion.div>
               <motion.div variants={itemVariants} className="lg:col-span-1">
                 <ActivityTimeline activities={DUMMY_ACTIVITIES} />
               </motion.div>

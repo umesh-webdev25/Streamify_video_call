@@ -393,7 +393,7 @@ class MeetingService {
   }
 
   async getAllActiveGroupMeetings(userId) {
-    const Group = (await import("../models/Group.js")).default;
+    const Group = (await import("../models/group.js")).default;
     const groups = await Group.find({ 
       "members.userId": userId, 
       status: "active", 

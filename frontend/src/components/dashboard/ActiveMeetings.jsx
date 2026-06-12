@@ -20,7 +20,7 @@ const ActiveMeetings = ({ meetings }) => {
           meetings.map((meeting) => (
             <div
               key={meeting._id || meeting.id}
-              className="relative w-full overflow-hidden border border-base-300 rounded-[1rem] p-6 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+              className="relative w-[500px] overflow-hidden border border-base-300 rounded-[1rem] p-6 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
             >
               {/* Subtle background glow effect */}
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-success/10 blur-3xl rounded-full group-hover:bg-success/20 transition-all duration-500" />

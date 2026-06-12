@@ -164,7 +164,7 @@ const SecurityPage = () => {
       <div className="space-y-6 max-w-4xl">
 
         {/* ── CHANGE PASSWORD ── */}
-        <section className="bg-base-100 border border-base-200 rounded-3xl shadow-sm overflow-hidden">
+        <section className="w-[600px] bg-base-100 border border-base-200 rounded-3xl shadow-sm overflow-hidden mt-10 mb-6">
           <div className="px-6 pt-6 pb-5 border-b border-base-200 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-primary/10">
               <KeyIcon className="size-5 text-primary" />
